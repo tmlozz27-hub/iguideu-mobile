@@ -1,0 +1,70 @@
+import React, { useState } from "react";
+import { View, Text, Pressable, Alert } from "react-native";
+import { useStripe } from "@stripe/stripe-react-native";
+import { API_BASE_URL } from "../config/api";
+
+export default function BookingScreen() {
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const [loading, setLoading] = useState(false);
+
+  // Para test: usá un booking real tuyo (después lo conectamos al flow real)
+  const bookingId = "697a3d72e1b34f15ea6df4cd";
+
+  async function pay() {
+    try {
+      setLoading(true);
+
+      const r = await fetch(`${API_BASE_URL}/api/payments/create-intent`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookingId }),
+      });
+
+      const data = await r.json();
+      if (!r.ok) throw new Error(data?.detail || data?.error || "create-intent failed");
+
+      const clientSecret = data.clientSecret;
+      if (!clientSecret) throw new Error("Missing clientSecret");
+
+      const init = await initPaymentSheet({
+        paymentIntentClientSecret: clientSecret,
+        merchantDisplayName: "I GUIDE U",
+      });
+      if (init.error) throw new Error(init.error.message);
+
+      const present = await presentPaymentSheet();
+      if (present.error) {
+        Alert.alert("Pago cancelado", present.error.message);
+        return;
+      }
+
+      Alert.alert("Pago OK", "PaymentSheet completado. Webhook debería marcar paid.");
+    } catch (e: any) {
+      Alert.alert("Error", String(e?.message || e));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <View style={{ flex: 1, padding: 18, gap: 12, justifyContent: "center" }}>
+      <Text style={{ fontSize: 20, fontWeight: "700" }}>Booking</Text>
+      <Text>Test bookingId: {bookingId}</Text>
+
+      <Pressable
+        onPress={pay}
+        disabled={loading}
+        style={{
+          backgroundColor: "#111",
+          padding: 14,
+          borderRadius: 10,
+          opacity: loading ? 0.6 : 1,
+        }}
+      >
+        <Text style={{ color: "white", textAlign: "center", fontWeight: "700" }}>
+          {loading ? "Procesando..." : "Pagar con Stripe"}
+        </Text>
+      </Pressable>
+    </View>
+  );
+}

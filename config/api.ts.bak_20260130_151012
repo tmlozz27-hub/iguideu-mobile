@@ -1,0 +1,188 @@
+﻿// C:\Users\Tom\Desktop\IGUIDEU_PROJECT\frontend\iguideu-app-expo-clean\config\api.ts
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+export const API_BASE = "https://iguideu23x.i-guide-u.com";
+
+const ACCESS_KEY = "iguideu_accessToken";
+const REFRESH_KEY = "iguideu_refreshToken";
+
+export function apiUrl(path: string) {
+  if (!path) return API_BASE;
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  if (!path.startsWith("/")) path = "/" + path;
+  return `${API_BASE}${path}`;
+}
+
+// ==============================
+// TOKEN STORAGE
+// ==============================
+export async function getAccessToken() {
+  return (await AsyncStorage.getItem(ACCESS_KEY)) || "";
+}
+
+export async function getRefreshToken() {
+  return (await AsyncStorage.getItem(REFRESH_KEY)) || "";
+}
+
+export async function setTokens(accessToken?: string, refreshToken?: string) {
+  if (typeof accessToken === "string") await AsyncStorage.setItem(ACCESS_KEY, accessToken);
+  if (typeof refreshToken === "string") await AsyncStorage.setItem(REFRESH_KEY, refreshToken);
+}
+
+export async function clearTokens() {
+  await AsyncStorage.removeItem(ACCESS_KEY);
+  await AsyncStorage.removeItem(REFRESH_KEY);
+}
+
+// ==============================
+// LOW LEVEL FETCH (auto refresh 1x)
+// ==============================
+type ApiFetchOptions = {
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  body?: any;
+  headers?: Record<string, string>;
+  auth?: boolean; // default true
+  timeoutMs?: number; // default 25000
+};
+
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: number) {
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { ...init, signal: controller.signal });
+    return res;
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+async function refreshAccessToken(): Promise<string> {
+  const refreshToken = await getRefreshToken();
+  if (!refreshToken) throw new Error("NO_REFRESH_TOKEN");
+
+  const res = await fetchWithTimeout(
+    apiUrl("/api/auth/refresh"),
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken }),
+    },
+    25000
+  );
+
+  if (!res.ok) {
+    // refresh muerto => limpiar tokens
+    await clearTokens();
+    const txt = await res.text().catch(() => "");
+    throw new Error(`REFRESH_FAILED_${res.status}_${txt}`);
+  }
+
+  const data = await res.json();
+  const newAccess = String(data.accessToken || "");
+  const newRefresh = String(data.refreshToken || "");
+  if (!newAccess) throw new Error("REFRESH_NO_ACCESS");
+
+  await setTokens(newAccess, newRefresh || refreshToken);
+  return newAccess;
+}
+
+export async function apiFetch<T = any>(path: string, options: ApiFetchOptions = {}): Promise<T> {
+  const method = options.method || "GET";
+  const auth = options.auth !== false; // default true
+  const timeoutMs = options.timeoutMs ?? 25000;
+
+  const headers: Record<string, string> = {
+    ...(options.headers || {}),
+  };
+
+  let body: any = undefined;
+  if (options.body !== undefined) {
+    headers["Content-Type"] = headers["Content-Type"] || "application/json";
+    body = headers["Content-Type"].includes("application/json")
+      ? JSON.stringify(options.body)
+      : options.body;
+  }
+
+  const doRequest = async (accessToken?: string) => {
+    const h = { ...headers };
+    if (auth) {
+      const tok = accessToken || (await getAccessToken());
+      if (tok) h["Authorization"] = `Bearer ${tok}`;
+    }
+
+    const res = await fetchWithTimeout(
+      apiUrl(path),
+      {
+        method,
+        headers: h,
+        body,
+      },
+      timeoutMs
+    );
+
+    return res;
+  };
+
+  // 1) intento normal
+  let res = await doRequest();
+  if (res.status !== 401) {
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      throw new Error(`API_${res.status}_${txt}`);
+    }
+    // si es 204 no hay json
+    if (res.status === 204) return undefined as any;
+    return (await res.json()) as T;
+  }
+
+  // 2) si 401 => refresh 1 vez y reintentar
+  try {
+    const newAccess = await refreshAccessToken();
+    res = await doRequest(newAccess);
+  } catch (e) {
+    throw e;
+  }
+
+  if (!res.ok) {
+    const txt = await res.text().catch(() => "");
+    throw new Error(`API_${res.status}_${txt}`);
+  }
+  if (res.status === 204) return undefined as any;
+  return (await res.json()) as T;
+}
+
+// ==============================
+// AUTH HELPERS
+// ==============================
+export async function authRegister(email: string, password: string) {
+  const data = await apiFetch<{ accessToken: string; refreshToken: string; user?: any }>(
+    "/api/auth/register",
+    { method: "POST", body: { email, password }, auth: false }
+  );
+  await setTokens(data.accessToken || "", data.refreshToken || "");
+  return data;
+}
+
+export async function authLogin(email: string, password: string) {
+  const data = await apiFetch<{ accessToken: string; refreshToken: string; user?: any }>(
+    "/api/auth/login",
+    { method: "POST", body: { email, password }, auth: false }
+  );
+  await setTokens(data.accessToken || "", data.refreshToken || "");
+  return data;
+}
+
+export async function authLogout() {
+  await clearTokens();
+}
+
+export async function authMe() {
+  return await apiFetch<{ user: any }>("/api/auth/me", { method: "GET", auth: true });
+}
+
+// ==============================
+// BOOKINGS
+// ==============================
+export async function getMyBookings() {
+  return await apiFetch<any[]>("/api/bookings/me", { method: "GET", auth: true });
+}

@@ -1,0 +1,30 @@
+﻿# OS / basura
+AppData/
+ChromeTempIguideu/
+3D Objects/
+Contacts/
+Cookies/
+Configuración local/
+Datos de programa/
+Entorno de red/
+Impresoras/
+Menú Inicio/
+Mis documentos/
+Plantillas/
+Reciente/
+SendTo/
+Alias/
+*.tmp
+*.log
+
+# Expo / RN
+.expo/
+.expo-shared/
+.cache/
+node_modules/
+android/
+ios/
+
+# secrets
+.env
+.env.*

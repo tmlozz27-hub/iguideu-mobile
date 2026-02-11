@@ -1,0 +1,181 @@
+import React, { useEffect, useMemo, useState } from "react";
+import { View, Text, Pressable, ScrollView, ActivityIndicator, Alert } from "react-native";
+import { useRouter } from "expo-router";
+
+type Guide = {
+  _id: string;
+  name: string;
+  country: string;
+  city: string;
+  languages: string[];
+  pricePerHour: number;
+  rating: number;
+  active?: boolean;
+};
+
+function moneyPerHour(n: number) {
+  const v = Number(n);
+  if (!Number.isFinite(v)) return "$0 / hora";
+  return `$${v} / hora`;
+}
+
+export default function GuiasScreen() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [items, setItems] = useState<Guide[]>([]);
+  const [error, setError] = useState<string>("");
+
+  const apiBase =
+    process.env.EXPO_PUBLIC_API_BASE ||
+    process.env.EXPO_PUBLIC_API_BASE_URL ||
+    "http://127.0.0.1:4020";
+
+  async function load() {
+    try {
+      setLoading(true);
+      setError("");
+
+      const res = await fetch(`${apiBase}/api/guides`);
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data?.ok) {
+        setItems([]);
+        setError(data?.error || `HTTP ${res.status}`);
+        return;
+      }
+
+      const list: Guide[] = Array.isArray(data.items) ? data.items : [];
+      setItems(list.filter((g) => g && (g.active === undefined || g.active === true)));
+    } catch (e: any) {
+      setItems([]);
+      setError(String(e?.message || e));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const content = useMemo(() => {
+    if (loading) {
+      return (
+        <View style={{ paddingVertical: 26, alignItems: "center" }}>
+          <ActivityIndicator />
+          <Text style={{ marginTop: 10, color: "#666" }}>Cargando guías…</Text>
+        </View>
+      );
+    }
+
+    if (error) {
+      return (
+        <View style={{ paddingVertical: 18 }}>
+          <Text style={{ color: "#b00020", fontWeight: "900" }}>Error</Text>
+          <Text style={{ color: "#b00020", marginTop: 6 }}>{error}</Text>
+
+          <Pressable
+            onPress={load}
+            style={{
+              marginTop: 12,
+              paddingVertical: 12,
+              borderRadius: 16,
+              backgroundColor: "#111",
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ color: "#fff", fontWeight: "900" }}>Reintentar</Text>
+          </Pressable>
+        </View>
+      );
+    }
+
+    if (!items.length) {
+      return (
+        <View style={{ paddingVertical: 18 }}>
+          <Text style={{ color: "#111", fontWeight: "900" }}>Sin guías</Text>
+          <Text style={{ color: "#666", marginTop: 6 }}>No hay guías disponibles por ahora.</Text>
+
+          <Pressable
+            onPress={load}
+            style={{
+              marginTop: 12,
+              paddingVertical: 12,
+              borderRadius: 16,
+              backgroundColor: "#111",
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ color: "#fff", fontWeight: "900" }}>Recargar</Text>
+          </Pressable>
+        </View>
+      );
+    }
+
+    return (
+      <View style={{ marginTop: 10, gap: 16 }}>
+        {items.map((g) => (
+          <Pressable
+            key={g._id}
+            onPress={() => {
+              // Navega a la tab "Guía" (guia.tsx) y le pasa params sin romper nada
+              router.push({
+                pathname: "/guia",
+                params: {
+                  id: g._id,
+                  name: g.name,
+                  city: `${g.city}, ${g.country}`,
+                  langs: (g.languages || []).join(", "),
+                  price: moneyPerHour(g.pricePerHour),
+                  rating: String(g.rating ?? ""),
+                },
+              });
+            }}
+            style={{
+              borderWidth: 1,
+              borderColor: "#e6e6e6",
+              borderRadius: 18,
+              padding: 18,
+              backgroundColor: "#fff",
+            }}
+          >
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <View style={{ flex: 1, paddingRight: 12 }}>
+                <Text style={{ fontSize: 22, fontWeight: "800" }}>{g.name}</Text>
+
+                <Text style={{ fontSize: 16, color: "#333", marginTop: 6 }}>
+                  {g.city}, {g.country}
+                </Text>
+
+                <Text style={{ fontSize: 16, color: "#333", marginTop: 10 }}>
+                  Idiomas: {(g.languages || []).join(", ")}
+                </Text>
+
+                <Text style={{ fontSize: 20, fontWeight: "900", marginTop: 14 }}>
+                  {moneyPerHour(g.pricePerHour)}
+                </Text>
+              </View>
+
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                <Text style={{ fontSize: 18 }}>⭐</Text>
+                <Text style={{ fontSize: 18, fontWeight: "900" }}>
+                  {Number.isFinite(Number(g.rating)) ? Number(g.rating).toFixed(1) : ""}
+                </Text>
+              </View>
+            </View>
+          </Pressable>
+        ))}
+      </View>
+    );
+  }, [items, loading, error]);
+
+  return (
+    <ScrollView style={{ flex: 1, backgroundColor: "#fff" }} contentContainerStyle={{ paddingBottom: 40 }}>
+      <View style={{ paddingHorizontal: 18, paddingTop: 22 }}>
+        <Text style={{ fontSize: 44, fontWeight: "900", letterSpacing: -1 }}>Guías</Text>
+        {content}
+      </View>
+    </ScrollView>
+  );
+}

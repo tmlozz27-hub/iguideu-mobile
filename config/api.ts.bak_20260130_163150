@@ -1,0 +1,97 @@
+﻿// config/api.ts
+// ✅ Compatible con imports existentes:
+// - guias.tsx: import { getGuides } from "../../config/api";
+// - reservas.tsx: import { apiFetch, authLogin, authLogout, authMe, getMyBookings } from "../../config/api";
+
+export const BASE_URL = "https://nhs-intend-assets-pixel.trycloudflare.com";
+
+type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+
+export async function apiFetch<T = any>(
+  path: string,
+  opts?: { method?: HttpMethod; body?: any; headers?: Record<string, string> }
+): Promise<T> {
+  const url = `${BASE_URL}${path.startsWith("/") ? "" : "/"}${path}`;
+
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    ...(opts?.body ? { "Content-Type": "application/json" } : {}),
+    ...(opts?.headers || {}),
+  };
+
+  const res = await fetch(url, {
+    method: opts?.method || "GET",
+    headers,
+    body: opts?.body ? JSON.stringify(opts.body) : undefined,
+  });
+
+  const text = await res.text();
+  let data: any = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = text; // por si vuelve HTML o texto
+  }
+
+  if (!res.ok) {
+    const msg = typeof data === "string" ? data : JSON.stringify(data);
+    throw new Error(`HTTP ${res.status} ${res.statusText} :: ${url} :: ${msg}`);
+  }
+
+  return data as T;
+}
+
+/** ✅ GUIAS */
+export async function getGuides(): Promise<any[]> {
+  const r = await apiFetch<any>(`/api/guides`);
+  // Por si el backend devuelve {items:[...]} o algo similar:
+  if (Array.isArray(r)) return r;
+  if (r && Array.isArray(r.items)) return r.items;
+  if (r && Array.isArray(r.data)) return r.data;
+  return [];
+}
+
+/**
+ * ✅ RESERVAS (My bookings)
+ * En tu backend hoy lo seguro es /api/bookings?email=...
+ * - Si reservas.tsx llama getMyBookings(email) -> OK
+ * - Si llama getMyBookings() sin email -> devuelve []
+ */
+export async function getMyBookings(email?: string): Promise<any[]> {
+  if (!email) return [];
+  const emailEnc = encodeURIComponent(email);
+  const r = await apiFetch<any>(`/api/bookings?email=${emailEnc}`);
+  if (Array.isArray(r)) return r;
+  if (r && Array.isArray(r.items)) return r.items;
+  if (r && Array.isArray(r.data)) return r.data;
+  return [];
+}
+
+/**
+ * ✅ AUTH (si backend tiene /api/auth/*)
+ * Si todavía no está implementado completo, devuelven objetos seguros para no romper UI.
+ */
+export async function authLogin(payload: { email?: string; password?: string } | any): Promise<any> {
+  try {
+    return await apiFetch<any>(`/api/auth/login`, { method: "POST", body: payload });
+  } catch (e: any) {
+    return { ok: false, error: e?.message || "authLogin failed" };
+  }
+}
+
+export async function authLogout(): Promise<any> {
+  try {
+    return await apiFetch<any>(`/api/auth/logout`, { method: "POST", body: {} });
+  } catch (e: any) {
+    return { ok: false, error: e?.message || "authLogout failed" };
+  }
+}
+
+export async function authMe(): Promise<any> {
+  try {
+    return await apiFetch<any>(`/api/auth/me`);
+  } catch (e: any) {
+    return { ok: false, error: e?.message || "authMe failed" };
+  }
+}
+

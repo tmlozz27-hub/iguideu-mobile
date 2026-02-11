@@ -1,0 +1,408 @@
+﻿import React, { useMemo, useState } from "react";
+import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+
+// 🔒 Regla: usar un único origen para API (config/api.ts)
+import { API_BASE } from "../../config/api";
+
+type Booking = {
+  _id: string;
+  travelerEmail: string;
+  guideId: string;
+  guideName: string;
+  city: string;
+  country: string;
+  duration: "HOURS" | string;
+  hours: number;
+  total: number; // centavos
+  status: "created" | "paid" | string;
+  paidAt: string | null;
+  currency: string;
+  amountPaid: number; // centavos
+  stripePaymentIntentId: string;
+  commissionRate: number;
+  commissionAmount: number; // centavos
+  guideNetAmount: number; // centavos
+  createdAt: string;
+  updatedAt: string;
+};
+
+function moneyFromCents(cents: number, currency: string = "usd") {
+  const val = (Number(cents || 0) / 100).toFixed(2);
+  return `${currency.toUpperCase()} ${val}`;
+}
+
+function dollarsToCentsSafe(input: string) {
+  // Convertimos a centavos SIEMPRE para evitar decimales/errores.
+  // Ej: "50" -> 5000, "50.25" -> 5025
+  const n = Number(String(input).replace(",", "."));
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  return Math.round(n * 100);
+}
+
+async function apiJson(path: string, init?: RequestInit) {
+  const url = `${API_BASE}${path}`;
+  const res = await fetch(url, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...(init?.headers || {}),
+    },
+  });
+  const text = await res.text();
+  let data: any = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = text;
+  }
+  if (!res.ok) {
+    const msg = typeof data === "string" ? data : data?.error || data?.message || `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+  return data;
+}
+
+export default function ReservasScreen() {
+  // Datos base (hoy trabajamos con demo_guide_1; después lo conectamos al guía seleccionado)
+  const [travelerEmail, setTravelerEmail] = useState("test+frontend@iguideu.com");
+  const [guideId] = useState("demo_guide_1");
+  const [guideName] = useState("Somchai");
+  const [city] = useState("Bangkok");
+  const [country] = useState("Thailand");
+
+  const [hours, setHours] = useState("2");
+  const [totalUsd, setTotalUsd] = useState("50"); // dólares (UI)
+  const [currency] = useState("usd");
+
+  const totalCents = useMemo(() => dollarsToCentsSafe(totalUsd), [totalUsd]);
+  const hoursNum = useMemo(() => {
+    const n = Number(hours);
+    return Number.isFinite(n) && n > 0 ? Math.round(n) : 0;
+  }, [hours]);
+
+  const [loading, setLoading] = useState(false);
+
+  const [bookingId, setBookingId] = useState<string>("");
+  const [piId, setPiId] = useState<string>("");
+
+  const [booking, setBooking] = useState<Booking | null>(null);
+  const [list, setList] = useState<Booking[]>([]);
+
+  const baseInfo = useMemo(
+    () => ({
+      travelerEmail: travelerEmail.trim(),
+      guideId,
+      guideName,
+      city,
+      country,
+      hours: hoursNum,
+      total: totalCents, // centavos
+      currency,
+    }),
+    [travelerEmail, guideId, guideName, city, country, hoursNum, totalCents, currency]
+  );
+
+  async function refreshList() {
+    const email = travelerEmail.trim();
+    if (!email) return;
+    const data = await apiJson(`/api/bookings?email=${encodeURIComponent(email)}`);
+    const arr: Booking[] = Array.isArray(data) ? data : [];
+    setList(arr);
+  }
+
+  async function refreshBooking(id?: string) {
+    const useId = (id || bookingId || "").trim();
+    if (!useId) return;
+    const data = await apiJson(`/api/bookings/${useId}`);
+    setBooking(data as Booking);
+  }
+
+  async function createBooking() {
+    const email = baseInfo.travelerEmail;
+    if (!email) return Alert.alert("Falta email", "Ingresá travelerEmail");
+    if (!baseInfo.hours) return Alert.alert("Faltan horas", "hours debe ser > 0");
+    if (!baseInfo.total) return Alert.alert("Falta total", "total debe ser > 0 (en USD)");
+
+    const payload = {
+      travelerEmail: baseInfo.travelerEmail,
+      guideId: baseInfo.guideId,
+      guideName: baseInfo.guideName,
+      city: baseInfo.city,
+      country: baseInfo.country,
+      hours: baseInfo.hours,
+      total: baseInfo.total, // centavos
+      duration: "HOURS",
+      currency: baseInfo.currency,
+    };
+
+    const r = await apiJson("/api/bookings", { method: "POST", body: JSON.stringify(payload) });
+    const id = String(r?.bookingId || "");
+    if (!id) throw new Error("No vino bookingId");
+    setBookingId(id);
+    setPiId("");
+    await refreshBooking(id);
+    await refreshList();
+    Alert.alert("OK", `Booking creado: ${id}`);
+  }
+
+  async function createIntent() {
+    const email = baseInfo.travelerEmail;
+    const id = (bookingId || "").trim();
+    if (!id) return Alert.alert("Falta bookingId", "Primero creá booking");
+    if (!baseInfo.total) return Alert.alert("Falta total", "total debe ser > 0 (en USD)");
+
+    const payload = {
+      amount: baseInfo.total, // centavos
+      currency: baseInfo.currency,
+      bookingId: id,
+      email,
+    };
+
+    const r = await apiJson("/api/payments/create-intent", { method: "POST", body: JSON.stringify(payload) });
+    const pid = String(r?.paymentIntentId || "");
+    if (!pid) throw new Error("No vino paymentIntentId");
+    setPiId(pid);
+    await refreshBooking(id);
+    Alert.alert("OK", `PI creado: ${pid}`);
+  }
+
+  async function devConfirmIntent() {
+    const id = (piId || "").trim();
+    const bid = (bookingId || "").trim();
+    if (!id) return Alert.alert("Falta PI", "Primero create-intent");
+    const payload = { paymentIntentId: id };
+    const r = await apiJson("/api/payments/dev/confirm-intent", { method: "POST", body: JSON.stringify(payload) });
+    const st = String(r?.status || "");
+    await refreshBooking(bid);
+    await refreshList();
+    Alert.alert("DEV CONFIRM", `status=${st}`);
+  }
+
+  function Btn(props: { title: string; onPress: () => void; disabled?: boolean }) {
+    return (
+      <TouchableOpacity
+        onPress={props.onPress}
+        disabled={!!props.disabled}
+        style={{
+          paddingVertical: 12,
+          paddingHorizontal: 14,
+          backgroundColor: props.disabled ? "#2a2a2a" : "#111",
+          borderRadius: 12,
+          marginBottom: 10,
+        }}
+      >
+        <Text style={{ color: "#fff", fontWeight: "700" }}>{props.title}</Text>
+      </TouchableOpacity>
+    );
+  }
+
+  async function run(fn: () => Promise<void>) {
+    try {
+      setLoading(true);
+      await fn();
+    } catch (e: any) {
+      Alert.alert("Error", e?.message || String(e));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <ScrollView style={{ flex: 1, backgroundColor: "#0b0b0b" }} contentContainerStyle={{ padding: 16, paddingBottom: 30 }}>
+      <Text style={{ color: "#fff", fontSize: 22, fontWeight: "800", marginBottom: 10 }}>Reservas</Text>
+
+      <View style={{ backgroundColor: "#121212", borderRadius: 16, padding: 14, marginBottom: 14 }}>
+        <Text style={{ color: "#bdbdbd", marginBottom: 6 }}>API_BASE</Text>
+        <Text style={{ color: "#fff", fontFamily: "monospace" }}>{API_BASE}</Text>
+      </View>
+
+      <View style={{ backgroundColor: "#121212", borderRadius: 16, padding: 14, marginBottom: 14 }}>
+        <Text style={{ color: "#bdbdbd", marginBottom: 6 }}>Traveler Email</Text>
+        <TextInput
+          value={travelerEmail}
+          onChangeText={setTravelerEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          style={{
+            backgroundColor: "#0f0f0f",
+            color: "#fff",
+            padding: 12,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: "#222",
+          }}
+        />
+
+        <View style={{ height: 10 }} />
+
+        <Text style={{ color: "#bdbdbd", marginBottom: 6 }}>Horas</Text>
+        <TextInput
+          value={hours}
+          onChangeText={setHours}
+          keyboardType="numeric"
+          style={{
+            backgroundColor: "#0f0f0f",
+            color: "#fff",
+            padding: 12,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: "#222",
+          }}
+        />
+
+        <View style={{ height: 10 }} />
+
+        <Text style={{ color: "#bdbdbd", marginBottom: 6 }}>Total (USD)</Text>
+        <TextInput
+          value={totalUsd}
+          onChangeText={setTotalUsd}
+          keyboardType="decimal-pad"
+          style={{
+            backgroundColor: "#0f0f0f",
+            color: "#fff",
+            padding: 12,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: "#222",
+          }}
+        />
+
+        <View style={{ height: 10 }} />
+        <Text style={{ color: "#8a8a8a" }}>
+          Se guarda/manda al backend en <Text style={{ color: "#fff", fontWeight: "700" }}>centavos</Text>:{" "}
+          <Text style={{ color: "#fff", fontFamily: "monospace" }}>{totalCents}</Text>
+        </Text>
+
+        <View style={{ height: 12 }} />
+
+        <Text style={{ color: "#8a8a8a" }}>
+          Guía: <Text style={{ color: "#fff" }}>{guideName}</Text> ({guideId}) — {city}, {country}
+        </Text>
+      </View>
+
+      <Btn title={loading ? "..." : "1) CREAR BOOKING"} disabled={loading} onPress={() => run(createBooking)} />
+      <Btn title={loading ? "..." : "2) CREATE INTENT"} disabled={loading} onPress={() => run(createIntent)} />
+      <Btn title={loading ? "..." : "3) DEV CONFIRM (TEST)"} disabled={loading} onPress={() => run(devConfirmIntent)} />
+      <Btn title={loading ? "..." : "REFRESH BOOKING"} disabled={loading} onPress={() => run(() => refreshBooking())} />
+      <Btn title={loading ? "..." : "REFRESH LIST (por email)"} disabled={loading} onPress={() => run(refreshList)} />
+
+      <View style={{ height: 14 }} />
+
+      <View style={{ backgroundColor: "#121212", borderRadius: 16, padding: 14, marginBottom: 14 }}>
+        <Text style={{ color: "#bdbdbd", marginBottom: 6 }}>bookingId</Text>
+        <TextInput
+          value={bookingId}
+          onChangeText={setBookingId}
+          autoCapitalize="none"
+          style={{
+            backgroundColor: "#0f0f0f",
+            color: "#fff",
+            padding: 12,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: "#222",
+            fontFamily: "monospace",
+          }}
+        />
+
+        <View style={{ height: 10 }} />
+
+        <Text style={{ color: "#bdbdbd", marginBottom: 6 }}>paymentIntentId</Text>
+        <TextInput
+          value={piId}
+          onChangeText={setPiId}
+          autoCapitalize="none"
+          style={{
+            backgroundColor: "#0f0f0f",
+            color: "#fff",
+            padding: 12,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: "#222",
+            fontFamily: "monospace",
+          }}
+        />
+      </View>
+
+      <View style={{ backgroundColor: "#121212", borderRadius: 16, padding: 14 }}>
+        <Text style={{ color: "#fff", fontWeight: "800", marginBottom: 10 }}>Booking actual</Text>
+
+        {booking ? (
+          <View>
+            <Text style={{ color: "#bdbdbd" }}>
+              Status: <Text style={{ color: "#fff", fontWeight: "700" }}>{booking.status}</Text>
+            </Text>
+            <Text style={{ color: "#bdbdbd" }}>
+              Total: <Text style={{ color: "#fff", fontWeight: "700" }}>{moneyFromCents(booking.total, booking.currency || "usd")}</Text>
+            </Text>
+            <Text style={{ color: "#bdbdbd" }}>
+              AmountPaid:{" "}
+              <Text style={{ color: "#fff", fontWeight: "700" }}>{moneyFromCents(booking.amountPaid, booking.currency || "usd")}</Text>
+            </Text>
+            <Text style={{ color: "#bdbdbd" }}>
+              Comisión (10%):{" "}
+              <Text style={{ color: "#fff", fontWeight: "700" }}>{moneyFromCents(booking.commissionAmount, booking.currency || "usd")}</Text>
+            </Text>
+            <Text style={{ color: "#bdbdbd" }}>
+              Neto guía: <Text style={{ color: "#fff", fontWeight: "700" }}>{moneyFromCents(booking.guideNetAmount, booking.currency || "usd")}</Text>
+            </Text>
+            <Text style={{ color: "#bdbdbd" }}>
+              PI: <Text style={{ color: "#fff", fontFamily: "monospace" }}>{booking.stripePaymentIntentId || "-"}</Text>
+            </Text>
+            <Text style={{ color: "#bdbdbd" }}>
+              paidAt: <Text style={{ color: "#fff", fontFamily: "monospace" }}>{booking.paidAt || "-"}</Text>
+            </Text>
+
+            <View style={{ height: 10 }} />
+            <Text style={{ color: "#8a8a8a", fontFamily: "monospace", fontSize: 12 }}>
+              {JSON.stringify(booking, null, 2)}
+            </Text>
+          </View>
+        ) : (
+          <Text style={{ color: "#8a8a8a" }}>—</Text>
+        )}
+      </View>
+
+      <View style={{ height: 14 }} />
+
+      <View style={{ backgroundColor: "#121212", borderRadius: 16, padding: 14 }}>
+        <Text style={{ color: "#fff", fontWeight: "800", marginBottom: 10 }}>Últimas reservas por email</Text>
+        {list.length === 0 ? (
+          <Text style={{ color: "#8a8a8a" }}>—</Text>
+        ) : (
+          list.slice(0, 10).map((b) => (
+            <TouchableOpacity
+              key={b._id}
+              onPress={() => {
+                setBookingId(b._id);
+                setPiId(b.stripePaymentIntentId || "");
+                setBooking(b);
+              }}
+              style={{
+                paddingVertical: 10,
+                borderTopWidth: 1,
+                borderTopColor: "#222",
+              }}
+            >
+              <Text style={{ color: "#fff", fontWeight: "700" }}>
+                {b._id} — {b.status.toUpperCase()}
+              </Text>
+              <Text style={{ color: "#bdbdbd" }}>
+                {b.guideName} · {b.city} · {moneyFromCents(b.total, b.currency || "usd")}
+              </Text>
+              <Text style={{ color: "#8a8a8a", fontFamily: "monospace", fontSize: 12 }}>
+                PI: {b.stripePaymentIntentId || "-"}
+              </Text>
+            </TouchableOpacity>
+          ))
+        )}
+      </View>
+
+      <View style={{ height: 30 }} />
+      <Text style={{ color: "#6f6f6f", fontSize: 12 }}>
+        Nota: acá usamos centavos siempre. Stripe + impuestos por país se resuelve después (el cálculo de impuestos NO debe
+        vivir en el cliente).
+      </Text>
+    </ScrollView>
+  );
+}

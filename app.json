@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "I GUIDE U",
+    "slug": "iguideu",
+    "scheme": "iguideu",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "platforms": ["ios", "android"],
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.auroragalactic.iguideu"
+    },
+    "android": {
+      "package": "com.auroragalactic.iguideu"
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "2778ee41-357b-4816-80f0-73b958f93746"
+      }
+    },
+    "owner": "tomloz"
+  }
+}
