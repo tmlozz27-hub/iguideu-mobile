@@ -1,111 +1,81 @@
 ﻿import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, ActivityIndicator, StyleSheet } from "react-native";
-import { getGuides } from "../../config/api";
+import { View, Text, FlatList, ActivityIndicator, RefreshControl } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { apiGet } from "../../config/api";
 
 type Guide = {
-  id?: string;
   _id?: string;
+  gid?: string;
+  id?: string;
   name?: string;
-  guideName?: string;
+  bio?: string;
   city?: string;
+  country?: string;
   rating?: number;
-  languages?: string[];
   priceHour?: number;
+  priceDay?: number;
+  price24h?: number;
+  avatarUrl?: string;
+  active?: boolean;
 };
 
 export default function GuiasScreen() {
-  const [loading, setLoading] = useState(true);
   const [guides, setGuides] = useState<Guide[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  async function loadGuides() {
+    try {
+      const data = await apiGet<Guide[]>("/api/guides");
+      const arr = Array.isArray(data) ? data : [];
+      setGuides(arr);
+    } catch (e) {
+      console.log("ERROR loadGuides()", e);
+      setGuides([]);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }
 
   useEffect(() => {
-    let mounted = true;
-
-    async function load() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const res: any = await getGuides();
-
-        const arr: Guide[] =
-          Array.isArray(res) ? res :
-          Array.isArray(res?.guides) ? res.guides :
-          Array.isArray(res?.items) ? res.items :
-          Array.isArray(res?.data) ? res.data :
-          [];
-
-        if (!mounted) return;
-        setGuides(arr);
-      } catch (e: any) {
-        console.log("ERROR getGuides()", e);
-        if (!mounted) return;
-        setError(e?.message || "Error loading guides");
-        setGuides([]);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    }
-
-    load();
-    return () => { mounted = false; };
+    loadGuides();
   }, []);
+
+  function onRefresh() {
+    setRefreshing(true);
+    loadGuides();
+  }
 
   if (loading) {
     return (
-      <View style={styles.center}>
+      <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />
-        <Text style={styles.muted}>Loading guides…</Text>
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.error}>{error}</Text>
-      </View>
-    );
-  }
-
-  if (!guides.length) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.muted}>No guides available</Text>
-      </View>
+        <Text style={{ marginTop: 10 }}>Cargando guías...</Text>
+      </SafeAreaView>
     );
   }
 
   return (
-    <FlatList
-      data={guides}
-      keyExtractor={(item, i) => String(item.id || item._id || i)}
-      contentContainerStyle={styles.list}
-      renderItem={({ item }) => (
-        <View style={styles.card}>
-          <Text style={styles.name}>{item.name || item.guideName || "Guide"}</Text>
-          <Text style={styles.city}>{item.city || "—"}</Text>
-          {item.rating != null && <Text style={styles.muted}>⭐ {item.rating}</Text>}
-          {item.languages?.length ? (
-            <Text style={styles.muted}>Languages: {item.languages.join(", ")}</Text>
-          ) : null}
-          {item.priceHour != null && (
-            <Text style={styles.price}>USD {item.priceHour} / hour</Text>
-          )}
-          <Text style={styles.muted}>gid: {String(item.id || item._id || "")}</Text>
-        </View>
-      )}
-    />
+    <SafeAreaView style={{ flex: 1, padding: 16 }}>
+      <Text style={{ fontSize: 28, fontWeight: "800", marginBottom: 12 }}>Guías</Text>
+
+      <FlatList
+        data={guides}
+        keyExtractor={(item) => String(item._id || item.gid || item.id || Math.random())}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        ListEmptyComponent={<Text style={{ opacity: 0.7 }}>No hay guías disponibles</Text>}
+        renderItem={({ item }) => (
+          <View style={{ borderWidth: 1, borderRadius: 12, padding: 14, marginBottom: 12 }}>
+            <Text style={{ fontWeight: "800", fontSize: 16 }}>{item.name || "Guía"}</Text>
+            <Text style={{ marginTop: 4, opacity: 0.8 }}>
+              {item.city || "-"}, {item.country || "-"}
+            </Text>
+            <Text style={{ marginTop: 6 }}>{item.bio || ""}</Text>
+            <Text style={{ marginTop: 6, fontWeight: "700" }}>⭐ {item.rating ?? "-"}</Text>
+          </View>
+        )}
+      />
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: "center", justifyContent: "center", padding: 16 },
-  muted: { marginTop: 6, color: "#666" },
-  error: { color: "red", fontSize: 16 },
-  list: { padding: 16 },
-  card: { padding: 16, marginBottom: 12, borderRadius: 8, backgroundColor: "#fff", elevation: 2 },
-  name: { fontSize: 16, fontWeight: "600" },
-  city: { marginTop: 4, color: "#666" },
-  price: { marginTop: 6, fontWeight: "500" }
-});

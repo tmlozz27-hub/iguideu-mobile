@@ -1,73 +1,54 @@
-﻿const ENV_BASE = (process.env.EXPO_PUBLIC_API_URL || "").trim();
+﻿export const API_BASE_URL = "http://192.168.0.4:4020";
 
-const BASE = (ENV_BASE || "http://192.168.0.4:4020").replace(/\/+$/, "");
+export function apiUrl(path: string) {
+  if (!path) return API_BASE_URL;
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  if (path.startsWith("/")) return API_BASE_URL + path;
+  return API_BASE_URL + "/" + path;
+}
 
-type HttpOptions = {
-  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
-  headers?: Record<string, string>;
-  body?: string;
-};
+async function apiFetch<T>(method: string, path: string, body?: any): Promise<T> {
+  const url = apiUrl(path);
+  const timeoutMs = 20000;
 
-async function http<T>(path: string, opts: HttpOptions = {}): Promise<T> {
-  const url = `${BASE}${path}`;
-
-  const res = await fetch(url, {
-    method: opts.method || "GET",
+  const fetchPromise = fetch(url, {
+    method,
     headers: {
+      Accept: "application/json",
       "Content-Type": "application/json",
-      ...(opts.headers || {}),
     },
-    body: opts.body,
+    body: body === undefined ? undefined : JSON.stringify(body),
   });
+
+  const timeoutPromise = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error("TIMEOUT")), timeoutMs)
+  );
+
+  const res = (await Promise.race([fetchPromise, timeoutPromise])) as Response;
 
   const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
 
   if (!res.ok) {
-    const msg = `NON_JSON_RESPONSE HTTP ${res.status} ${path} :: ${text}`;
+    const msg = (data && (data.error || data.message)) || `HTTP ${res.status}`;
     throw new Error(msg);
   }
 
-  if (!text) return null as unknown as T;
-
-  try {
-    return JSON.parse(text) as T;
-  } catch {
-    const msg = `NON_JSON_RESPONSE HTTP ${res.status} ${path} :: ${text}`;
-    throw new Error(msg);
-  }
+  return data as T;
 }
 
-export async function getGuides(): Promise<any[]> {
-  const data = await http<any>("/api/guides", { method: "GET" });
-  if (Array.isArray(data)) return data;
-  if (data && Array.isArray(data.guides)) return data.guides;
-  return [];
+export function apiGet<T = any>(path: string): Promise<T> {
+  return apiFetch<T>("GET", path);
 }
 
-export async function createBooking(payload: {
-  travelerEmail: string;
-  guideId: string;
-  date: string;
-  hours: number;
-}): Promise<any> {
-  return await http<any>("/api/bookings", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+export function apiPost<T = any>(path: string, body?: any): Promise<T> {
+  return apiFetch<T>("POST", path, body);
 }
 
-export async function createPaymentIntent(payload: { bookingId: string }): Promise<any> {
-  return await http<any>("/api/payments/create-intent", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+export function apiPut<T = any>(path: string, body?: any): Promise<T> {
+  return apiFetch<T>("PUT", path, body);
 }
 
-const api = {
-  BASE,
-  getGuides,
-  createBooking,
-  createPaymentIntent,
-};
-
-export default api;
+export function apiDel<T = any>(path: string): Promise<T> {
+  return apiFetch<T>("DELETE", path);
+}

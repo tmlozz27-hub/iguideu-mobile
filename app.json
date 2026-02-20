@@ -6,14 +6,23 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
-    "platforms": ["ios", "android"],
-    "assetBundlePatterns": ["**/*"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.auroragalactic.iguideu"
+      "bundleIdentifier": "com.auroragalactic.iguideu",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
-      "package": "com.auroragalactic.iguideu"
+      "package": "com.auroragalactic.iguideu",
+      "usesCleartextTraffic": true
     },
     "web": {
       "bundler": "metro"

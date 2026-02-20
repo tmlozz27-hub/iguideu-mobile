@@ -1,0 +1,10 @@
+﻿{
+  "guideId": "demo-002",
+  "travelerEmail": "test+frontend@iguideu.com",
+  "travelerName": "Test Frontend",
+  "date": "2026-02-12",
+  "duration": "hour",
+  "hours": 2,
+  "currency": "USD",
+  "amountCents": 2000
+}
