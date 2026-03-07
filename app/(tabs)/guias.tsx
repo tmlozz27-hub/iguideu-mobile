@@ -1,7 +1,15 @@
-﻿import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, ActivityIndicator, RefreshControl } from "react-native";
+﻿import React, { useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { apiGet } from "../../config/api";
+import useLocation from "../../hooks/useLocation";
+import { getDistance } from "../../lib/distance";
 
 type Guide = {
   _id?: string;
@@ -17,9 +25,14 @@ type Guide = {
   price24h?: number;
   avatarUrl?: string;
   active?: boolean;
+  lat?: number;
+  lng?: number;
+  distance?: number;
 };
 
 export default function GuiasScreen() {
+  const userLocation = useLocation();
+
   const [guides, setGuides] = useState<Guide[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -47,32 +60,85 @@ export default function GuiasScreen() {
     loadGuides();
   }
 
+  const sortedGuides = useMemo(() => {
+    if (!userLocation) return guides;
+
+    return [...guides]
+      .map((guide) => {
+        if (
+          typeof guide.lat === "number" &&
+          typeof guide.lng === "number"
+        ) {
+          const distance = getDistance(
+            userLocation.latitude,
+            userLocation.longitude,
+            guide.lat,
+            guide.lng
+          );
+          return { ...guide, distance };
+        }
+        return { ...guide, distance: undefined };
+      })
+      .sort((a, b) => {
+        const da = a.distance ?? Number.MAX_SAFE_INTEGER;
+        const db = b.distance ?? Number.MAX_SAFE_INTEGER;
+        return da - db;
+      });
+  }, [guides, userLocation]);
+
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <SafeAreaView
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         <ActivityIndicator size="large" />
-        <Text style={{ marginTop: 10 }}>Cargando guías...</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, padding: 16 }}>
-      <Text style={{ fontSize: 28, fontWeight: "800", marginBottom: 12 }}>Guías</Text>
-
+    <SafeAreaView style={{ flex: 1 }}>
       <FlatList
-        data={guides}
-        keyExtractor={(item) => String(item._id || item.gid || item.id || Math.random())}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        ListEmptyComponent={<Text style={{ opacity: 0.7 }}>No hay guías disponibles</Text>}
+        data={sortedGuides}
+        keyExtractor={(item, index) =>
+          item._id || item.gid || item.id || index.toString()
+        }
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
         renderItem={({ item }) => (
-          <View style={{ borderWidth: 1, borderRadius: 12, padding: 14, marginBottom: 12 }}>
-            <Text style={{ fontWeight: "800", fontSize: 16 }}>{item.name || "Guía"}</Text>
-            <Text style={{ marginTop: 4, opacity: 0.8 }}>
-              {item.city || "-"}, {item.country || "-"}
+          <View
+            style={{
+              padding: 16,
+              borderBottomWidth: 1,
+              borderColor: "#eee",
+            }}
+          >
+            <Text style={{ fontSize: 18, fontWeight: "600" }}>
+              {item.name || "Guide"}
             </Text>
-            <Text style={{ marginTop: 6 }}>{item.bio || ""}</Text>
-            <Text style={{ marginTop: 6, fontWeight: "700" }}>⭐ {item.rating ?? "-"}</Text>
+
+            {item.city && (
+              <Text>
+                {item.city}, {item.country}
+              </Text>
+            )}
+
+            {item.distance !== undefined && (
+              <Text style={{ marginTop: 4 }}>
+                {item.distance.toFixed(1)} km away
+              </Text>
+            )}
+
+            {item.priceHour && (
+              <Text style={{ marginTop: 4 }}>
+                ${item.priceHour}/hour
+              </Text>
+            )}
           </View>
         )}
       />

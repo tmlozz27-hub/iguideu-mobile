@@ -1,26 +1,127 @@
-import { View, Text, Pressable } from "react-native";
-import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import {
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function Chatroom() {
-  const router = useRouter();
+type Message = {
+  id: string;
+  text: string;
+  sender: "traveler" | "guide";
+};
+
+export default function ChatroomScreen() {
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "1",
+      text: "Hi! I am interested in your tour.",
+      sender: "traveler",
+    },
+    {
+      id: "2",
+      text: "Great! When would you like to start?",
+      sender: "guide",
+    },
+  ]);
+
+  const [input, setInput] = useState("");
+
+  function sendMessage() {
+    if (!input.trim()) return;
+
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      text: input,
+      sender: "traveler",
+    };
+
+    setMessages((prev) => [...prev, newMessage]);
+    setInput("");
+  }
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text style={{ fontSize: 18, marginBottom: 20 }}>
-        Chat no disponible por el momento
-      </Text>
-
-      <Pressable
-        onPress={() => router.replace("/")}
-        style={{
-          paddingHorizontal: 20,
-          paddingVertical: 12,
-          borderRadius: 10,
-          borderWidth: 1,
-        }}
+    <SafeAreaView style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <Text>Ir al inicio</Text>
-      </Pressable>
-    </View>
+        <FlatList
+          style={{ flex: 1 }}
+          data={messages}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{ padding: 16 }}
+          renderItem={({ item }) => (
+            <View
+              style={{
+                alignSelf:
+                  item.sender === "traveler"
+                    ? "flex-end"
+                    : "flex-start",
+                backgroundColor:
+                  item.sender === "traveler"
+                    ? "#007AFF"
+                    : "#eee",
+                padding: 10,
+                borderRadius: 10,
+                marginBottom: 8,
+                maxWidth: "70%",
+              }}
+            >
+              <Text
+                style={{
+                  color:
+                    item.sender === "traveler"
+                      ? "white"
+                      : "black",
+                }}
+              >
+                {item.text}
+              </Text>
+            </View>
+          )}
+        />
+
+        <View
+          style={{
+            flexDirection: "row",
+            padding: 10,
+            borderTopWidth: 1,
+            borderColor: "#eee",
+          }}
+        >
+          <TextInput
+            value={input}
+            onChangeText={setInput}
+            placeholder="Type a message..."
+            style={{
+              flex: 1,
+              borderWidth: 1,
+              borderColor: "#ddd",
+              borderRadius: 20,
+              paddingHorizontal: 12,
+              marginRight: 10,
+            }}
+          />
+
+          <TouchableOpacity
+            onPress={sendMessage}
+            style={{
+              backgroundColor: "#007AFF",
+              paddingHorizontal: 16,
+              justifyContent: "center",
+              borderRadius: 20,
+            }}
+          >
+            <Text style={{ color: "white" }}>Send</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
