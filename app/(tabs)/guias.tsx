@@ -1,7 +1,8 @@
 ﻿import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, ActivityIndicator, RefreshControl } from "react-native";
+import { Pressable, Text, FlatList, ActivityIndicator, RefreshControl, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Location from "expo-location";
+import { router } from "expo-router";
 import { apiGet } from "../../config/api";
 
 type Guide = {
@@ -103,6 +104,19 @@ export default function GuiasScreen() {
     return `${value.toFixed(1)} km`;
   }
 
+  function openGuide(item: Guide, index: number) {
+    const id = String(item._id || item.id || item.gid || `guide-${index}`);
+    router.push({
+      pathname: "/guia/[id]",
+      params: {
+        id,
+        guideName: item.name || "Guía",
+        city: item.city || "",
+        country: item.country || ""
+      }
+    });
+  }
+
   if (loading) {
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -122,11 +136,14 @@ export default function GuiasScreen() {
         keyExtractor={(item, index) => String(item._id || item.gid || item.id || `guide-${index}`)}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         ListEmptyComponent={<Text style={{ opacity: 0.7 }}>No hay guías disponibles</Text>}
-        renderItem={({ item }) => {
+        renderItem={({ item, index }) => {
           const distanceText = formatDistance(item.distanceKm);
 
           return (
-            <View style={{ borderWidth: 1, borderRadius: 12, padding: 14, marginBottom: 12 }}>
+            <Pressable
+              onPress={() => openGuide(item, index)}
+              style={{ borderWidth: 1, borderRadius: 12, padding: 14, marginBottom: 12 }}
+            >
               <Text style={{ fontWeight: "800", fontSize: 16 }}>{item.name || "Guía"}</Text>
 
               <Text style={{ marginTop: 4, opacity: 0.8 }}>
@@ -139,7 +156,19 @@ export default function GuiasScreen() {
                 ⭐ {item.rating ?? "-"}
                 {distanceText ? ` • ${distanceText}` : ""}
               </Text>
-            </View>
+
+              <View
+                style={{
+                  marginTop: 10,
+                  borderWidth: 1,
+                  borderRadius: 10,
+                  paddingVertical: 10,
+                  alignItems: "center"
+                }}
+              >
+                <Text style={{ fontWeight: "700" }}>VER DETALLE</Text>
+              </View>
+            </Pressable>
           );
         }}
       />

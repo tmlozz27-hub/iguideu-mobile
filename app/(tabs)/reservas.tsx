@@ -1,65 +1,58 @@
-﻿import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native"
-import { apiGet, apiPost } from "../../config/api"
+﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { apiGet, apiPost } from "../../config/api";
+import { clearReservationDraftGuide, getReservationDraftGuide } from "../../lib/reservationDraft";
 
 type Guide = {
-  _id?: string
-  id?: string
-  guideId?: string
-  name?: string
-  guideName?: string
-  city?: string
-  country?: string
-}
+  _id?: string;
+  id?: string;
+  gid?: string;
+  guideId?: string;
+  name?: string;
+  guideName?: string;
+  city?: string;
+  country?: string;
+};
 
 type Booking = {
-  _id?: string
-  id?: string
-  guideId?: string
-  guideName?: string
-  travelerEmail?: string
-  travelerName?: string
-  hours?: number
-  durationHours?: number
-  status?: string
-  paymentStatus?: string
-  createdAt?: string
-  date?: string
-  amountCents?: number
-  totalCents?: number
-  totalAmountCents?: number
-  total?: number
-}
+  _id?: string;
+  id?: string;
+  guideId?: string;
+  guideName?: string;
+  travelerEmail?: string;
+  travelerName?: string;
+  hours?: number;
+  durationHours?: number;
+  status?: string;
+  paymentStatus?: string;
+  createdAt?: string;
+  date?: string;
+  amountCents?: number;
+  totalCents?: number;
+  totalAmountCents?: number;
+  total?: number;
+};
 
-const DEFAULT_EMAIL = "test+frontend@iguideu.com"
+const DEFAULT_EMAIL = "test+frontend@iguideu.com";
 
 function todayYYYYMMDD() {
-  const now = new Date()
-  const y = now.getFullYear()
-  const m = String(now.getMonth() + 1).padStart(2, "0")
-  const d = String(now.getDate()).padStart(2, "0")
-  return `${y}-${m}-${d}`
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 function bookingKey(booking: Booking, index: number) {
-  return (
-    booking._id ||
-    booking.id ||
-    `${booking.guideName || "booking"}-${booking.createdAt || ""}-${index}`
-  )
+  return booking._id || booking.id || `${booking.guideName || "booking"}-${booking.createdAt || ""}-${index}`;
 }
 
 function guideKey(guide: Guide, index: number) {
-  return (
-    guide._id ||
-    guide.id ||
-    guide.guideId ||
-    `${guide.guideName || guide.name || "guide"}-${guide.city || ""}-${index}`
-  )
+  return guide._id || guide.id || guide.gid || guide.guideId || `${guide.guideName || guide.name || "guide"}-${guide.city || ""}-${index}`;
 }
 
 function guideLabel(guide: Guide) {
-  return `${guide.guideName || guide.name || "Guía"}${guide.city ? " — " + guide.city : ""}`
+  return `${guide.guideName || guide.name || "Guía"}${guide.city ? " — " + guide.city : ""}`;
 }
 
 function bookingAmountText(booking: Booking) {
@@ -67,36 +60,79 @@ function bookingAmountText(booking: Booking) {
     booking.amountCents ??
     booking.totalAmountCents ??
     booking.totalCents ??
-    (typeof booking.total === "number" ? booking.total * 100 : 0)
+    (typeof booking.total === "number" ? booking.total * 100 : 0);
 
-  if (!cents || cents <= 0) return "-"
-  return `USD ${(cents / 100).toFixed(2)}`
+  if (!cents || cents <= 0) return "-";
+  return `USD ${(cents / 100).toFixed(2)}`;
 }
 
 function isPaid(booking: Booking) {
-  const value = String(booking.paymentStatus || booking.status || "").toUpperCase()
-  return value === "PAID"
+  const value = String(booking.paymentStatus || booking.status || "").toUpperCase();
+  return value === "PAID";
+}
+
+function guidesAreSame(a: Guide | null | undefined, b: Guide | null | undefined) {
+  if (!a || !b) return false;
+
+  return (
+    String(a._id || "") === String(b._id || "") ||
+    String(a.id || "") === String(b.id || "") ||
+    String(a.gid || "") === String(b.gid || "") ||
+    String(a.guideId || "") === String(b.guideId || "") ||
+    (
+      String(a.guideName || a.name || "").trim().toLowerCase() ===
+        String(b.guideName || b.name || "").trim().toLowerCase() &&
+      String(a.city || "").trim().toLowerCase() ===
+        String(b.city || "").trim().toLowerCase()
+    )
+  );
+}
+
+function guideMatchesDraft(
+  guide: Guide,
+  draftGuideId: string,
+  draftGuideName: string,
+  draftCity: string
+) {
+  const sameId =
+    String(guide._id || "") === draftGuideId ||
+    String(guide.id || "") === draftGuideId ||
+    String(guide.gid || "") === draftGuideId ||
+    String(guide.guideId || "") === draftGuideId;
+
+  const sameName =
+    String(guide.guideName || guide.name || "").trim().toLowerCase() ===
+    draftGuideName.trim().toLowerCase();
+
+  const sameCity =
+    String(guide.city || "").trim().toLowerCase() ===
+    draftCity.trim().toLowerCase();
+
+  return sameId || (sameName && (!draftCity || sameCity));
 }
 
 export default function ReservasScreen() {
-  const [travelerEmail, setTravelerEmail] = useState(DEFAULT_EMAIL)
-  const [date, setDate] = useState(todayYYYYMMDD())
-  const [hours, setHours] = useState("1")
-  const [guides, setGuides] = useState<Guide[]>([])
-  const [selectedGuide, setSelectedGuide] = useState<Guide | null>(null)
-  const [bookings, setBookings] = useState<Booking[]>([])
-  const [loading, setLoading] = useState(false)
-  const [refreshing, setRefreshing] = useState(false)
-  const [creating, setCreating] = useState(false)
-  const [payingBookingId, setPayingBookingId] = useState<string>("")
+  const initialDraftRef = useRef(getReservationDraftGuide());
+  const draftConsumedRef = useRef(false);
 
-  const normalizedEmail = useMemo(() => travelerEmail.trim().toLowerCase(), [travelerEmail])
+  const [travelerEmail, setTravelerEmail] = useState(DEFAULT_EMAIL);
+  const [date, setDate] = useState(todayYYYYMMDD());
+  const [hours, setHours] = useState("1");
+  const [guides, setGuides] = useState<Guide[]>([]);
+  const [selectedGuide, setSelectedGuide] = useState<Guide | null>(null);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [payingBookingId, setPayingBookingId] = useState<string>("");
+
+  const normalizedEmail = useMemo(() => travelerEmail.trim().toLowerCase(), [travelerEmail]);
 
   const loadAll = useCallback(async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const guidesRes = await apiGet<any>("/api/guides")
-      const bookingsRes = await apiGet<any>("/api/bookings")
+      const guidesRes = await apiGet<any>("/api/guides");
+      const bookingsRes = await apiGet<any>("/api/bookings");
 
       const guidesList: Guide[] = Array.isArray(guidesRes)
         ? guidesRes
@@ -104,7 +140,7 @@ export default function ReservasScreen() {
           ? guidesRes.guides
           : Array.isArray(guidesRes?.items)
             ? guidesRes.items
-            : []
+            : [];
 
       const bookingsList: Booking[] = Array.isArray(bookingsRes)
         ? bookingsRes
@@ -114,83 +150,108 @@ export default function ReservasScreen() {
             ? bookingsRes.items
             : Array.isArray(bookingsRes?.data)
               ? bookingsRes.data
-              : []
+              : [];
 
-      setGuides(guidesList)
+      setGuides(guidesList);
 
-      if (!selectedGuide && guidesList.length > 0) {
-        setSelectedGuide(guidesList[0])
+      let nextSelected: Guide | null = selectedGuide;
+
+      const draft = initialDraftRef.current;
+
+      if (!draftConsumedRef.current && draft) {
+        const draftGuideId = String(draft.guideId || "");
+        const draftGuideName = String(draft.guideName || "");
+        const draftCity = String(draft.city || "");
+
+        const matched =
+          guidesList.find((guide) => guideMatchesDraft(guide, draftGuideId, draftGuideName, draftCity)) || null;
+
+        if (matched) {
+          nextSelected = matched;
+        }
+
+        draftConsumedRef.current = true;
+        clearReservationDraftGuide();
+      }
+
+      if (!nextSelected && guidesList.length > 0) {
+        nextSelected = guidesList[0];
+      }
+
+      if (nextSelected && !guidesAreSame(selectedGuide, nextSelected)) {
+        setSelectedGuide(nextSelected);
       }
 
       const filtered = bookingsList.filter((b) => {
-        const email = String(b?.travelerEmail || "").trim().toLowerCase()
-        return !normalizedEmail || email === normalizedEmail
-      })
+        const email = String(b?.travelerEmail || "").trim().toLowerCase();
+        return !normalizedEmail || email === normalizedEmail;
+      });
 
       filtered.sort((a, b) => {
-        const aa = new Date(b?.createdAt || 0).getTime()
-        const bb = new Date(a?.createdAt || 0).getTime()
-        return aa - bb
-      })
+        const aa = new Date(b?.createdAt || 0).getTime();
+        const bb = new Date(a?.createdAt || 0).getTime();
+        return aa - bb;
+      });
 
-      setBookings(filtered)
+      setBookings(filtered);
     } catch (error: any) {
-      Alert.alert("Error", error?.message || "No se pudieron cargar las reservas")
+      Alert.alert("Error", error?.message || "No se pudieron cargar las reservas");
     } finally {
-      setLoading(false)
-      setRefreshing(false)
+      setLoading(false);
+      setRefreshing(false);
     }
-  }, [normalizedEmail, selectedGuide])
+  }, [normalizedEmail, selectedGuide]);
 
   useEffect(() => {
-    loadAll()
-  }, [loadAll])
+    loadAll();
+  }, [loadAll]);
 
   const onRefresh = useCallback(() => {
-    setRefreshing(true)
-    loadAll()
-  }, [loadAll])
+    setRefreshing(true);
+    loadAll();
+  }, [loadAll]);
 
   const createBooking = useCallback(async () => {
-    const email = travelerEmail.trim().toLowerCase()
-    const bookingDate = date.trim()
-    const parsedHours = Number(hours)
+    const email = travelerEmail.trim().toLowerCase();
+    const bookingDate = date.trim();
+    const parsedHours = Number(hours);
 
     if (!email) {
-      Alert.alert("Error", "travelerEmail is required")
-      return
+      Alert.alert("Error", "travelerEmail is required");
+      return;
     }
 
     if (!bookingDate) {
-      Alert.alert("Error", "date is required (YYYY-MM-DD)")
-      return
+      Alert.alert("Error", "date is required (YYYY-MM-DD)");
+      return;
     }
 
     if (!selectedGuide) {
-      Alert.alert("Error", "Seleccioná un guía")
-      return
+      Alert.alert("Error", "Seleccioná un guía");
+      return;
     }
 
     if (!Number.isFinite(parsedHours) || parsedHours <= 0) {
-      Alert.alert("Error", "Ingresá horas válidas")
-      return
+      Alert.alert("Error", "Ingresá horas válidas");
+      return;
     }
 
     const guideId =
       selectedGuide._id ||
       selectedGuide.id ||
+      selectedGuide.gid ||
       selectedGuide.guideId ||
       selectedGuide.guideName ||
       selectedGuide.name ||
-      ""
+      "";
 
     const guideName =
       selectedGuide.guideName ||
       selectedGuide.name ||
-      "Guide"
+      "Guide";
 
     try {
-      setCreating(true)
+      setCreating(true);
 
       await apiPost("/api/bookings", {
         travelerEmail: email,
@@ -203,35 +264,35 @@ export default function ReservasScreen() {
         hours: parsedHours,
         duration: "HOURS",
         total: parsedHours * 25
-      })
+      });
 
-      Alert.alert("OK", "Reserva creada")
-      await loadAll()
+      Alert.alert("OK", "Reserva creada");
+      await loadAll();
     } catch (error: any) {
-      Alert.alert("Error", error?.message || "No se pudo crear la reserva")
+      Alert.alert("Error", error?.message || "No se pudo crear la reserva");
     } finally {
-      setCreating(false)
+      setCreating(false);
     }
-  }, [travelerEmail, date, hours, selectedGuide, loadAll])
+  }, [travelerEmail, date, hours, selectedGuide, loadAll]);
 
   const markPaidTest = useCallback(async (booking: Booking) => {
-    const bookingId = String(booking._id || booking.id || "")
+    const bookingId = String(booking._id || booking.id || "");
     if (!bookingId) {
-      Alert.alert("Error", "bookingId inválido")
-      return
+      Alert.alert("Error", "bookingId inválido");
+      return;
     }
 
     try {
-      setPayingBookingId(bookingId)
-      await apiPost("/api/payments/pay-test", { bookingId })
-      Alert.alert("OK", "Reserva marcada como PAID en test")
-      await loadAll()
+      setPayingBookingId(bookingId);
+      await apiPost("/api/payments/pay-test", { bookingId });
+      Alert.alert("OK", "Reserva marcada como PAID en test");
+      await loadAll();
     } catch (error: any) {
-      Alert.alert("Error", error?.message || "No se pudo marcar pago test")
+      Alert.alert("Error", error?.message || "No se pudo marcar pago test");
     } finally {
-      setPayingBookingId("")
+      setPayingBookingId("");
     }
-  }, [loadAll])
+  }, [loadAll]);
 
   return (
     <ScrollView
@@ -263,17 +324,18 @@ export default function ReservasScreen() {
       <Text style={styles.label}>Guía</Text>
       <View style={styles.listBlock}>
         {guides.map((guide, index) => {
-          const key = guideKey(guide, index)
-          const label = guideLabel(guide)
+          const key = guideKey(guide, index);
+          const label = guideLabel(guide);
 
           const selected =
             (selectedGuide?._id && selectedGuide?._id === guide._id) ||
             (selectedGuide?.id && selectedGuide?.id === guide.id) ||
+            (selectedGuide?.gid && selectedGuide?.gid === guide.gid) ||
             (selectedGuide?.guideId && selectedGuide?.guideId === guide.guideId) ||
             (
               (selectedGuide?.guideName || selectedGuide?.name) === (guide.guideName || guide.name) &&
               (selectedGuide?.city || "") === (guide.city || "")
-            )
+            );
 
           return (
             <Pressable
@@ -283,7 +345,7 @@ export default function ReservasScreen() {
             >
               <Text style={[styles.guideText, selected && styles.guideTextSelected]}>{label}</Text>
             </Pressable>
-          )
+          );
         })}
       </View>
 
@@ -309,10 +371,10 @@ export default function ReservasScreen() {
       ) : (
         <View style={styles.listBlock}>
           {bookings.map((booking, index) => {
-            const key = bookingKey(booking, index)
-            const paid = isPaid(booking)
-            const bookingId = String(booking._id || booking.id || "")
-            const thisPaying = payingBookingId === bookingId
+            const key = bookingKey(booking, index);
+            const paid = isPaid(booking);
+            const bookingId = String(booking._id || booking.id || "");
+            const thisPaying = payingBookingId === bookingId;
 
             return (
               <View key={key} style={styles.bookingCard}>
@@ -333,12 +395,12 @@ export default function ReservasScreen() {
                   </Pressable>
                 )}
               </View>
-            )
+            );
           })}
         </View>
       )}
     </ScrollView>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -462,4 +524,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "800"
   }
-})
+});
