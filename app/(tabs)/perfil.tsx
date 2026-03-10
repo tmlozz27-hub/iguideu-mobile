@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useState } from "react";
-import { Alert, Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
+import { Alert, Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from "react-native";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE } from "../../config/api";
@@ -19,61 +19,96 @@ type MeUser = {
 export default function Profile() {
   const router = useRouter();
   const [user, setUser] = useState<MeUser | null>(null);
+  const [nameInput, setNameInput] = useState("");
   const [loadingUser, setLoadingUser] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const loadUser = async () => {
+    try {
+      const token = await AsyncStorage.getItem(TOKEN_KEY);
+
+      if (!token) {
+        setUser(null);
+        return;
+      }
+
+      const response = await fetch(`${API_BASE}/api/auth/me`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok || !data?.user) {
+        setUser(null);
+        return;
+      }
+
+      setUser(data.user);
+      setNameInput(String(data.user?.name || ""));
+
+      if (data.user?.email) {
+        await AsyncStorage.setItem(USER_EMAIL_KEY, String(data.user.email));
+      }
+    } catch {
+      setUser(null);
+    } finally {
+      setLoadingUser(false);
+    }
+  };
 
   useEffect(() => {
-    let mounted = true;
-
-    const loadUser = async () => {
-      try {
-        const token = await AsyncStorage.getItem(TOKEN_KEY);
-
-        if (!token) {
-          if (mounted) {
-            setUser(null);
-          }
-          return;
-        }
-
-        const response = await fetch(`${API_BASE}/api/auth/me`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        const data = await response.json();
-
-        if (!response.ok || !data?.ok || !data?.user) {
-          if (mounted) {
-            setUser(null);
-          }
-          return;
-        }
-
-        if (mounted) {
-          setUser(data.user);
-          if (data.user?.email) {
-            await AsyncStorage.setItem(USER_EMAIL_KEY, String(data.user.email));
-          }
-        }
-      } catch {
-        if (mounted) {
-          setUser(null);
-        }
-      } finally {
-        if (mounted) {
-          setLoadingUser(false);
-        }
-      }
-    };
-
     loadUser();
-
-    return () => {
-      mounted = false;
-    };
   }, []);
+
+  const handleSaveProfile = async () => {
+    const nextName = String(nameInput || "").trim();
+
+    if (!nextName) {
+      Alert.alert("Falta el nombre", "Ingresá un nombre válido.");
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      const token = await AsyncStorage.getItem(TOKEN_KEY);
+
+      if (!token) {
+        Alert.alert("Error", "No hay sesión activa.");
+        return;
+      }
+
+      const response = await fetch(`${API_BASE}/api/auth/me`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          name: nextName
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok || !data?.user) {
+        Alert.alert("Error", data?.message || "No se pudo actualizar el perfil.");
+        return;
+      }
+
+      setUser(data.user);
+      setNameInput(String(data.user?.name || ""));
+      Alert.alert("OK", "Perfil actualizado.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "No se pudo conectar al backend.";
+      Alert.alert("Error", message);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -111,36 +146,58 @@ export default function Profile() {
             backgroundColor: "#ffffff"
           }}
         >
-          <Text style={{ fontSize: 18, fontWeight: "800", marginBottom: 8 }}>
+          <Text style={{ fontSize: 18, fontWeight: "800", marginBottom: 12 }}>
             Mi cuenta
           </Text>
-          <Text style={{ marginBottom: 6 }}>
-            Nombre: {loadingUser ? "Cargando..." : user?.name || "No disponible"}
-          </Text>
-          <Text style={{ marginBottom: 6 }}>
+
+          <Text style={{ marginBottom: 8 }}>
             Email: {loadingUser ? "Cargando..." : user?.email || "No disponible"}
           </Text>
-          <Text style={{ marginBottom: 6 }}>
+
+          <Text style={{ marginBottom: 8 }}>
             Rol: {loadingUser ? "Cargando..." : user?.role || "traveler"}
           </Text>
-          <Text style={{ opacity: 0.7 }}>Sesión activa</Text>
+
+          <Text style={{ marginBottom: 8, fontWeight: "700" }}>
+            Nombre
+          </Text>
+
+          <TextInput
+            value={nameInput}
+            onChangeText={setNameInput}
+            placeholder="Tu nombre"
+            editable={!loadingUser && !saving}
+            style={{
+              borderWidth: 1,
+              borderColor: "#d1d5db",
+              borderRadius: 12,
+              paddingHorizontal: 14,
+              paddingVertical: 14,
+              fontSize: 16,
+              backgroundColor: "#ffffff",
+              marginBottom: 12
+            }}
+          />
+
+          <Pressable
+            onPress={handleSaveProfile}
+            disabled={loadingUser || saving}
+            style={{
+              backgroundColor: "#0f9fb3",
+              borderRadius: 12,
+              paddingVertical: 14,
+              alignItems: "center",
+              justifyContent: "center",
+              opacity: loadingUser || saving ? 0.7 : 1
+            }}
+          >
+            <Text style={{ color: "#ffffff", fontWeight: "800", fontSize: 16 }}>
+              {saving ? "Guardando..." : "Guardar perfil"}
+            </Text>
+          </Pressable>
         </View>
 
         <View style={{ gap: 12 }}>
-          <Pressable
-            style={{
-              borderWidth: 1,
-              borderColor: "#e5e7eb",
-              borderRadius: 12,
-              padding: 14
-            }}
-          >
-            <Text style={{ fontWeight: "700" }}>Editar perfil</Text>
-            <Text style={{ opacity: 0.7, marginTop: 4 }}>
-              Próximo paso: actualizar datos reales del usuario en Mongo
-            </Text>
-          </Pressable>
-
           <Pressable
             style={{
               borderWidth: 1,
@@ -190,7 +247,7 @@ export default function Profile() {
           <Text style={{ marginBottom: 6 }}>Pago test: OK</Text>
           <Text style={{ marginBottom: 6 }}>Webhook: OK</Text>
           <Text style={{ marginBottom: 6 }}>Login Mongo: OK</Text>
-          <Text>Perfil Mongo: OK</Text>
+          <Text>Perfil Mongo editable: OK</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
