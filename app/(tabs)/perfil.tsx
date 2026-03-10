@@ -2,13 +2,23 @@
 import { Alert, Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_BASE } from "../../config/api";
 
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
 
+type MeUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+};
+
 export default function Profile() {
   const router = useRouter();
-  const [userEmail, setUserEmail] = useState("");
+  const [user, setUser] = useState<MeUser | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
   useEffect(() => {
@@ -16,13 +26,40 @@ export default function Profile() {
 
     const loadUser = async () => {
       try {
-        const email = await AsyncStorage.getItem(USER_EMAIL_KEY);
+        const token = await AsyncStorage.getItem(TOKEN_KEY);
+
+        if (!token) {
+          if (mounted) {
+            setUser(null);
+          }
+          return;
+        }
+
+        const response = await fetch(`${API_BASE}/api/auth/me`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data?.ok || !data?.user) {
+          if (mounted) {
+            setUser(null);
+          }
+          return;
+        }
+
         if (mounted) {
-          setUserEmail(String(email || ""));
+          setUser(data.user);
+          if (data.user?.email) {
+            await AsyncStorage.setItem(USER_EMAIL_KEY, String(data.user.email));
+          }
         }
       } catch {
         if (mounted) {
-          setUserEmail("");
+          setUser(null);
         }
       } finally {
         if (mounted) {
@@ -77,11 +114,16 @@ export default function Profile() {
           <Text style={{ fontSize: 18, fontWeight: "800", marginBottom: 8 }}>
             Mi cuenta
           </Text>
-          <Text style={{ marginBottom: 6 }}>Rol: Traveler</Text>
           <Text style={{ marginBottom: 6 }}>
-            Email: {loadingUser ? "Cargando..." : userEmail || "No disponible"}
+            Nombre: {loadingUser ? "Cargando..." : user?.name || "No disponible"}
           </Text>
-          <Text style={{ opacity: 0.7 }}>Sesión local activa</Text>
+          <Text style={{ marginBottom: 6 }}>
+            Email: {loadingUser ? "Cargando..." : user?.email || "No disponible"}
+          </Text>
+          <Text style={{ marginBottom: 6 }}>
+            Rol: {loadingUser ? "Cargando..." : user?.role || "traveler"}
+          </Text>
+          <Text style={{ opacity: 0.7 }}>Sesión activa</Text>
         </View>
 
         <View style={{ gap: 12 }}>
@@ -95,7 +137,7 @@ export default function Profile() {
           >
             <Text style={{ fontWeight: "700" }}>Editar perfil</Text>
             <Text style={{ opacity: 0.7, marginTop: 4 }}>
-              Próximo paso: conectar datos reales del usuario desde Mongo
+              Próximo paso: actualizar datos reales del usuario en Mongo
             </Text>
           </Pressable>
 
@@ -109,7 +151,7 @@ export default function Profile() {
           >
             <Text style={{ fontWeight: "700" }}>Seguridad</Text>
             <Text style={{ opacity: 0.7, marginTop: 4 }}>
-              Auth real en Mongo ya conectado
+              Auth real en Mongo conectado
             </Text>
           </Pressable>
 
@@ -148,7 +190,7 @@ export default function Profile() {
           <Text style={{ marginBottom: 6 }}>Pago test: OK</Text>
           <Text style={{ marginBottom: 6 }}>Webhook: OK</Text>
           <Text style={{ marginBottom: 6 }}>Login Mongo: OK</Text>
-          <Text>Logout local: OK</Text>
+          <Text>Perfil Mongo: OK</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
