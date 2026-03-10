@@ -64,7 +64,7 @@ export default function ChatroomScreen() {
   const scrollToBottom = () => {
     setTimeout(() => {
       flatListRef.current?.scrollToEnd({ animated: true });
-    }, 100);
+    }, 120);
   };
 
   useEffect(() => {
@@ -106,8 +106,12 @@ export default function ChatroomScreen() {
     }, 1500);
   };
 
-  const renderItem = ({ item }: { item: Message }) => {
+  const renderItem = ({ item, index }: { item: Message; index: number }) => {
     const traveler = item.sender === "traveler";
+
+    const prev = messages[index - 1];
+    const showAvatar =
+      item.sender === "guide" && (!prev || prev.sender !== "guide");
 
     return (
       <View
@@ -116,6 +120,12 @@ export default function ChatroomScreen() {
           { justifyContent: traveler ? "flex-end" : "flex-start" },
         ]}
       >
+        {!traveler && showAvatar && (
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>G</Text>
+          </View>
+        )}
+
         <View
           style={[
             styles.bubble,
@@ -163,14 +173,23 @@ export default function ChatroomScreen() {
             { backgroundColor: colors.header, borderBottomColor: colors.border },
           ]}
         >
-          <Text style={{ fontSize: 17, fontWeight: "600", color: colors.text }}>
-            {guideName}
-          </Text>
+          <View style={styles.headerRow}>
+            <View style={styles.headerAvatar}>
+              <Text style={styles.avatarText}>G</Text>
+            </View>
 
-          <Text style={{ fontSize: 12, color: "#22c55e" }}>Online</Text>
+            <View>
+              <Text
+                style={{ fontSize: 17, fontWeight: "600", color: colors.text }}
+              >
+                {guideName}
+              </Text>
+              <Text style={{ fontSize: 12, color: "#22c55e" }}>Online</Text>
+            </View>
+          </View>
         </View>
 
-        {/* RESERVA CARD */}
+        {/* BOOKING CARD */}
         <View
           style={[
             styles.bookingCard,
@@ -186,7 +205,7 @@ export default function ChatroomScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* MENSAJES */}
+        {/* MESSAGES */}
         <FlatList
           ref={flatListRef}
           data={messages}
@@ -197,9 +216,9 @@ export default function ChatroomScreen() {
 
         {/* TYPING */}
         {typing && (
-          <Text style={{ marginLeft: 14, color: colors.sub }}>
-            guide typing...
-          </Text>
+          <View style={{ paddingLeft: 14, paddingBottom: 4 }}>
+            <Text style={{ color: colors.sub, fontSize: 20 }}>● ● ●</Text>
+          </View>
         )}
 
         {/* INPUT */}
@@ -209,11 +228,11 @@ export default function ChatroomScreen() {
             { backgroundColor: colors.header, borderTopColor: colors.border },
           ]}
         >
-          <TouchableOpacity style={styles.iconBtn}>
+          <TouchableOpacity style={styles.roundIcon}>
             <Text>📷</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.iconBtn}>
+          <TouchableOpacity style={styles.roundIcon}>
             <Text>📍</Text>
           </TouchableOpacity>
 
@@ -222,11 +241,14 @@ export default function ChatroomScreen() {
             onChangeText={setInput}
             placeholder="Message..."
             placeholderTextColor={colors.sub}
-            style={[styles.input, { backgroundColor: colors.input, color: colors.text }]}
+            style={[
+              styles.input,
+              { backgroundColor: colors.input, color: colors.text },
+            ]}
           />
 
           <TouchableOpacity style={styles.sendBtn} onPress={sendMessage}>
-            <Text style={{ color: "#fff", fontWeight: "600" }}>Send</Text>
+            <Text style={{ color: "#fff", fontWeight: "600" }}>➤</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -236,8 +258,39 @@ export default function ChatroomScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    padding: 14,
+    padding: 12,
     borderBottomWidth: 1,
+  },
+
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  headerAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#2563EB",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  avatar: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#2563EB",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 6,
+  },
+
+  avatarText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 12,
   },
 
   bookingCard: {
@@ -259,6 +312,8 @@ const styles = StyleSheet.create({
 
   row: {
     marginVertical: 6,
+    flexDirection: "row",
+    alignItems: "flex-end",
   },
 
   bubble: {
@@ -282,14 +337,21 @@ const styles = StyleSheet.create({
     marginHorizontal: 6,
   },
 
-  iconBtn: {
-    paddingHorizontal: 6,
+  roundIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: "#E5E7EB",
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   sendBtn: {
     backgroundColor: "#2563EB",
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
