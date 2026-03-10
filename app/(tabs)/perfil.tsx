@@ -1,4 +1,4 @@
-﻿import React from "react";
+﻿import React, { useEffect, useState } from "react";
 import { Alert, Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -8,6 +8,35 @@ const USER_EMAIL_KEY = "iguideu_user_email";
 
 export default function Profile() {
   const router = useRouter();
+  const [userEmail, setUserEmail] = useState("");
+  const [loadingUser, setLoadingUser] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadUser = async () => {
+      try {
+        const email = await AsyncStorage.getItem(USER_EMAIL_KEY);
+        if (mounted) {
+          setUserEmail(String(email || ""));
+        }
+      } catch {
+        if (mounted) {
+          setUserEmail("");
+        }
+      } finally {
+        if (mounted) {
+          setLoadingUser(false);
+        }
+      }
+    };
+
+    loadUser();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -49,6 +78,9 @@ export default function Profile() {
             Mi cuenta
           </Text>
           <Text style={{ marginBottom: 6 }}>Rol: Traveler</Text>
+          <Text style={{ marginBottom: 6 }}>
+            Email: {loadingUser ? "Cargando..." : userEmail || "No disponible"}
+          </Text>
           <Text style={{ opacity: 0.7 }}>Sesión local activa</Text>
         </View>
 
@@ -63,7 +95,7 @@ export default function Profile() {
           >
             <Text style={{ fontWeight: "700" }}>Editar perfil</Text>
             <Text style={{ opacity: 0.7, marginTop: 4 }}>
-              Próximo paso: conectar datos reales del usuario
+              Próximo paso: conectar datos reales del usuario desde Mongo
             </Text>
           </Pressable>
 
@@ -77,7 +109,7 @@ export default function Profile() {
           >
             <Text style={{ fontWeight: "700" }}>Seguridad</Text>
             <Text style={{ opacity: 0.7, marginTop: 4 }}>
-              Login mínimo ya conectado al backend
+              Auth real en Mongo ya conectado
             </Text>
           </Pressable>
 
@@ -115,7 +147,7 @@ export default function Profile() {
           <Text style={{ marginBottom: 6 }}>Reservas: OK</Text>
           <Text style={{ marginBottom: 6 }}>Pago test: OK</Text>
           <Text style={{ marginBottom: 6 }}>Webhook: OK</Text>
-          <Text style={{ marginBottom: 6 }}>Login backend: OK</Text>
+          <Text style={{ marginBottom: 6 }}>Login Mongo: OK</Text>
           <Text>Logout local: OK</Text>
         </View>
       </ScrollView>
