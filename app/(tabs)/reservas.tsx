@@ -1,527 +1,350 @@
-﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+﻿import React, { useEffect, useMemo, useState } from "react";
+import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 import { apiGet, apiPost } from "../../config/api";
-import { clearReservationDraftGuide, getReservationDraftGuide } from "../../lib/reservationDraft";
 
 type Guide = {
-  _id?: string;
-  id?: string;
-  gid?: string;
-  guideId?: string;
-  name?: string;
-  guideName?: string;
-  city?: string;
+  _id: string;
+  name: string;
   country?: string;
+  city?: string;
+  languages?: string[];
+  rating?: number;
+  pricePerHour?: number;
+  priceHour?: number;
+  priceDay?: number;
+  price24h?: number;
+  priceFullDay24h?: number;
+  bio?: string;
+  guideType?: string;
 };
 
 type Booking = {
-  _id?: string;
-  id?: string;
-  guideId?: string;
-  guideName?: string;
+  _id: string;
   travelerEmail?: string;
-  travelerName?: string;
-  hours?: number;
-  durationHours?: number;
-  status?: string;
-  paymentStatus?: string;
-  createdAt?: string;
+  email?: string;
   date?: string;
+  hours?: number;
+  amount?: number;
+  amountUsd?: number;
   amountCents?: number;
-  totalCents?: number;
-  totalAmountCents?: number;
-  total?: number;
+  totalAmount?: number;
+  status?: string;
+  guideName?: string;
 };
 
-const DEFAULT_EMAIL = "test+frontend@iguideu.com";
-
-function todayYYYYMMDD() {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const d = String(now.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
-
-function bookingKey(booking: Booking, index: number) {
-  return booking._id || booking.id || `${booking.guideName || "booking"}-${booking.createdAt || ""}-${index}`;
-}
-
-function guideKey(guide: Guide, index: number) {
-  return guide._id || guide.id || guide.gid || guide.guideId || `${guide.guideName || guide.name || "guide"}-${guide.city || ""}-${index}`;
-}
-
-function guideLabel(guide: Guide) {
-  return `${guide.guideName || guide.name || "Guía"}${guide.city ? " — " + guide.city : ""}`;
-}
-
-function bookingAmountText(booking: Booking) {
-  const cents =
-    booking.amountCents ??
-    booking.totalAmountCents ??
-    booking.totalCents ??
-    (typeof booking.total === "number" ? booking.total * 100 : 0);
-
-  if (!cents || cents <= 0) return "-";
-  return `USD ${(cents / 100).toFixed(2)}`;
-}
-
-function isPaid(booking: Booking) {
-  const value = String(booking.paymentStatus || booking.status || "").toUpperCase();
-  return value === "PAID";
-}
-
-function guidesAreSame(a: Guide | null | undefined, b: Guide | null | undefined) {
-  if (!a || !b) return false;
-
-  return (
-    String(a._id || "") === String(b._id || "") ||
-    String(a.id || "") === String(b.id || "") ||
-    String(a.gid || "") === String(b.gid || "") ||
-    String(a.guideId || "") === String(b.guideId || "") ||
-    (
-      String(a.guideName || a.name || "").trim().toLowerCase() ===
-        String(b.guideName || b.name || "").trim().toLowerCase() &&
-      String(a.city || "").trim().toLowerCase() ===
-        String(b.city || "").trim().toLowerCase()
-    )
-  );
-}
-
-function guideMatchesDraft(
-  guide: Guide,
-  draftGuideId: string,
-  draftGuideName: string,
-  draftCity: string
-) {
-  const sameId =
-    String(guide._id || "") === draftGuideId ||
-    String(guide.id || "") === draftGuideId ||
-    String(guide.gid || "") === draftGuideId ||
-    String(guide.guideId || "") === draftGuideId;
-
-  const sameName =
-    String(guide.guideName || guide.name || "").trim().toLowerCase() ===
-    draftGuideName.trim().toLowerCase();
-
-  const sameCity =
-    String(guide.city || "").trim().toLowerCase() ===
-    draftCity.trim().toLowerCase();
-
-  return sameId || (sameName && (!draftCity || sameCity));
+function todayString() {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
 }
 
 export default function ReservasScreen() {
-  const initialDraftRef = useRef(getReservationDraftGuide());
-  const draftConsumedRef = useRef(false);
+  const params = useLocalSearchParams<{ guideId?: string; guideLocked?: string }>();
+  const lockedGuideId = typeof params.guideId === "string" ? params.guideId : "";
+  const guideLocked = params.guideLocked === "1";
 
-  const [travelerEmail, setTravelerEmail] = useState(DEFAULT_EMAIL);
-  const [date, setDate] = useState(todayYYYYMMDD());
+  const [travelerEmail, setTravelerEmail] = useState("test+frontend@iguideu.com");
+  const [date, setDate] = useState(todayString());
   const [hours, setHours] = useState("1");
   const [guides, setGuides] = useState<Guide[]>([]);
-  const [selectedGuide, setSelectedGuide] = useState<Guide | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [selectedGuideId, setSelectedGuideId] = useState(lockedGuideId);
   const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const [creating, setCreating] = useState(false);
-  const [payingBookingId, setPayingBookingId] = useState<string>("");
 
-  const normalizedEmail = useMemo(() => travelerEmail.trim().toLowerCase(), [travelerEmail]);
+  async function loadGuides() {
+    const data = await apiGet<any>("/api/guides");
+    const list = Array.isArray(data) ? data : [];
+    setGuides(list);
 
-  const loadAll = useCallback(async () => {
-    setLoading(true);
+    if (guideLocked && lockedGuideId) {
+      setSelectedGuideId(lockedGuideId);
+      return;
+    }
+
+    if (!selectedGuideId && list.length > 0) {
+      setSelectedGuideId(list[0]._id);
+    }
+  }
+
+  async function loadBookings() {
+    const data = await apiGet<any>("/api/bookings");
+    const list = Array.isArray(data) ? data : Array.isArray(data?.items) ? data.items : [];
+    setBookings(list);
+  }
+
+  async function refreshAll() {
     try {
-      const guidesRes = await apiGet<any>("/api/guides");
-      const bookingsRes = await apiGet<any>("/api/bookings");
-
-      const guidesList: Guide[] = Array.isArray(guidesRes)
-        ? guidesRes
-        : Array.isArray(guidesRes?.guides)
-          ? guidesRes.guides
-          : Array.isArray(guidesRes?.items)
-            ? guidesRes.items
-            : [];
-
-      const bookingsList: Booking[] = Array.isArray(bookingsRes)
-        ? bookingsRes
-        : Array.isArray(bookingsRes?.bookings)
-          ? bookingsRes.bookings
-          : Array.isArray(bookingsRes?.items)
-            ? bookingsRes.items
-            : Array.isArray(bookingsRes?.data)
-              ? bookingsRes.data
-              : [];
-
-      setGuides(guidesList);
-
-      let nextSelected: Guide | null = selectedGuide;
-
-      const draft = initialDraftRef.current;
-
-      if (!draftConsumedRef.current && draft) {
-        const draftGuideId = String(draft.guideId || "");
-        const draftGuideName = String(draft.guideName || "");
-        const draftCity = String(draft.city || "");
-
-        const matched =
-          guidesList.find((guide) => guideMatchesDraft(guide, draftGuideId, draftGuideName, draftCity)) || null;
-
-        if (matched) {
-          nextSelected = matched;
-        }
-
-        draftConsumedRef.current = true;
-        clearReservationDraftGuide();
-      }
-
-      if (!nextSelected && guidesList.length > 0) {
-        nextSelected = guidesList[0];
-      }
-
-      if (nextSelected && !guidesAreSame(selectedGuide, nextSelected)) {
-        setSelectedGuide(nextSelected);
-      }
-
-      const filtered = bookingsList.filter((b) => {
-        const email = String(b?.travelerEmail || "").trim().toLowerCase();
-        return !normalizedEmail || email === normalizedEmail;
-      });
-
-      filtered.sort((a, b) => {
-        const aa = new Date(b?.createdAt || 0).getTime();
-        const bb = new Date(a?.createdAt || 0).getTime();
-        return aa - bb;
-      });
-
-      setBookings(filtered);
+      setLoading(true);
+      await Promise.all([loadGuides(), loadBookings()]);
     } catch (error: any) {
-      Alert.alert("Error", error?.message || "No se pudieron cargar las reservas");
+      console.log("ERROR refresh reservas", error);
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
-  }, [normalizedEmail, selectedGuide]);
+  }
 
   useEffect(() => {
-    loadAll();
-  }, [loadAll]);
+    refreshAll();
+  }, []);
 
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    loadAll();
-  }, [loadAll]);
-
-  const createBooking = useCallback(async () => {
-    const email = travelerEmail.trim().toLowerCase();
-    const bookingDate = date.trim();
-    const parsedHours = Number(hours);
-
-    if (!email) {
-      Alert.alert("Error", "travelerEmail is required");
-      return;
+  useEffect(() => {
+    if (guideLocked && lockedGuideId) {
+      setSelectedGuideId(lockedGuideId);
     }
+  }, [guideLocked, lockedGuideId]);
 
-    if (!bookingDate) {
-      Alert.alert("Error", "date is required (YYYY-MM-DD)");
-      return;
-    }
+  const selectedGuide = useMemo(() => {
+    return guides.find((g) => g._id === selectedGuideId) || null;
+  }, [guides, selectedGuideId]);
 
-    if (!selectedGuide) {
-      Alert.alert("Error", "Seleccioná un guía");
-      return;
-    }
+  const selectedPriceHour = useMemo(() => {
+    return selectedGuide?.priceHour ?? selectedGuide?.pricePerHour ?? 0;
+  }, [selectedGuide]);
 
-    if (!Number.isFinite(parsedHours) || parsedHours <= 0) {
-      Alert.alert("Error", "Ingresá horas válidas");
-      return;
-    }
+  const totalAmount = useMemo(() => {
+    const h = Number(hours || 0);
+    if (!Number.isFinite(h) || h <= 0) return 0;
+    return Number((selectedPriceHour * h).toFixed(2));
+  }, [hours, selectedPriceHour]);
 
-    const guideId =
-      selectedGuide._id ||
-      selectedGuide.id ||
-      selectedGuide.gid ||
-      selectedGuide.guideId ||
-      selectedGuide.guideName ||
-      selectedGuide.name ||
-      "";
+  const totalAmountCents = useMemo(() => {
+    return Math.round(totalAmount * 100);
+  }, [totalAmount]);
 
-    const guideName =
-      selectedGuide.guideName ||
-      selectedGuide.name ||
-      "Guide";
-
+  async function createBooking() {
     try {
-      setCreating(true);
+      const h = Number(hours);
 
-      await apiPost("/api/bookings", {
-        travelerEmail: email,
-        travelerName: "",
-        guideId,
-        guideName,
-        city: selectedGuide.city || "",
-        country: selectedGuide.country || "",
-        date: bookingDate,
-        hours: parsedHours,
-        duration: "HOURS",
-        total: parsedHours * 25
-      });
+      if (!travelerEmail.trim()) {
+        Alert.alert("Error", "Ingresá email.");
+        return;
+      }
+
+      if (!date.trim()) {
+        Alert.alert("Error", "Ingresá fecha.");
+        return;
+      }
+
+      if (!selectedGuideId) {
+        Alert.alert("Error", "Seleccioná un guía.");
+        return;
+      }
+
+      if (!Number.isFinite(h) || h <= 0) {
+        Alert.alert("Error", "Ingresá horas válidas.");
+        return;
+      }
+
+      if (!Number.isFinite(totalAmount) || totalAmount <= 0) {
+        Alert.alert("Error", "Monto inválido.");
+        return;
+      }
+
+      if (!Number.isFinite(totalAmountCents) || totalAmountCents <= 0) {
+        Alert.alert("Error", "Monto en centavos inválido.");
+        return;
+      }
+
+      const payload = {
+        travelerEmail: travelerEmail.trim(),
+        date: date.trim(),
+        hours: h,
+        guideId: selectedGuideId,
+      };
+
+      const created = await apiPost<any>("/api/bookings", payload);
+      const bookingId = created?._id || created?.booking?._id || created?.id;
 
       Alert.alert("OK", "Reserva creada");
-      await loadAll();
-    } catch (error: any) {
-      Alert.alert("Error", error?.message || "No se pudo crear la reserva");
-    } finally {
-      setCreating(false);
-    }
-  }, [travelerEmail, date, hours, selectedGuide, loadAll]);
 
-  const markPaidTest = useCallback(async (booking: Booking) => {
-    const bookingId = String(booking._id || booking.id || "");
-    if (!bookingId) {
-      Alert.alert("Error", "bookingId inválido");
-      return;
-    }
+      await loadBookings();
 
-    try {
-      setPayingBookingId(bookingId);
-      await apiPost("/api/payments/pay-test", { bookingId });
-      Alert.alert("OK", "Reserva marcada como PAID en test");
-      await loadAll();
+      if (bookingId) {
+        await apiPost("/api/payments/pay-test", {
+          bookingId,
+          amount: totalAmount,
+          amountUsd: totalAmount,
+          amountCents: totalAmountCents,
+        });
+
+        Alert.alert("OK", "Reserva marcada como PAID en test");
+
+        await loadBookings();
+      }
     } catch (error: any) {
-      Alert.alert("Error", error?.message || "No se pudo marcar pago test");
-    } finally {
-      setPayingBookingId("");
+      console.log("ERROR createBooking()", error);
+      Alert.alert("Error", error?.message || "No se pudo crear la reserva.");
     }
-  }, [loadAll]);
+  }
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-    >
-      <Text style={styles.title}>Reservas</Text>
+    <ScrollView contentContainerStyle={{ padding: 16, gap: 14 }}>
+      <Text style={{ fontSize: 24, fontWeight: "700" }}>Reservas</Text>
 
-      <Text style={styles.label}>Traveler Email</Text>
+      <Text style={{ fontSize: 16 }}>Traveler Email</Text>
       <TextInput
         value={travelerEmail}
         onChangeText={setTravelerEmail}
         autoCapitalize="none"
-        keyboardType="email-address"
-        style={styles.input}
-        placeholder="test+frontend@iguideu.com"
+        style={{
+          borderWidth: 1,
+          borderColor: "#000000",
+          borderRadius: 16,
+          paddingHorizontal: 16,
+          paddingVertical: 18,
+          fontSize: 16,
+          backgroundColor: "#ffffff",
+        }}
       />
 
-      <Text style={styles.label}>Fecha</Text>
+      <Text style={{ fontSize: 16 }}>Fecha</Text>
       <TextInput
         value={date}
         onChangeText={setDate}
-        autoCapitalize="none"
-        style={styles.input}
-        placeholder="YYYY-MM-DD"
+        style={{
+          borderWidth: 1,
+          borderColor: "#000000",
+          borderRadius: 16,
+          paddingHorizontal: 16,
+          paddingVertical: 18,
+          fontSize: 16,
+          backgroundColor: "#ffffff",
+        }}
       />
 
-      <Text style={styles.label}>Guía</Text>
-      <View style={styles.listBlock}>
-        {guides.map((guide, index) => {
-          const key = guideKey(guide, index);
-          const label = guideLabel(guide);
+      <Text style={{ fontSize: 16 }}>Guía</Text>
 
-          const selected =
-            (selectedGuide?._id && selectedGuide?._id === guide._id) ||
-            (selectedGuide?.id && selectedGuide?.id === guide.id) ||
-            (selectedGuide?.gid && selectedGuide?.gid === guide.gid) ||
-            (selectedGuide?.guideId && selectedGuide?.guideId === guide.guideId) ||
-            (
-              (selectedGuide?.guideName || selectedGuide?.name) === (guide.guideName || guide.name) &&
-              (selectedGuide?.city || "") === (guide.city || "")
-            );
+      {guideLocked && selectedGuide ? (
+        <View
+          style={{
+            borderWidth: 1,
+            borderColor: "#000000",
+            borderRadius: 16,
+            paddingHorizontal: 16,
+            paddingVertical: 18,
+            backgroundColor: "#000000",
+          }}
+        >
+          <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
+            {selectedGuide.name} — {[selectedGuide.city, selectedGuide.country].filter(Boolean).join(", ")}
+          </Text>
+          <Text style={{ color: "#d1d5db", marginTop: 8, fontSize: 16 }}>
+            Guía seleccionada desde el perfil
+          </Text>
+        </View>
+      ) : null}
 
+      {!guideLocked &&
+        guides.map((guide) => {
+          const active = guide._id === selectedGuideId;
           return (
             <Pressable
-              key={key}
-              onPress={() => setSelectedGuide(guide)}
-              style={[styles.guideCard, selected && styles.guideCardSelected]}
+              key={guide._id}
+              onPress={() => setSelectedGuideId(guide._id)}
+              style={{
+                borderWidth: 1,
+                borderColor: "#000000",
+                borderRadius: 16,
+                paddingHorizontal: 16,
+                paddingVertical: 18,
+                backgroundColor: active ? "#000000" : "#ffffff",
+              }}
             >
-              <Text style={[styles.guideText, selected && styles.guideTextSelected]}>{label}</Text>
+              <Text style={{ color: active ? "#ffffff" : "#000000", fontSize: 18, fontWeight: "700" }}>
+                {guide.name} — {[guide.city, guide.country].filter(Boolean).join(", ")}
+              </Text>
             </Pressable>
           );
         })}
-      </View>
 
-      <Text style={styles.label}>Horas</Text>
+      <Text style={{ fontSize: 16 }}>Horas</Text>
       <TextInput
         value={hours}
         onChangeText={setHours}
         keyboardType="numeric"
-        style={styles.hoursInput}
-        placeholder="1"
+        style={{
+          width: 120,
+          borderWidth: 1,
+          borderColor: "#000000",
+          borderRadius: 16,
+          paddingHorizontal: 16,
+          paddingVertical: 18,
+          fontSize: 16,
+          backgroundColor: "#ffffff",
+        }}
       />
 
-      <Pressable onPress={createBooking} style={styles.button} disabled={creating}>
-        <Text style={styles.buttonText}>{creating ? "CREANDO..." : "CREAR RESERVA"}</Text>
+      <View
+        style={{
+          borderWidth: 1,
+          borderColor: "#d1d5db",
+          borderRadius: 16,
+          padding: 16,
+          backgroundColor: "#ffffff",
+          gap: 6,
+        }}
+      >
+        <Text style={{ fontWeight: "700", fontSize: 18 }}>Resumen</Text>
+        <Text>Guía: {selectedGuide?.name || "-"}</Text>
+        <Text>Fecha: {date}</Text>
+        <Text>Horas: {hours}</Text>
+        <Text>Precio/hora: USD {selectedPriceHour || 0}</Text>
+        <Text>Total: USD {totalAmount.toFixed(2)}</Text>
+        <Text>Total centavos: {totalAmountCents}</Text>
+      </View>
+
+      <Pressable
+        onPress={createBooking}
+        style={{
+          backgroundColor: "#000000",
+          paddingVertical: 18,
+          borderRadius: 16,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
+          {loading ? "Cargando..." : "PAGAR AHORA"}
+        </Text>
       </Pressable>
 
-      <Text style={styles.sectionTitle}>Mis reservas</Text>
+      <Text style={{ fontSize: 16, textAlign: "center", color: "#4b5563" }}>
+        Tu información de contacto se compartirá solo después del pago
+      </Text>
 
-      {loading ? (
-        <Text style={styles.empty}>Cargando...</Text>
-      ) : bookings.length === 0 ? (
-        <Text style={styles.empty}>No hay reservas todavía.</Text>
-      ) : (
-        <View style={styles.listBlock}>
-          {bookings.map((booking, index) => {
-            const key = bookingKey(booking, index);
-            const paid = isPaid(booking);
-            const bookingId = String(booking._id || booking.id || "");
-            const thisPaying = payingBookingId === bookingId;
+      <Text style={{ fontSize: 24, fontWeight: "700", marginTop: 12 }}>Mis reservas</Text>
 
-            return (
-              <View key={key} style={styles.bookingCard}>
-                <Text style={styles.bookingTitle}>{booking.guideName || "Guía"}</Text>
-                <Text style={styles.bookingLine}>Email: {booking.travelerEmail || "-"}</Text>
-                <Text style={styles.bookingLine}>Fecha: {booking.date ? String(booking.date).slice(0, 10) : "-"}</Text>
-                <Text style={styles.bookingLine}>Horas: {booking.hours ?? booking.durationHours ?? "-"}</Text>
-                <Text style={styles.bookingLine}>Monto: {bookingAmountText(booking)}</Text>
-                <Text style={styles.bookingLine}>Estado: {booking.paymentStatus || booking.status || "-"}</Text>
+      {bookings.map((booking) => {
+        const amount =
+          booking.amount ??
+          booking.amountUsd ??
+          booking.totalAmount ??
+          0;
 
-                {!paid && !!bookingId && (
-                  <Pressable
-                    onPress={() => markPaidTest(booking)}
-                    style={[styles.payButton, thisPaying && styles.payButtonDisabled]}
-                    disabled={thisPaying}
-                  >
-                    <Text style={styles.payButtonText}>{thisPaying ? "PROCESANDO..." : "PAGAR TEST"}</Text>
-                  </Pressable>
-                )}
-              </View>
-            );
-          })}
-        </View>
-      )}
+        return (
+          <View
+            key={booking._id}
+            style={{
+              borderWidth: 1,
+              borderColor: "#000000",
+              borderRadius: 16,
+              padding: 16,
+              backgroundColor: "#ffffff",
+              gap: 4,
+            }}
+          >
+            <Text style={{ fontSize: 18, fontWeight: "700" }}>{booking.guideName || "Guía"}</Text>
+            <Text>Email: {booking.travelerEmail || booking.email || "-"}</Text>
+            <Text>Fecha: {booking.date || "-"}</Text>
+            <Text>Horas: {booking.hours ?? "-"}</Text>
+            <Text>Monto: USD {Number(amount).toFixed(2)}</Text>
+            <Text>Estado: {booking.status || "-"}</Text>
+          </View>
+        );
+      })}
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff"
-  },
-  content: {
-    padding: 24,
-    paddingBottom: 120
-  },
-  title: {
-    fontSize: 36,
-    fontWeight: "800",
-    marginBottom: 24,
-    color: "#000"
-  },
-  label: {
-    fontSize: 18,
-    marginBottom: 10,
-    color: "#000"
-  },
-  input: {
-    borderWidth: 2,
-    borderColor: "#000",
-    borderRadius: 18,
-    paddingHorizontal: 18,
-    paddingVertical: 16,
-    fontSize: 16,
-    marginBottom: 24
-  },
-  hoursInput: {
-    width: 120,
-    borderWidth: 2,
-    borderColor: "#000",
-    borderRadius: 18,
-    paddingHorizontal: 18,
-    paddingVertical: 16,
-    fontSize: 16,
-    marginBottom: 24
-  },
-  listBlock: {
-    marginBottom: 18
-  },
-  guideCard: {
-    borderWidth: 2,
-    borderColor: "#000",
-    borderRadius: 18,
-    paddingHorizontal: 18,
-    paddingVertical: 22,
-    marginBottom: 16,
-    backgroundColor: "#fff"
-  },
-  guideCardSelected: {
-    backgroundColor: "#000"
-  },
-  guideText: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#000"
-  },
-  guideTextSelected: {
-    color: "#fff"
-  },
-  button: {
-    backgroundColor: "#000",
-    borderRadius: 18,
-    paddingVertical: 22,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 28
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "800"
-  },
-  sectionTitle: {
-    fontSize: 32,
-    fontWeight: "800",
-    marginBottom: 18,
-    color: "#000"
-  },
-  empty: {
-    fontSize: 16,
-    color: "#333"
-  },
-  bookingCard: {
-    borderWidth: 2,
-    borderColor: "#000",
-    borderRadius: 18,
-    paddingHorizontal: 18,
-    paddingVertical: 18,
-    marginBottom: 16,
-    backgroundColor: "#fff"
-  },
-  bookingTitle: {
-    fontSize: 18,
-    fontWeight: "800",
-    marginBottom: 8,
-    color: "#000"
-  },
-  bookingLine: {
-    fontSize: 16,
-    color: "#000",
-    marginBottom: 2
-  },
-  payButton: {
-    marginTop: 14,
-    backgroundColor: "#000",
-    borderRadius: 14,
-    paddingVertical: 14,
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  payButtonDisabled: {
-    opacity: 0.7
-  },
-  payButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "800"
-  }
-});

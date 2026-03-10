@@ -1,4 +1,27 @@
-﻿export const API_BASE_URL = "http://192.168.0.4:4020";
+﻿import Constants from "expo-constants";
+
+function guessApiBaseUrl() {
+  const explicit = process.env.EXPO_PUBLIC_API_BASE_URL;
+  if (explicit && explicit.trim()) return explicit.trim();
+
+  const c: any = Constants as any;
+
+  const hostUri =
+    c?.expoConfig?.hostUri ||
+    c?.manifest2?.extra?.expoClient?.hostUri ||
+    c?.manifest?.debuggerHost ||
+    "";
+
+  const host = typeof hostUri === "string" ? hostUri.split(":")[0] : "";
+
+  if (host) {
+    return `http://${host}:4020`;
+  }
+
+  return "http://127.0.0.1:4020";
+}
+
+export const API_BASE_URL = guessApiBaseUrl();
 
 export function apiUrl(path: string) {
   if (!path) return API_BASE_URL;
@@ -10,6 +33,9 @@ export function apiUrl(path: string) {
 async function apiFetch<T>(method: string, path: string, body?: any): Promise<T> {
   const url = apiUrl(path);
   const timeoutMs = 20000;
+
+  console.log("API_BASE_URL_RUNTIME", API_BASE_URL);
+  console.log("API_FETCH", method, url);
 
   const fetchPromise = fetch(url, {
     method,
@@ -25,7 +51,6 @@ async function apiFetch<T>(method: string, path: string, body?: any): Promise<T>
   );
 
   const res = (await Promise.race([fetchPromise, timeoutPromise])) as Response;
-
   const text = await res.text();
   const data = text ? JSON.parse(text) : null;
 

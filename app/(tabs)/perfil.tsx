@@ -1,85 +1,64 @@
 ﻿import React from "react";
-import { View, Text, ScrollView, Pressable } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Alert, Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const TOKEN_KEY = "iguideu_token";
+const USER_EMAIL_KEY = "iguideu_user_email";
 
 export default function Profile() {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.multiRemove([TOKEN_KEY, USER_EMAIL_KEY]);
+      router.replace("/login");
+    } catch {
+      Alert.alert("Error", "No se pudo cerrar la sesión.");
+    }
+  };
+
+  const confirmLogout = () => {
+    Alert.alert(
+      "Cerrar sesión",
+      "¿Querés salir de tu cuenta ahora?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        { text: "Salir", style: "destructive", onPress: handleLogout }
+      ]
+    );
+  };
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
-        <Text style={{ fontSize: 28, fontWeight: "800", marginBottom: 16 }}>Perfil</Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#ffffff" }}>
+      <ScrollView contentContainerStyle={{ padding: 20, gap: 18 }}>
+        <Text style={{ fontSize: 28, fontWeight: "800", marginBottom: 4 }}>
+          Perfil
+        </Text>
 
         <View
           style={{
             borderWidth: 1,
+            borderColor: "#e5e7eb",
             borderRadius: 16,
             padding: 16,
-            marginBottom: 14
+            backgroundColor: "#ffffff"
           }}
         >
-          <Text style={{ fontSize: 20, fontWeight: "800", marginBottom: 6 }}>Tommy</Text>
-          <Text style={{ opacity: 0.75, marginBottom: 4 }}>Viajero</Text>
-          <Text style={{ opacity: 0.75 }}>test+frontend@iguideu.com</Text>
+          <Text style={{ fontSize: 18, fontWeight: "800", marginBottom: 8 }}>
+            Mi cuenta
+          </Text>
+          <Text style={{ marginBottom: 6 }}>Rol: Traveler</Text>
+          <Text style={{ opacity: 0.7 }}>Sesión local activa</Text>
         </View>
 
-        <View
-          style={{
-            borderWidth: 1,
-            borderRadius: 16,
-            padding: 16,
-            marginBottom: 14
-          }}
-        >
-          <Text style={{ fontSize: 18, fontWeight: "800", marginBottom: 12 }}>Resumen</Text>
-
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              marginBottom: 10
-            }}
-          >
-            <Text style={{ opacity: 0.8 }}>Reservas</Text>
-            <Text style={{ fontWeight: "700" }}>Activas</Text>
-          </View>
-
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              marginBottom: 10
-            }}
-          >
-            <Text style={{ opacity: 0.8 }}>Pagos</Text>
-            <Text style={{ fontWeight: "700" }}>Test OK</Text>
-          </View>
-
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between"
-            }}
-          >
-            <Text style={{ opacity: 0.8 }}>Ubicación</Text>
-            <Text style={{ fontWeight: "700" }}>Geo OK</Text>
-          </View>
-        </View>
-
-        <View
-          style={{
-            borderWidth: 1,
-            borderRadius: 16,
-            padding: 16,
-            marginBottom: 14
-          }}
-        >
-          <Text style={{ fontSize: 18, fontWeight: "800", marginBottom: 12 }}>Cuenta</Text>
-
+        <View style={{ gap: 12 }}>
           <Pressable
             style={{
               borderWidth: 1,
+              borderColor: "#e5e7eb",
               borderRadius: 12,
-              padding: 14,
-              marginBottom: 10
+              padding: 14
             }}
           >
             <Text style={{ fontWeight: "700" }}>Editar perfil</Text>
@@ -91,27 +70,32 @@ export default function Profile() {
           <Pressable
             style={{
               borderWidth: 1,
-              borderRadius: 12,
-              padding: 14,
-              marginBottom: 10
-            }}
-          >
-            <Text style={{ fontWeight: "700" }}>Métodos de pago</Text>
-            <Text style={{ opacity: 0.7, marginTop: 4 }}>
-              Próximo paso: Stripe real
-            </Text>
-          </Pressable>
-
-          <Pressable
-            style={{
-              borderWidth: 1,
+              borderColor: "#e5e7eb",
               borderRadius: 12,
               padding: 14
             }}
           >
             <Text style={{ fontWeight: "700" }}>Seguridad</Text>
             <Text style={{ opacity: 0.7, marginTop: 4 }}>
-              Próximo paso: login y autenticación real
+              Login mínimo ya conectado al backend
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={confirmLogout}
+            style={{
+              borderWidth: 1,
+              borderColor: "#ef4444",
+              borderRadius: 12,
+              padding: 14,
+              backgroundColor: "#fff5f5"
+            }}
+          >
+            <Text style={{ fontWeight: "800", color: "#b91c1c" }}>
+              Cerrar sesión
+            </Text>
+            <Text style={{ opacity: 0.8, marginTop: 4, color: "#7f1d1d" }}>
+              Borra la sesión local y vuelve al login
             </Text>
           </Pressable>
         </View>
@@ -119,15 +103,20 @@ export default function Profile() {
         <View
           style={{
             borderWidth: 1,
+            borderColor: "#e5e7eb",
             borderRadius: 16,
             padding: 16
           }}
         >
-          <Text style={{ fontSize: 18, fontWeight: "800", marginBottom: 12 }}>Estado app</Text>
+          <Text style={{ fontSize: 18, fontWeight: "800", marginBottom: 12 }}>
+            Estado app
+          </Text>
           <Text style={{ marginBottom: 6 }}>Guías cercanos: OK</Text>
           <Text style={{ marginBottom: 6 }}>Reservas: OK</Text>
           <Text style={{ marginBottom: 6 }}>Pago test: OK</Text>
-          <Text>Webhook: OK</Text>
+          <Text style={{ marginBottom: 6 }}>Webhook: OK</Text>
+          <Text style={{ marginBottom: 6 }}>Login backend: OK</Text>
+          <Text>Logout local: OK</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

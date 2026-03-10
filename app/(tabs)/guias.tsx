@@ -1,177 +1,126 @@
-﻿import React, { useEffect, useState } from "react";
-import { Pressable, Text, FlatList, ActivityIndicator, RefreshControl, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+﻿import React, { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 import * as Location from "expo-location";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
 import { apiGet } from "../../config/api";
 
 type Guide = {
-  _id?: string;
-  gid?: string;
+  _id: string;
   id?: string;
-  name?: string;
-  bio?: string;
-  city?: string;
+  name: string;
   country?: string;
+  city?: string;
+  languages?: string[];
   rating?: number;
+  pricePerHour?: number;
   priceHour?: number;
   priceDay?: number;
   price24h?: number;
+  priceFullDay24h?: number;
+  bio?: string;
   avatarUrl?: string;
-  active?: boolean;
   distanceKm?: number;
-  geo?: {
-    lat?: number;
-    lng?: number;
-  };
 };
-
-type NearbyResponse = {
-  ok?: boolean;
-  center?: {
-    lat?: number;
-    lng?: number;
-  };
-  radiusKm?: number;
-  count?: number;
-  items?: Guide[];
-};
-
-const TEST_LAT = -34.6037;
-const TEST_LNG = -58.3816;
-const TEST_RADIUS_KM = 20000;
 
 export default function GuiasScreen() {
+  const router = useRouter();
   const [guides, setGuides] = useState<Guide[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [locationLabel, setLocationLabel] = useState("Usando ubicación de prueba Buenos Aires");
+  const [loading, setLoading] = useState(false);
+  const [coordsText, setCoordsText] = useState("");
 
-  async function loadGuides() {
+  const loadGuides = useCallback(async () => {
     try {
-      let lat: number | null = null;
-      let lng: number | null = null;
+      setLoading(true);
 
-      try {
-        const permission = await Location.requestForegroundPermissionsAsync();
-
-        if (permission.status === "granted") {
-          const current = await Location.getCurrentPositionAsync({
-            accuracy: Location.Accuracy.Balanced
-          });
-          lat = current.coords.latitude;
-          lng = current.coords.longitude;
-          setLocationLabel(`Cerca de ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
-        } else {
-          lat = TEST_LAT;
-          lng = TEST_LNG;
-          setLocationLabel("Sin permiso. Usando Buenos Aires de prueba");
-        }
-      } catch (locationError) {
-        console.log("LOCATION ERROR", locationError);
-        lat = TEST_LAT;
-        lng = TEST_LNG;
-        setLocationLabel("Ubicación no disponible. Usando Buenos Aires de prueba");
+      const perm = await Location.requestForegroundPermissionsAsync();
+      if (perm.status !== "granted") {
+        setCoordsText("Ubicación no permitida");
+        setGuides([]);
+        return;
       }
 
-      const data = await apiGet<NearbyResponse>(
-        `/api/guides/nearby?lat=${lat}&lng=${lng}&radius=${TEST_RADIUS_KM}`
-      );
+      const pos = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
 
-      const arr = Array.isArray(data?.items) ? data.items : [];
-      setGuides(arr);
-    } catch (e) {
-      console.log("ERROR loadGuides()", e);
+      const lat = Number(pos.coords.latitude.toFixed(4));
+      const lng = Number(pos.coords.longitude.toFixed(4));
+      setCoordsText(`Cerca de ${lat}, ${lng}`);
+
+      const data = await apiGet<any>(`/api/guides/nearby?lat=${lat}&lng=${lng}&radius=50`);
+      const list = Array.isArray(data?.items) ? data.items : [];
+
+      setGuides(list);
+      console.log("GUIDES_OK", { count: list.length, lat, lng });
+    } catch (error: any) {
+      console.log("ERROR loadGuides()", error);
       setGuides([]);
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
     loadGuides();
-  }, []);
-
-  function onRefresh() {
-    setRefreshing(true);
-    loadGuides();
-  }
-
-  function formatDistance(value?: number) {
-    if (typeof value !== "number" || Number.isNaN(value)) return null;
-    if (value < 1) return `${value.toFixed(2)} km`;
-    return `${value.toFixed(1)} km`;
-  }
-
-  function openGuide(item: Guide, index: number) {
-    const id = String(item._id || item.id || item.gid || `guide-${index}`);
-    router.push({
-      pathname: "/guia/[id]",
-      params: {
-        id,
-        guideName: item.name || "Guía",
-        city: item.city || "",
-        country: item.country || ""
-      }
-    });
-  }
-
-  if (loading) {
-    return (
-      <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
-        <Text style={{ marginTop: 10 }}>Cargando guías...</Text>
-      </SafeAreaView>
-    );
-  }
+  }, [loadGuides]);
 
   return (
-    <SafeAreaView style={{ flex: 1, padding: 16 }}>
-      <Text style={{ fontSize: 28, fontWeight: "800", marginBottom: 6 }}>Guías</Text>
-      <Text style={{ marginBottom: 12, opacity: 0.7 }}>{locationLabel}</Text>
+    <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
+      <Text style={{ fontSize: 24, fontWeight: "700" }}>Guías</Text>
 
-      <FlatList
-        data={guides}
-        keyExtractor={(item, index) => String(item._id || item.gid || item.id || `guide-${index}`)}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        ListEmptyComponent={<Text style={{ opacity: 0.7 }}>No hay guías disponibles</Text>}
-        renderItem={({ item, index }) => {
-          const distanceText = formatDistance(item.distanceKm);
+      {coordsText ? <Text style={{ fontSize: 16 }}>{coordsText}</Text> : null}
 
-          return (
-            <Pressable
-              onPress={() => openGuide(item, index)}
-              style={{ borderWidth: 1, borderRadius: 12, padding: 14, marginBottom: 12 }}
-            >
-              <Text style={{ fontWeight: "800", fontSize: 16 }}>{item.name || "Guía"}</Text>
-
-              <Text style={{ marginTop: 4, opacity: 0.8 }}>
-                {item.city || "-"}, {item.country || "-"}
-              </Text>
-
-              {!!item.bio && <Text style={{ marginTop: 6 }}>{item.bio}</Text>}
-
-              <Text style={{ marginTop: 6, fontWeight: "700" }}>
-                ⭐ {item.rating ?? "-"}
-                {distanceText ? ` • ${distanceText}` : ""}
-              </Text>
-
-              <View
-                style={{
-                  marginTop: 10,
-                  borderWidth: 1,
-                  borderRadius: 10,
-                  paddingVertical: 10,
-                  alignItems: "center"
-                }}
-              >
-                <Text style={{ fontWeight: "700" }}>VER DETALLE</Text>
-              </View>
-            </Pressable>
-          );
+      <Pressable
+        onPress={loadGuides}
+        style={{
+          backgroundColor: "#0f172a",
+          paddingVertical: 12,
+          paddingHorizontal: 16,
+          borderRadius: 10,
+          alignSelf: "flex-start",
         }}
-      />
-    </SafeAreaView>
+      >
+        <Text style={{ color: "#ffffff", fontWeight: "700" }}>Recargar guías</Text>
+      </Pressable>
+
+      {loading ? <ActivityIndicator size="large" /> : null}
+
+      {!loading && guides.length === 0 ? (
+        <View style={{ paddingVertical: 20 }}>
+          <Text>No hay guías para mostrar.</Text>
+        </View>
+      ) : null}
+
+      {guides.map((guide) => (
+        <Pressable
+          key={guide._id}
+          onPress={() =>
+            router.push({
+              pathname: "/guia-detalle",
+              params: {
+                guideId: guide._id,
+              },
+            })
+          }
+          style={{
+            borderWidth: 1,
+            borderColor: "#d1d5db",
+            borderRadius: 14,
+            padding: 14,
+            gap: 6,
+            backgroundColor: "#ffffff",
+          }}
+        >
+          <Text style={{ fontSize: 18, fontWeight: "700" }}>{guide.name}</Text>
+          <Text>{[guide.city, guide.country].filter(Boolean).join(", ") || "-"}</Text>
+          <Text>Idiomas: {Array.isArray(guide.languages) ? guide.languages.join(", ") : "-"}</Text>
+          <Text>Rating: {guide.rating ?? "-"}</Text>
+          <Text>Precio/hora: USD {guide.priceHour ?? guide.pricePerHour ?? "-"}</Text>
+          <Text>Distancia: {guide.distanceKm ?? "-"} km</Text>
+          <Text>{guide.bio || "Sin descripción."}</Text>
+          <Text style={{ marginTop: 6, fontWeight: "700" }}>Ver perfil</Text>
+        </Pressable>
+      ))}
+    </ScrollView>
   );
 }
