@@ -34,7 +34,7 @@ export default function GuiaDetalleScreen() {
     async function run() {
       try {
         setLoading(true);
-        const data = await apiGet<any>("/api/guides");
+        const data = await apiGet("/api/guides");
         const list = Array.isArray(data) ? data : [];
         const found = list.find((g: any) => g?._id === guideId) || null;
         if (active) setGuide(found);

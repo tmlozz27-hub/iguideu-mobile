@@ -1,8 +1,7 @@
 export async function keepAwakeSafe() {
-  return;
+  return false;
 }
 
 export async function keepAwakeSafeOff() {
-  return;
+  return false;
 }
-

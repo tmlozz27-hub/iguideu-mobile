@@ -1,18 +1,26 @@
 import React from "react";
 import { Pressable, SafeAreaView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const ROLE_KEY = "iguideu_pending_role";
 
 export default function SelectRoleScreen() {
   const router = useRouter();
 
+  const chooseRole = async (role: "traveler" | "guide") => {
+    await AsyncStorage.setItem(ROLE_KEY, role);
+    router.push("/register");
+  };
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#0d3f77" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#0f9fb3" }}>
       <View
         style={{
           flex: 1,
+          alignItems: "center",
           paddingHorizontal: 24,
-          justifyContent: "center",
-          gap: 22,
+          paddingTop: 40,
         }}
       >
         <Text
@@ -20,70 +28,81 @@ export default function SelectRoleScreen() {
             color: "#ffffff",
             fontSize: 42,
             fontWeight: "800",
-            textAlign: "center",
+            marginBottom: 40,
+            marginTop: 10,
           }}
         >
-          ElegÃ­ tu perfil
+          I GUIDE U
         </Text>
 
-        <Text
+        <View
           style={{
-            color: "#dbeafe",
-            fontSize: 20,
-            textAlign: "center",
-            marginBottom: 10,
-          }}
-        >
-          SeleccionÃ¡ cÃ³mo querÃ©s usar I GUIDE U
-        </Text>
-
-        <Pressable
-          onPress={() => router.replace("/(tabs)")}
-          style={{
+            width: "100%",
             backgroundColor: "#ffffff",
-            borderRadius: 22,
-            paddingVertical: 24,
-            paddingHorizontal: 20,
+            borderRadius: 28,
+            padding: 22,
+            gap: 18,
           }}
         >
-          <Text style={{ color: "#0d3f77", fontSize: 28, fontWeight: "800", textAlign: "center" }}>
-            Turista / Viajero
+          <Text style={{ fontSize: 26, fontWeight: "800", color: "#111827" }}>
+            Elegí tu perfil
           </Text>
-          <Text style={{ color: "#375a7f", fontSize: 18, textAlign: "center", marginTop: 8 }}>
-            Buscar guÃ­as, reservar, pagar y viajar
-          </Text>
-        </Pressable>
 
-        <Pressable
-          onPress={() => router.replace("/(tabs)")}
-          style={{
-            backgroundColor: "#ffffff",
-            borderRadius: 22,
-            paddingVertical: 24,
-            paddingHorizontal: 20,
-          }}
-        >
-          <Text style={{ color: "#0d3f77", fontSize: 28, fontWeight: "800", textAlign: "center" }}>
-            GuÃ­a
+          <Text style={{ fontSize: 16, color: "#374151" }}>
+            Seleccioná cómo querés usar I GUIDE U.
           </Text>
-          <Text style={{ color: "#375a7f", fontSize: 18, textAlign: "center", marginTop: 8 }}>
-            Ofrecer servicios, crear perfil y recibir reservas
-          </Text>
-        </Pressable>
 
-        <Pressable onPress={() => router.back()}>
-          <Text
+          <Pressable
+            onPress={() => chooseRole("traveler")}
             style={{
-              color: "#ffffff",
-              textAlign: "center",
-              fontSize: 20,
-              fontWeight: "700",
-              marginTop: 10,
+              backgroundColor: "#f6c744",
+              borderRadius: 14,
+              paddingVertical: 18,
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
-            Volver
-          </Text>
-        </Pressable>
+            <Text style={{ color: "#ffffff", fontSize: 22, fontWeight: "800" }}>
+              Soy viajero
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => chooseRole("guide")}
+            style={{
+              borderWidth: 1,
+              borderColor: "#d1d5db",
+              borderRadius: 14,
+              paddingVertical: 18,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "#ffffff",
+            }}
+          >
+            <Text style={{ color: "#374151", fontSize: 20, fontWeight: "700" }}>
+              Soy guía
+            </Text>
+          </Pressable>
+
+          <View style={{ alignItems: "center", marginTop: 8 }}>
+            <Text style={{ color: "#1f3b63", fontSize: 18 }}>
+              ¿Ya tienes cuenta?
+            </Text>
+
+            <Pressable onPress={() => router.push("/login")}>
+              <Text
+                style={{
+                  color: "#0f3f78",
+                  fontSize: 22,
+                  fontWeight: "800",
+                  marginTop: 6,
+                }}
+              >
+                Iniciar sesión
+              </Text>
+            </Pressable>
+          </View>
+        </View>
       </View>
     </SafeAreaView>
   );

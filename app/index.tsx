@@ -1,23 +1,48 @@
 import React, { useEffect } from "react";
 import { Text, View } from "react-native";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const TOKEN_KEY = "iguideu_token";
 
 export default function SplashScreen() {
   const router = useRouter();
 
   useEffect(() => {
-    const t = setTimeout(() => {
-      router.replace("/login");
-    }, 1400);
+    let active = true;
 
-    return () => clearTimeout(t);
+    async function run() {
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 1200));
+
+        const token = await AsyncStorage.getItem(TOKEN_KEY);
+
+        if (!active) return;
+
+        if (token) {
+          router.replace("/(tabs)");
+          return;
+        }
+
+        router.replace("/select-role");
+      } catch {
+        if (!active) return;
+        router.replace("/select-role");
+      }
+    }
+
+    run();
+
+    return () => {
+      active = false;
+    };
   }, [router]);
 
   return (
     <View
       style={{
         flex: 1,
-        backgroundColor: "#0d4d92",
+        backgroundColor: "#0f9fb3",
         alignItems: "center",
         justifyContent: "center",
         paddingHorizontal: 24,
@@ -42,7 +67,7 @@ export default function SplashScreen() {
           textAlign: "center",
         }}
       >
-        GuÃ­as personales para viajeros en todo el mundo
+        Guías personales para viajeros en todo el mundo
       </Text>
     </View>
   );

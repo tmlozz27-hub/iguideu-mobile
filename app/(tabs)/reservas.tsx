@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, router } from "expo-router";
 import { apiGet, apiPost } from "../../config/api";
 
 type Guide = {
@@ -42,9 +42,8 @@ function todayString() {
 }
 
 export default function ReservasScreen() {
-  const params = useLocalSearchParams<{ guideId?: string; guideLocked?: string }>();
+  const params = useLocalSearchParams<{ guideId?: string }>();
   const lockedGuideId = typeof params.guideId === "string" ? params.guideId : "";
-  const guideLocked = params.guideLocked === "1";
 
   const [travelerEmail, setTravelerEmail] = useState("test+frontend@iguideu.com");
   const [date, setDate] = useState(todayString());
@@ -55,24 +54,23 @@ export default function ReservasScreen() {
   const [loading, setLoading] = useState(false);
 
   async function loadGuides() {
-    const data = await apiGet<any>("/api/guides");
-    const list = Array.isArray(data) ? data : [];
+    const data = await apiGet("/api/guides");
+    const list = Array.isArray(data) ? data : Array.isArray((data as any)?.guides) ? (data as any).guides : [];
     setGuides(list);
 
-    if (guideLocked && lockedGuideId) {
+    if (lockedGuideId) {
       setSelectedGuideId(lockedGuideId);
       return;
     }
 
-    if (!selectedGuideId && list.length > 0) {
-      setSelectedGuideId(list[0]._id);
-    }
+    setSelectedGuideId("");
   }
 
   async function loadBookings() {
-    const data = await apiGet<any>("/api/bookings");
-    const list = Array.isArray(data) ? data : Array.isArray(data?.items) ? data.items : [];
-    setBookings(list);
+    const data = await apiGet("/api/bookings");
+    const list = Array.isArray(data) ? data : Array.isArray((data as any)?.items) ? (data as any).items : [];
+    const paidOnly = list.filter((item: Booking) => String(item.status || "").toUpperCase() === "PAID");
+    setBookings(paidOnly);
   }
 
   async function refreshAll() {
@@ -81,6 +79,7 @@ export default function ReservasScreen() {
       await Promise.all([loadGuides(), loadBookings()]);
     } catch (error: any) {
       console.log("ERROR refresh reservas", error);
+      Alert.alert("Error", error?.message || "No se pudieron cargar las reservas.");
     } finally {
       setLoading(false);
     }
@@ -91,17 +90,17 @@ export default function ReservasScreen() {
   }, []);
 
   useEffect(() => {
-    if (guideLocked && lockedGuideId) {
+    if (lockedGuideId) {
       setSelectedGuideId(lockedGuideId);
     }
-  }, [guideLocked, lockedGuideId]);
+  }, [lockedGuideId]);
 
   const selectedGuide = useMemo(() => {
     return guides.find((g) => g._id === selectedGuideId) || null;
   }, [guides, selectedGuideId]);
 
   const selectedPriceHour = useMemo(() => {
-    return selectedGuide?.priceHour ?? selectedGuide?.pricePerHour ?? 0;
+    return Number(selectedGuide?.priceHour ?? selectedGuide?.pricePerHour ?? 0);
   }, [selectedGuide]);
 
   const totalAmount = useMemo(() => {
@@ -115,7 +114,11 @@ export default function ReservasScreen() {
   }, [totalAmount]);
 
   async function createBooking() {
+    if (loading) return;
+
     try {
+      setLoading(true);
+
       const h = Number(hours);
 
       if (!travelerEmail.trim()) {
@@ -129,7 +132,7 @@ export default function ReservasScreen() {
       }
 
       if (!selectedGuideId) {
-        Alert.alert("Error", "Seleccioná un guía.");
+        Alert.alert("Error", "Primero elegí un guía.");
         return;
       }
 
@@ -152,177 +155,211 @@ export default function ReservasScreen() {
         travelerEmail: travelerEmail.trim(),
         date: date.trim(),
         hours: h,
-        guideId: selectedGuideId,
+        guideId: selectedGuideId
       };
 
-      const created = await apiPost<any>("/api/bookings", payload);
-      const bookingId = created?._id || created?.booking?._id || created?.id;
+      const created = await apiPost("/api/bookings", payload);
+      const bookingId =
+        (created as any)?._id ||
+        (created as any)?.booking?._id ||
+        (created as any)?.id;
 
-      Alert.alert("OK", "Reserva creada");
-
-      await loadBookings();
-
-      if (bookingId) {
-        await apiPost("/api/payments/pay-test", {
-          bookingId,
-          amount: totalAmount,
-          amountUsd: totalAmount,
-          amountCents: totalAmountCents,
-        });
-
-        Alert.alert("OK", "Reserva marcada como PAID en test");
-
+      if (!bookingId) {
+        Alert.alert("Error", "La reserva se creó pero no volvió el bookingId.");
         await loadBookings();
+        return;
       }
+
+      await apiPost("/api/payments/pay-test", {
+        bookingId,
+        amount: totalAmount,
+        amountUsd: totalAmount,
+        amountCents: totalAmountCents
+      });
+
+      Alert.alert("OK", "Reserva creada y marcada como PAID en test");
+      await loadBookings();
     } catch (error: any) {
       console.log("ERROR createBooking()", error);
       Alert.alert("Error", error?.message || "No se pudo crear la reserva.");
+    } finally {
+      setLoading(false);
     }
   }
 
+  const showReservationForm = !!selectedGuide;
+
   return (
-    <ScrollView contentContainerStyle={{ padding: 16, gap: 14 }}>
+    <ScrollView
+      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: 40 }}
+    >
       <Text style={{ fontSize: 24, fontWeight: "700" }}>Reservas</Text>
 
-      <Text style={{ fontSize: 16 }}>Traveler Email</Text>
-      <TextInput
-        value={travelerEmail}
-        onChangeText={setTravelerEmail}
-        autoCapitalize="none"
-        style={{
-          borderWidth: 1,
-          borderColor: "#000000",
-          borderRadius: 16,
-          paddingHorizontal: 16,
-          paddingVertical: 18,
-          fontSize: 16,
-          backgroundColor: "#ffffff",
-        }}
-      />
-
-      <Text style={{ fontSize: 16 }}>Fecha</Text>
-      <TextInput
-        value={date}
-        onChangeText={setDate}
-        style={{
-          borderWidth: 1,
-          borderColor: "#000000",
-          borderRadius: 16,
-          paddingHorizontal: 16,
-          paddingVertical: 18,
-          fontSize: 16,
-          backgroundColor: "#ffffff",
-        }}
-      />
-
-      <Text style={{ fontSize: 16 }}>Guía</Text>
-
-      {guideLocked && selectedGuide ? (
+      {!showReservationForm ? (
         <View
           style={{
             borderWidth: 1,
-            borderColor: "#000000",
+            borderColor: "#d1d5db",
             borderRadius: 16,
-            paddingHorizontal: 16,
-            paddingVertical: 18,
-            backgroundColor: "#000000",
+            padding: 16,
+            backgroundColor: "#ffffff",
+            gap: 10
           }}
         >
-          <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
-            {selectedGuide.name} — {[selectedGuide.city, selectedGuide.country].filter(Boolean).join(", ")}
+          <Text style={{ fontSize: 18, fontWeight: "700" }}>Todavía no elegiste un guía</Text>
+          <Text style={{ fontSize: 16, color: "#4b5563" }}>
+            Primero elegí un guía desde Buscar guías por país o Guías cercanos.
           </Text>
-          <Text style={{ color: "#d1d5db", marginTop: 8, fontSize: 16 }}>
-            Guía seleccionada desde el perfil
-          </Text>
+
+          <Pressable
+            onPress={() => router.push("/buscar-pais")}
+            style={{
+              borderWidth: 1,
+              borderColor: "#000000",
+              borderRadius: 16,
+              paddingVertical: 16,
+              alignItems: "center",
+              justifyContent: "center",
+              marginTop: 4
+            }}
+          >
+            <Text style={{ fontSize: 18, fontWeight: "700" }}>IR A BUSCAR GUÍAS</Text>
+          </Pressable>
         </View>
       ) : null}
 
-      {!guideLocked &&
-        guides.map((guide) => {
-          const active = guide._id === selectedGuideId;
-          return (
-            <Pressable
-              key={guide._id}
-              onPress={() => setSelectedGuideId(guide._id)}
-              style={{
-                borderWidth: 1,
-                borderColor: "#000000",
-                borderRadius: 16,
-                paddingHorizontal: 16,
-                paddingVertical: 18,
-                backgroundColor: active ? "#000000" : "#ffffff",
-              }}
-            >
-              <Text style={{ color: active ? "#ffffff" : "#000000", fontSize: 18, fontWeight: "700" }}>
-                {guide.name} — {[guide.city, guide.country].filter(Boolean).join(", ")}
-              </Text>
-            </Pressable>
-          );
-        })}
+      {showReservationForm ? (
+        <>
+          <Text style={{ fontSize: 16 }}>Traveler Email</Text>
+          <TextInput
+            value={travelerEmail}
+            onChangeText={setTravelerEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            style={{
+              borderWidth: 1,
+              borderColor: "#000000",
+              borderRadius: 16,
+              paddingHorizontal: 16,
+              paddingVertical: 18,
+              fontSize: 16,
+              backgroundColor: "#ffffff"
+            }}
+          />
 
-      <Text style={{ fontSize: 16 }}>Horas</Text>
-      <TextInput
-        value={hours}
-        onChangeText={setHours}
-        keyboardType="numeric"
-        style={{
-          width: 120,
-          borderWidth: 1,
-          borderColor: "#000000",
-          borderRadius: 16,
-          paddingHorizontal: 16,
-          paddingVertical: 18,
-          fontSize: 16,
-          backgroundColor: "#ffffff",
-        }}
-      />
+          <Text style={{ fontSize: 16 }}>Fecha</Text>
+          <TextInput
+            value={date}
+            onChangeText={setDate}
+            placeholder="YYYY-MM-DD"
+            style={{
+              borderWidth: 1,
+              borderColor: "#000000",
+              borderRadius: 16,
+              paddingHorizontal: 16,
+              paddingVertical: 18,
+              fontSize: 16,
+              backgroundColor: "#ffffff"
+            }}
+          />
 
-      <View
-        style={{
-          borderWidth: 1,
-          borderColor: "#d1d5db",
-          borderRadius: 16,
-          padding: 16,
-          backgroundColor: "#ffffff",
-          gap: 6,
-        }}
-      >
-        <Text style={{ fontWeight: "700", fontSize: 18 }}>Resumen</Text>
-        <Text>Guía: {selectedGuide?.name || "-"}</Text>
-        <Text>Fecha: {date}</Text>
-        <Text>Horas: {hours}</Text>
-        <Text>Precio/hora: USD {selectedPriceHour || 0}</Text>
-        <Text>Total: USD {totalAmount.toFixed(2)}</Text>
-        <Text>Total centavos: {totalAmountCents}</Text>
-      </View>
+          <Text style={{ fontSize: 16 }}>Guía</Text>
 
-      <Pressable
-        onPress={createBooking}
-        style={{
-          backgroundColor: "#000000",
-          paddingVertical: 18,
-          borderRadius: 16,
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
-          {loading ? "Cargando..." : "PAGAR AHORA"}
-        </Text>
-      </Pressable>
+          <View
+            style={{
+              borderWidth: 1,
+              borderColor: "#000000",
+              borderRadius: 16,
+              paddingHorizontal: 16,
+              paddingVertical: 18,
+              backgroundColor: "#000000"
+            }}
+          >
+            <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
+              {selectedGuide.name} — {[selectedGuide.city, selectedGuide.country].filter(Boolean).join(", ")}
+            </Text>
+            <Text style={{ color: "#d1d5db", marginTop: 8, fontSize: 16 }}>
+              Guía seleccionada desde el perfil
+            </Text>
+          </View>
 
-      <Text style={{ fontSize: 16, textAlign: "center", color: "#4b5563" }}>
-        Tu información de contacto se compartirá solo después del pago
-      </Text>
+          <Text style={{ fontSize: 16 }}>Horas</Text>
+          <TextInput
+            value={hours}
+            onChangeText={setHours}
+            keyboardType="numeric"
+            style={{
+              width: 120,
+              borderWidth: 1,
+              borderColor: "#000000",
+              borderRadius: 16,
+              paddingHorizontal: 16,
+              paddingVertical: 18,
+              fontSize: 16,
+              backgroundColor: "#ffffff"
+            }}
+          />
+
+          <View
+            style={{
+              borderWidth: 1,
+              borderColor: "#d1d5db",
+              borderRadius: 16,
+              padding: 16,
+              backgroundColor: "#ffffff",
+              gap: 6
+            }}
+          >
+            <Text style={{ fontWeight: "700", fontSize: 18 }}>Resumen</Text>
+            <Text>Guía: {selectedGuide?.name || "-"}</Text>
+            <Text>Fecha: {date}</Text>
+            <Text>Horas: {hours}</Text>
+            <Text>Precio/hora: USD {selectedPriceHour || 0}</Text>
+            <Text>Total: USD {totalAmount.toFixed(2)}</Text>
+            <Text>Total centavos: {totalAmountCents}</Text>
+          </View>
+
+          <Pressable
+            onPress={createBooking}
+            disabled={loading}
+            style={{
+              backgroundColor: loading ? "#6b7280" : "#000000",
+              paddingVertical: 18,
+              borderRadius: 16,
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+          >
+            <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
+              {loading ? "Cargando..." : "PAGAR AHORA"}
+            </Text>
+          </Pressable>
+
+          <Text style={{ fontSize: 16, textAlign: "center", color: "#4b5563" }}>
+            Tu información de contacto se compartirá solo después del pago
+          </Text>
+        </>
+      ) : null}
 
       <Text style={{ fontSize: 24, fontWeight: "700", marginTop: 12 }}>Mis reservas</Text>
 
+      {bookings.length === 0 ? (
+        <View
+          style={{
+            borderWidth: 1,
+            borderColor: "#d1d5db",
+            borderRadius: 16,
+            padding: 16,
+            backgroundColor: "#ffffff"
+          }}
+        >
+          <Text style={{ fontSize: 16, color: "#4b5563" }}>Todavía no hay reservas pagadas.</Text>
+        </View>
+      ) : null}
+
       {bookings.map((booking) => {
-        const amount =
-          booking.amount ??
-          booking.amountUsd ??
-          booking.totalAmount ??
-          0;
+        const amount = booking.amount ?? booking.amountUsd ?? booking.totalAmount ?? 0;
 
         return (
           <View
@@ -333,14 +370,14 @@ export default function ReservasScreen() {
               borderRadius: 16,
               padding: 16,
               backgroundColor: "#ffffff",
-              gap: 4,
+              gap: 4
             }}
           >
             <Text style={{ fontSize: 18, fontWeight: "700" }}>{booking.guideName || "Guía"}</Text>
             <Text>Email: {booking.travelerEmail || booking.email || "-"}</Text>
             <Text>Fecha: {booking.date || "-"}</Text>
             <Text>Horas: {booking.hours ?? "-"}</Text>
-            <Text>Monto: USD {Number(amount).toFixed(2)}</Text>
+            <Text>Monto: USD {Number(amount || 0).toFixed(2)}</Text>
             <Text>Estado: {booking.status || "-"}</Text>
           </View>
         );

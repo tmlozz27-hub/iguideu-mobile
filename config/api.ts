@@ -1,79 +1,65 @@
-﻿import Constants from "expo-constants";
+﻿export const API_BASE = (process.env.EXPO_PUBLIC_API_BASE || "").replace(/\/+$/, "");
+export const STRIPE_MODE = process.env.EXPO_PUBLIC_STRIPE_MODE || "test";
 
-function guessApiBaseUrl() {
-  const explicit = process.env.EXPO_PUBLIC_API_BASE_URL;
-  if (explicit && explicit.trim()) return explicit.trim();
+async function apiFetch(path: string, options: RequestInit = {}) {
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const url = `${API_BASE}${normalizedPath}`;
 
-  const c: any = Constants as any;
+  console.log("API_BASE_URL_RUNTIME", API_BASE);
+  console.log("API_FETCH", options.method || "GET", url);
 
-  const hostUri =
-    c?.expoConfig?.hostUri ||
-    c?.manifest2?.extra?.expoClient?.hostUri ||
-    c?.manifest?.debuggerHost ||
-    "";
-
-  const host = typeof hostUri === "string" ? hostUri.split(":")[0] : "";
-
-  if (host) {
-    return `http://${host}:4020`;
-  }
-
-  return "http://127.0.0.1:4020";
-}
-
-export const API_BASE_URL = guessApiBaseUrl();
-
-export function apiUrl(path: string) {
-  if (!path) return API_BASE_URL;
-  if (path.startsWith("http://") || path.startsWith("https://")) return path;
-  if (path.startsWith("/")) return API_BASE_URL + path;
-  return API_BASE_URL + "/" + path;
-}
-
-async function apiFetch<T>(method: string, path: string, body?: any): Promise<T> {
-  const url = apiUrl(path);
-  const timeoutMs = 20000;
-
-  console.log("API_BASE_URL_RUNTIME", API_BASE_URL);
-  console.log("API_FETCH", method, url);
-
-  const fetchPromise = fetch(url, {
-    method,
+  const response = await fetch(url, {
+    ...options,
     headers: {
-      Accept: "application/json",
       "Content-Type": "application/json",
+      ...(options.headers || {}),
     },
-    body: body === undefined ? undefined : JSON.stringify(body),
   });
 
-  const timeoutPromise = new Promise<never>((_, reject) =>
-    setTimeout(() => reject(new Error("TIMEOUT")), timeoutMs)
-  );
+  const text = await response.text();
+  let data: any = null;
 
-  const res = (await Promise.race([fetchPromise, timeoutPromise])) as Response;
-  const text = await res.text();
-  const data = text ? JSON.parse(text) : null;
-
-  if (!res.ok) {
-    const msg = (data && (data.error || data.message)) || `HTTP ${res.status}`;
-    throw new Error(msg);
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = text;
   }
 
-  return data as T;
+  if (!response.ok) {
+    const message =
+      (data && typeof data === "object" && (data.error || data.message)) ||
+      `HTTP ${response.status}`;
+    throw new Error(String(message));
+  }
+
+  return data;
 }
 
-export function apiGet<T = any>(path: string): Promise<T> {
-  return apiFetch<T>("GET", path);
+export async function apiGet(path: string) {
+  return apiFetch(path, { method: "GET" });
 }
 
-export function apiPost<T = any>(path: string, body?: any): Promise<T> {
-  return apiFetch<T>("POST", path, body);
+export async function apiPost(path: string, body?: any) {
+  return apiFetch(path, {
+    method: "POST",
+    body: body ? JSON.stringify(body) : undefined,
+  });
 }
 
-export function apiPut<T = any>(path: string, body?: any): Promise<T> {
-  return apiFetch<T>("PUT", path, body);
+export async function apiPut(path: string, body?: any) {
+  return apiFetch(path, {
+    method: "PUT",
+    body: body ? JSON.stringify(body) : undefined,
+  });
 }
 
-export function apiDel<T = any>(path: string): Promise<T> {
-  return apiFetch<T>("DELETE", path);
+export async function apiPatch(path: string, body?: any) {
+  return apiFetch(path, {
+    method: "PATCH",
+    body: body ? JSON.stringify(body) : undefined,
+  });
+}
+
+export async function apiDelete(path: string) {
+  return apiFetch(path, { method: "DELETE" });
 }

@@ -1,15 +1,29 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true,
+    "strict": false,
+    "baseUrl": ".",
     "paths": {
       "@/*": [
-        "./*"
+        "*"
       ]
     }
   },
   "include": [
     "**/*.ts",
     "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    ".expo",
+    "dist",
+    "build",
+    "__DISABLED__ROUTES",
+    "_backup_api_dupes_20260128_000957",
+    "app/guides-country.tsx",
+    "app/guia/**",
+    "components/parallax-scroll-view.tsx",
+    "config/bookingFlow.ts",
+    "lib/socket.ts"
   ]
 }

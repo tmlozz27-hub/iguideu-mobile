@@ -1,7 +1,13 @@
-import { io } from "socket.io-client";
-import { API_BASE } from "./api";
+export const SOCKET_ENABLED = false;
 
-export const socket = io(API_BASE, {
-  transports: ["websocket"],
-  autoConnect: true,
-});
+export function getSocket() {
+  return null;
+}
+
+export function connectSocket() {
+  return null;
+}
+
+export function disconnectSocket() {
+  return null;
+}

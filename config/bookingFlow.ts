@@ -1,48 +1,31 @@
-import { createReservation, createIntent } from "./api";
-
-export async function bookAndCreateIntent(input: {
+export type BookingInput = {
   travelerEmail: string;
-  gid: string; // OJO: gid = guide.id (no _id)
-  date: string; // yyyy-mm-dd
+  date: string;
   hours: number;
-  amount: number; // en centavos
-  currency: string; // "usd"
-}) {
-  const bookingRes = await createReservation({
-    travelerEmail: input.travelerEmail,
-    gid: input.gid,
-    date: input.date,
-    hours: input.hours
-  });
+  guideId: string;
+};
 
-  const bookingId =
-    bookingRes?.reservation?._id ||
-    bookingRes?.booking?._id ||
-    bookingRes?.bookingId ||
-    bookingRes?._id ||
-    null;
+export type PaymentInput = {
+  bookingId: string;
+  amount: number;
+  amountUsd: number;
+  amountCents: number;
+};
 
-  if (!bookingId) {
-    throw new Error("No bookingId en respuesta de /api/reservations");
-  }
-
-  const payRes = await createIntent({
-    amount: input.amount,
-    currency: input.currency,
-    bookingId,
-    email: input.travelerEmail
-  });
-
-  const clientSecret =
-    payRes?.clientSecret || payRes?.client_secret || payRes?.clientSecretKey || null;
-
-  if (!clientSecret) {
-    throw new Error("No clientSecret en respuesta de /api/payments/create-intent");
-  }
-
+export function createReservationPayload(input: BookingInput) {
   return {
-    bookingId,
-    clientSecret,
-    paymentIntentId: payRes?.paymentIntentId || null
+    travelerEmail: input.travelerEmail,
+    date: input.date,
+    hours: input.hours,
+    guideId: input.guideId
+  };
+}
+
+export function createPaymentPayload(input: PaymentInput) {
+  return {
+    bookingId: input.bookingId,
+    amount: input.amount,
+    amountUsd: input.amountUsd,
+    amountCents: input.amountCents
   };
 }

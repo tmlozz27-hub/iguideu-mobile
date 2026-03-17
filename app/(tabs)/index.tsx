@@ -1,93 +1,86 @@
 import React from "react";
-import { View, Text, ScrollView, Pressable } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
 
 export default function HomeScreen() {
+  const router = useRouter();
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
-        <Text style={{ fontSize: 32, fontWeight: "800", marginBottom: 8 }}>I GUIDE U</Text>
-        <Text style={{ fontSize: 18, opacity: 0.75, marginBottom: 20 }}>
-          Encontrá guías locales, reservá y pagá desde la app.
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#f8fafc" }}>
+      <View
+        style={{
+          flex: 1,
+          paddingHorizontal: 20,
+          paddingTop: 24,
+          paddingBottom: 24
+        }}
+      >
+        <Text style={{ fontSize: 30, fontWeight: "800", color: "#0f172a" }}>
+          I GUIDE U
+        </Text>
+
+        <Text style={{ marginTop: 8, fontSize: 16, color: "#475569" }}>
+          Elegí cómo querés encontrar tu guía.
         </Text>
 
         <Pressable
-          onPress={() => router.push("/(tabs)/guias")}
+          onPress={() => router.push("/buscar-pais")}
           style={{
+            marginTop: 24,
+            backgroundColor: "#ffffff",
             borderWidth: 1,
-            borderRadius: 18,
-            padding: 18,
-            marginBottom: 14
+            borderColor: "#e5e7eb",
+            borderRadius: 20,
+            padding: 20
           }}
         >
-          <Text style={{ fontSize: 20, fontWeight: "800", marginBottom: 6 }}>Guías cercanos</Text>
-          <Text style={{ opacity: 0.75 }}>
-            Ver guías ordenados por distancia desde tu ubicación.
+          <Text style={{ fontSize: 20, fontWeight: "800", color: "#0f172a" }}>
+            Buscar guías por país
+          </Text>
+          <Text style={{ marginTop: 6, fontSize: 14, color: "#64748b" }}>
+            Explorá guías disponibles según el país que elijas.
           </Text>
         </Pressable>
 
         <Pressable
-          onPress={() => router.push("/(tabs)/reservas")}
+          onPress={() => router.push("/guias-cercanos")}
           style={{
+            marginTop: 14,
+            backgroundColor: "#ffffff",
             borderWidth: 1,
-            borderRadius: 18,
-            padding: 18,
-            marginBottom: 14
+            borderColor: "#e5e7eb",
+            borderRadius: 20,
+            padding: 20
           }}
         >
-          <Text style={{ fontSize: 20, fontWeight: "800", marginBottom: 6 }}>Reservar ahora</Text>
-          <Text style={{ opacity: 0.75 }}>
-            Creá una reserva, pagá en test y revisá el estado.
+          <Text style={{ fontSize: 20, fontWeight: "800", color: "#0f172a" }}>
+            Guías cercanos
+          </Text>
+          <Text style={{ marginTop: 6, fontSize: 14, color: "#64748b" }}>
+            Encontrá guías cerca de tu ubicación actual.
           </Text>
         </Pressable>
 
         <Pressable
           onPress={() => router.push("/(tabs)/perfil")}
           style={{
+            marginTop: 14,
+            backgroundColor: "#ffffff",
             borderWidth: 1,
-            borderRadius: 18,
-            padding: 18,
-            marginBottom: 20
+            borderColor: "#e5e7eb",
+            borderRadius: 20,
+            padding: 20
           }}
         >
-          <Text style={{ fontSize: 20, fontWeight: "800", marginBottom: 6 }}>Mi perfil</Text>
-          <Text style={{ opacity: 0.75 }}>
-            Estado de cuenta, pagos y próximos pasos de la app.
+          <Text style={{ fontSize: 20, fontWeight: "800", color: "#0f172a" }}>
+            Mi perfil
+          </Text>
+          <Text style={{ marginTop: 6, fontSize: 14, color: "#64748b" }}>
+            Revisá tu cuenta, reservas y opciones legales.
           </Text>
         </Pressable>
-
-        <View
-          style={{
-            borderWidth: 1,
-            borderRadius: 18,
-            padding: 18,
-            marginBottom: 14
-          }}
-        >
-          <Text style={{ fontSize: 22, fontWeight: "800", marginBottom: 12 }}>Estado del sistema</Text>
-          <Text style={{ marginBottom: 6 }}>Guías cercanos: OK</Text>
-          <Text style={{ marginBottom: 6 }}>Geo: OK</Text>
-          <Text style={{ marginBottom: 6 }}>Reservas: OK</Text>
-          <Text style={{ marginBottom: 6 }}>Pago test: OK</Text>
-          <Text>Webhook: OK</Text>
-        </View>
-
-        <View
-          style={{
-            borderWidth: 1,
-            borderRadius: 18,
-            padding: 18
-          }}
-        >
-          <Text style={{ fontSize: 22, fontWeight: "800", marginBottom: 12 }}>Siguiente fase</Text>
-          <Text style={{ marginBottom: 6 }}>1. Encajar diseño final pantalla por pantalla</Text>
-          <Text style={{ marginBottom: 6 }}>2. Detalle de guía</Text>
-          <Text style={{ marginBottom: 6 }}>3. Reserva desde guía</Text>
-          <Text style={{ marginBottom: 6 }}>4. Stripe real</Text>
-          <Text>5. Login y perfil real</Text>
-        </View>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }

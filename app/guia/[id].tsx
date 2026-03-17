@@ -1,156 +1,110 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { apiGet } from "../../config/api";
 
 type Guide = {
-  _id?: string;
-  gid?: string;
-  id?: string;
-  guideId?: string;
+  _id: string;
   name?: string;
-  guideName?: string;
-  bio?: string;
   city?: string;
   country?: string;
-  rating?: number;
-  priceHour?: number;
-  priceDay?: number;
-  price24h?: number;
-  avatarUrl?: string;
-  active?: boolean;
-  distanceKm?: number;
   languages?: string[];
+  bio?: string;
 };
 
-function guideMatchesId(guide: Guide, id: string) {
-  return (
-    String(guide._id || "") === id ||
-    String(guide.id || "") === id ||
-    String(guide.gid || "") === id ||
-    String(guide.guideId || "") === id
-  );
-}
+export default function GuiaDetalleScreen() {
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const id = String(params.id || "");
 
-export default function GuideDetailScreen() {
-  const params = useLocalSearchParams<{
-    id?: string;
-    guideName?: string;
-    city?: string;
-    country?: string;
-  }>();
-
-  const routeId = String(params.id || "");
-  const [guide, setGuide] = useState<Guide | null>(null);
   const [loading, setLoading] = useState(true);
+  const [guide, setGuide] = useState<Guide | null>(null);
 
   useEffect(() => {
-    async function loadGuide() {
+    async function load() {
       try {
-        const res = await apiGet<any>("/api/guides");
-        const list: Guide[] = Array.isArray(res)
-          ? res
-          : Array.isArray(res?.guides)
-            ? res.guides
-            : Array.isArray(res?.items)
-              ? res.items
-              : [];
+        const data = await apiGet("/api/guides");
 
-        const found =
-          list.find((item) => guideMatchesId(item, routeId)) ||
-          list.find((item) => (item.name || item.guideName || "") === String(params.guideName || ""));
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray((data as any)?.items)
+          ? (data as any).items
+          : [];
+
+        const found = list.find((g: Guide) => String(g._id) === id);
 
         setGuide(found || null);
       } catch (error) {
-        console.log("ERROR loadGuide()", error);
+        console.log("ERROR loading guide", error);
         setGuide(null);
       } finally {
         setLoading(false);
       }
     }
 
-    loadGuide();
-  }, [routeId, params.guideName]);
-
-  const title = useMemo(() => {
-    return guide?.name || guide?.guideName || String(params.guideName || "Guía");
-  }, [guide, params.guideName]);
-
-  function goToReserva() {
-    const guideId = encodeURIComponent(
-      String(guide?._id || guide?.id || guide?.gid || guide?.guideId || routeId)
-    );
-    const guideName = encodeURIComponent(String(guide?.name || guide?.guideName || title));
-    const city = encodeURIComponent(String(guide?.city || params.city || ""));
-    const country = encodeURIComponent(String(guide?.country || params.country || ""));
-
-    router.replace(`/(tabs)/reservas?guideId=${guideId}&guideName=${guideName}&city=${city}&country=${country}`);
-  }
+    load();
+  }, [id]);
 
   if (loading) {
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />
-        <Text style={{ marginTop: 10 }}>Cargando guía...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (!guide) {
+    return (
+      <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>No se encontró el guía.</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
-        <Text style={{ fontSize: 30, fontWeight: "800", marginBottom: 10 }}>{title}</Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#f8fafc" }}>
+      <ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingTop: 24,
+          paddingBottom: 40
+        }}
+      >
+        <Text style={{ fontSize: 28, fontWeight: "800", color: "#0f172a" }}>
+          {guide.name || "Guía"}
+        </Text>
 
-        <View style={{ borderWidth: 1, borderRadius: 16, padding: 16, marginBottom: 14 }}>
-          <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 8 }}>Ubicación</Text>
-          <Text style={{ fontSize: 16 }}>
-            {guide?.city || params.city || "-"}, {guide?.country || params.country || "-"}
-          </Text>
-        </View>
+        <Text style={{ marginTop: 6, fontSize: 16, color: "#64748b" }}>
+          {[guide.city, guide.country].filter(Boolean).join(", ")}
+        </Text>
 
-        <View style={{ borderWidth: 1, borderRadius: 16, padding: 16, marginBottom: 14 }}>
-          <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 8 }}>Calificación</Text>
-          <Text style={{ fontSize: 16 }}>⭐ {guide?.rating ?? "-"}</Text>
-        </View>
+        <Text style={{ marginTop: 14, fontSize: 16, color: "#334155" }}>
+          {guide.bio || "Guía personal disponible para viajeros."}
+        </Text>
 
-        <View style={{ borderWidth: 1, borderRadius: 16, padding: 16, marginBottom: 14 }}>
-          <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 8 }}>Descripción</Text>
-          <Text style={{ fontSize: 16, lineHeight: 24 }}>
-            {guide?.bio || "Guía local disponible para experiencias personalizadas."}
-          </Text>
-        </View>
-
-        <View style={{ borderWidth: 1, borderRadius: 16, padding: 16, marginBottom: 18 }}>
-          <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 10 }}>Tarifas</Text>
-          <Text style={{ marginBottom: 6 }}>Hora: USD {guide?.priceHour ?? 25}</Text>
-          <Text style={{ marginBottom: 6 }}>Día: USD {guide?.priceDay ?? 160}</Text>
-          <Text>24h: USD {guide?.price24h ?? 420}</Text>
-        </View>
+        <Text style={{ marginTop: 14, fontSize: 15, color: "#475569" }}>
+          Idiomas: {guide.languages?.join(", ") || "-"}
+        </Text>
 
         <Pressable
-          onPress={goToReserva}
+          onPress={() =>
+            router.push({
+              pathname: "/(tabs)/reservas",
+              params: { guideId: guide._id }
+            })
+          }
           style={{
-            backgroundColor: "#000",
-            borderRadius: 16,
-            paddingVertical: 18,
-            alignItems: "center",
-            marginBottom: 12
-          }}
-        >
-          <Text style={{ color: "#fff", fontSize: 18, fontWeight: "800" }}>RESERVAR ESTE GUÍA</Text>
-        </Pressable>
-
-        <Pressable
-          onPress={() => router.back()}
-          style={{
-            borderWidth: 1,
-            borderRadius: 16,
-            paddingVertical: 18,
+            marginTop: 28,
+            backgroundColor: "#0f9fb3",
+            paddingVertical: 16,
+            borderRadius: 18,
             alignItems: "center"
           }}
         >
-          <Text style={{ fontSize: 16, fontWeight: "700" }}>VOLVER A GUÍAS</Text>
+          <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "800" }}>
+            Solicitar servicio
+          </Text>
         </Pressable>
       </ScrollView>
     </SafeAreaView>

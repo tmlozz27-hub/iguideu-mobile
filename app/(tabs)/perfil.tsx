@@ -132,7 +132,7 @@ export default function Profile() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#ffffff" }}>
-      <ScrollView contentContainerStyle={{ padding: 20, gap: 18 }}>
+      <ScrollView contentContainerStyle={{ padding: 20, gap: 18, paddingBottom: 40 }}>
         <Text style={{ fontSize: 28, fontWeight: "800", marginBottom: 4 }}>
           Perfil
         </Text>
@@ -209,6 +209,42 @@ export default function Profile() {
             <Text style={{ fontWeight: "700" }}>Seguridad</Text>
             <Text style={{ opacity: 0.7, marginTop: 4 }}>
               Auth real en Mongo conectado
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => router.push("/terms")}
+            style={{
+              borderWidth: 1,
+              borderColor: "#e5e7eb",
+              borderRadius: 12,
+              padding: 14,
+              backgroundColor: "#ffffff"
+            }}
+          >
+            <Text style={{ fontWeight: "800", color: "#111827" }}>
+              Términos y condiciones
+            </Text>
+            <Text style={{ opacity: 0.8, marginTop: 4, color: "#374151" }}>
+              Ver condiciones de uso de I GUIDE U
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => router.push("/privacy")}
+            style={{
+              borderWidth: 1,
+              borderColor: "#e5e7eb",
+              borderRadius: 12,
+              padding: 14,
+              backgroundColor: "#ffffff"
+            }}
+          >
+            <Text style={{ fontWeight: "800", color: "#111827" }}>
+              Política de privacidad
+            </Text>
+            <Text style={{ opacity: 0.8, marginTop: 4, color: "#374151" }}>
+              Ver cómo se tratan y protegen tus datos
             </Text>
           </Pressable>
 
