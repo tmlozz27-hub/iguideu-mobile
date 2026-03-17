@@ -47,7 +47,7 @@ export default function GuiasScreen() {
       const lng = Number(pos.coords.longitude.toFixed(4));
       setCoordsText(`Cerca de ${lat}, ${lng}`);
 
-      const data = await apiGet<any>(`/api/guides/nearby?lat=${lat}&lng=${lng}&radius=50`);
+      const data = (await apiGet(`/api/guides/nearby?lat=${lat}&lng=${lng}&radius=50`)) as any;
       const list = Array.isArray(data?.items) ? data.items : [];
 
       setGuides(list);
