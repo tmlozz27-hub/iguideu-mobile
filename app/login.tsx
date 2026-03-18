@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Alert, KeyboardAvoidingView, Platform, Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from "react-native";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { API_BASE } from "../config/api";
+import { apiPost } from "../config/api";
 
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
@@ -51,20 +51,12 @@ export default function LoginScreen() {
     try {
       setLoading(true);
 
-      const response = await fetch(`${API_BASE}/api/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          email: emailClean,
-          password: passwordClean
-        })
+      const data = await apiPost("/api/auth/login", {
+        email: emailClean,
+        password: passwordClean
       });
 
-      const data = await response.json();
-
-      if (!response.ok || !data?.ok || !data?.token) {
+      if (!data?.ok || !data?.token) {
         const rawMessage = String(data?.message || data?.error || "").toUpperCase();
 
         if (rawMessage.includes("INVALID_CREDENTIALS")) {
@@ -272,15 +264,8 @@ export default function LoginScreen() {
                   ¿No tienes cuenta?
                 </Text>
 
-                <Pressable onPress={() => router.push("/register")}>
-                  <Text
-                    style={{
-                      color: "#0f3f78",
-                      fontSize: 22,
-                      fontWeight: "800",
-                      marginTop: 6
-                    }}
-                  >
+                <Pressable onPress={() => router.push("/register")} style={{ marginTop: 6 }}>
+                  <Text style={{ color: "#0f3f78", fontWeight: "800", fontSize: 18 }}>
                     Registrarse
                   </Text>
                 </Pressable>

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Alert, Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from "react-native";
+import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { API_BASE } from "../../config/api";
+import { apiGet, apiPut } from "../../config/api";
 
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
@@ -29,20 +30,17 @@ export default function Profile() {
 
       if (!token) {
         setUser(null);
+        setLoadingUser(false);
         return;
       }
 
-      const response = await fetch(`${API_BASE}/api/auth/me`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+      const data = await apiGet("/api/auth/me", {
+        Authorization: `Bearer ${token}`
       });
 
-      const data = await response.json();
-
-      if (!response.ok || !data?.ok || !data?.user) {
+      if (!data?.ok || !data?.user) {
         setUser(null);
+        setLoadingUser(false);
         return;
       }
 
@@ -81,20 +79,15 @@ export default function Profile() {
         return;
       }
 
-      const response = await fetch(`${API_BASE}/api/auth/me`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          name: nextName
-        })
-      });
+      const data = await apiPut(
+        "/api/auth/me",
+        { name: nextName },
+        {
+          Authorization: `Bearer ${token}`
+        }
+      );
 
-      const data = await response.json();
-
-      if (!response.ok || !data?.ok || !data?.user) {
+      if (!data?.ok || !data?.user) {
         Alert.alert("Error", data?.message || "No se pudo actualizar el perfil.");
         return;
       }

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Alert, KeyboardAvoidingView, Platform, Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from "react-native";
 import { useRouter } from "expo-router";
-import { API_BASE } from "../config/api";
+import { apiPost } from "../config/api";
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
@@ -19,26 +19,14 @@ export default function ForgotPasswordScreen() {
     try {
       setLoading(true);
 
-      const response = await fetch(`${API_BASE}/api/auth/forgot-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          email: emailClean
-        })
+      await apiPost("/api/auth/forgot-password", {
+        email: emailClean
       });
 
-      const data = await response.json().catch(() => null);
-
-      if (response.ok) {
-        Alert.alert("OK", "Si el email existe, enviamos instrucciones para recuperar la contraseña.");
-        return;
-      }
-
-      Alert.alert("Aviso", data?.message || "Endpoint todavía no conectado. La pantalla ya quedó lista.");
-    } catch {
-      Alert.alert("Aviso", "Pantalla lista. Falta conectar el endpoint de recuperación en backend.");
+      Alert.alert("OK", "Si el email existe, enviamos instrucciones para recuperar la contraseña.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "";
+      Alert.alert("Aviso", message || "Pantalla lista. Falta conectar el endpoint de recuperación en backend.");
     } finally {
       setLoading(false);
     }
