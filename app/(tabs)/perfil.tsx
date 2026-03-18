@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Alert, Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from "react-native";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -213,7 +213,7 @@ export default function Profile() {
           </Pressable>
 
           <Pressable
-            onPress={() => router.push("/terms")}
+            onPress={() => router.push("/legal/terms")}
             style={{
               borderWidth: 1,
               borderColor: "#e5e7eb",
@@ -231,7 +231,7 @@ export default function Profile() {
           </Pressable>
 
           <Pressable
-            onPress={() => router.push("/privacy")}
+            onPress={() => router.push("/legal/privacy")}
             style={{
               borderWidth: 1,
               borderColor: "#e5e7eb",
