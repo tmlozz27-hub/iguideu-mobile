@@ -139,6 +139,21 @@ export default function GuiaDetalleScreen() {
             Solicitar servicio
           </Text>
         </Pressable>
+
+        <Pressable
+          onPress={() => router.push("/chat")}
+          style={{
+            marginTop: 12,
+            backgroundColor: "#111827",
+            paddingVertical: 16,
+            borderRadius: 18,
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "800" }}>
+            Abrir chat con guía
+          </Text>
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
