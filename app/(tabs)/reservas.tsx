@@ -320,6 +320,51 @@ export default function ReservasScreen() {
             <Text>Total centavos: {totalAmountCents}</Text>
           </View>
 
+          <View
+            style={{
+              borderWidth: 1,
+              borderColor: "#d1d5db",
+              borderRadius: 16,
+              padding: 16,
+              backgroundColor: "#ffffff",
+              gap: 8
+            }}
+          >
+            <Text style={{ fontSize: 18, fontWeight: "700" }}>
+              Antes de confirmar tu reserva
+            </Text>
+
+            <Text>• La tarifa corresponde únicamente al servicio del guía según la modalidad indicada</Text>
+            <Text>• Gastos como comidas, transporte o entradas no están incluidos salvo que se indique expresamente</Text>
+            <Text>• En actividades compartidas, el viajero cubre también los gastos del guía</Text>
+            <Text>• Podés cancelar sin costo con más de 24 horas de anticipación</Text>
+            <Text>• Si surge un imprevisto, podés coordinar directamente con tu guía un cambio de horario o fecha</Text>
+            <Text>• Las horas adicionales se acuerdan con el guía y se cobran según la tarifa publicada</Text>
+          </View>
+
+          <View
+            style={{
+              borderWidth: 1,
+              borderColor: "#000000",
+              borderRadius: 16,
+              padding: 16,
+              backgroundColor: "#f9fafb",
+              gap: 8
+            }}
+          >
+            <Text style={{ fontSize: 18, fontWeight: "700" }}>
+              Confirmación
+            </Text>
+
+            <Text>• Confirmo que revisé la tarifa, duración y condiciones de esta reserva</Text>
+            <Text>• Confirmo que los gastos adicionales no están incluidos salvo que se indique expresamente</Text>
+            <Text>• Confirmo que leí las condiciones de cancelación, cambios e imprevistos</Text>
+
+            <Text style={{ marginTop: 6, fontSize: 14, color: "#4b5563" }}>
+              Pago seguro · Reserva registrada · Mayor transparencia para ambas partes
+            </Text>
+          </View>
+
           <Pressable
             onPress={createBooking}
             disabled={loading}

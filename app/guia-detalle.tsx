@@ -317,6 +317,40 @@ export default function GuiaDetalleScreen() {
           </View>
         </View>
 
+        <View
+          style={{
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.20)",
+            borderRadius: 20,
+            padding: 18,
+            backgroundColor: "rgba(255,255,255,0.08)",
+            gap: 10
+          }}
+        >
+          <Text style={{ color: "#ffffff", fontSize: 20, fontWeight: "800" }}>
+            Antes de reservar
+          </Text>
+
+          <Text style={{ color: "#e5eefb", fontSize: 16 }}>
+            • Cada guía ofrece una experiencia personalizada según tus intereses
+          </Text>
+          <Text style={{ color: "#e5eefb", fontSize: 16 }}>
+            • Podés coordinar directamente los detalles para adaptar el recorrido
+          </Text>
+          <Text style={{ color: "#e5eefb", fontSize: 16 }}>
+            • Las tarifas corresponden al servicio del guía según la modalidad indicada
+          </Text>
+          <Text style={{ color: "#e5eefb", fontSize: 16 }}>
+            • Gastos como comidas, transporte o entradas no están incluidos salvo que se indique expresamente
+          </Text>
+          <Text style={{ color: "#e5eefb", fontSize: 16 }}>
+            • En actividades compartidas, el viajero cubre también los gastos del guía
+          </Text>
+          <Text style={{ color: "#e5eefb", fontSize: 16 }}>
+            • Reservando a través de la plataforma asegurás una experiencia clara, segura y registrada
+          </Text>
+        </View>
+
         <Pressable
           onPress={() =>
             router.push({
