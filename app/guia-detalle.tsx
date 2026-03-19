@@ -322,8 +322,7 @@ export default function GuiaDetalleScreen() {
             router.push({
               pathname: "/(tabs)/reservas",
               params: {
-                guideId: guide._id,
-                guideLocked: "1"
+                guideId: guide._id
               }
             })
           }
