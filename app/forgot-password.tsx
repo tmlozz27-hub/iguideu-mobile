@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { apiPost } from "../config/api";
 
@@ -12,7 +13,7 @@ export default function ForgotPasswordScreen() {
     const emailClean = String(email || "").trim().toLowerCase();
 
     if (!emailClean) {
-      Alert.alert("Error", "Ingres√° tu email.");
+      Alert.alert("Error", "Ingres· tu email.");
       return;
     }
 
@@ -23,10 +24,10 @@ export default function ForgotPasswordScreen() {
         email: emailClean
       });
 
-      Alert.alert("OK", "Si el email existe, enviamos instrucciones para recuperar la contrase√±a.");
+      Alert.alert("OK", "Si el email existe, enviamos instrucciones para recuperar la contraseÒa.");
     } catch (error) {
       const message = error instanceof Error ? error.message : "";
-      Alert.alert("Aviso", message || "Pantalla lista. Falta conectar el endpoint de recuperaci√≥n en backend.");
+      Alert.alert("Aviso", message || "Pantalla lista. Falta conectar el endpoint de recuperaciÛn en backend.");
     } finally {
       setLoading(false);
     }
@@ -47,11 +48,11 @@ export default function ForgotPasswordScreen() {
             </Pressable>
 
             <Text style={{ fontSize: 34, fontWeight: "800", color: "#111827" }}>
-              Recuperar contrase√±a
+              Recuperar contraseÒa
             </Text>
 
             <Text style={{ fontSize: 18, color: "#4b5563", lineHeight: 28 }}>
-              Ingres√° tu email y te enviaremos instrucciones para recuperar el acceso.
+              Ingres· tu email y te enviaremos instrucciones para recuperar el acceso.
             </Text>
 
             <TextInput

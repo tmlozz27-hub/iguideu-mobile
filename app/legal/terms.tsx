@@ -1,5 +1,6 @@
 import React from "react";
-import { Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 
 export default function TermsScreen() {
@@ -15,28 +16,28 @@ export default function TermsScreen() {
         </Pressable>
 
         <Text style={{ fontSize: 32, fontWeight: "800", color: "#111827" }}>
-          TÃ©rminos y condiciones
+          Términos y condiciones
         </Text>
 
         <View style={{ gap: 14 }}>
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            I GUIDE U conecta viajeros con guÃ­as locales independientes para facilitar reservas y experiencias personalizadas.
+            I GUIDE U conecta viajeros con guías locales independientes para facilitar reservas y experiencias personalizadas.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            El usuario acepta proporcionar informaciÃ³n verdadera, utilizar la plataforma de forma lÃ­cita y respetar a otros usuarios durante todo el proceso de bÃºsqueda, reserva y pago.
+            El usuario acepta proporcionar información verdadera, utilizar la plataforma de forma lícita y respetar a otros usuarios durante todo el proceso de búsqueda, reserva y pago.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            Los guÃ­as son responsables por la informaciÃ³n publicada en sus perfiles, sus tarifas, su disponibilidad y la prestaciÃ³n efectiva del servicio acordado con el viajero.
+            Los guías son responsables por la información publicada en sus perfiles, sus tarifas, su disponibilidad y la prestación efectiva del servicio acordado con el viajero.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            I GUIDE U puede aplicar comisiones por intermediaciÃ³n y podrÃ¡ actualizar funciones, tarifas, polÃ­ticas operativas y medidas de seguridad cuando sea necesario.
+            I GUIDE U puede aplicar comisiones por intermediación y podrá actualizar funciones, tarifas, políticas operativas y medidas de seguridad cuando sea necesario.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            El uso continuado de la app implica la aceptaciÃ³n de estos tÃ©rminos y de la polÃ­tica de privacidad vigente.
+            El uso continuado de la app implica la aceptación de estos términos y de la política de privacidad vigente.
           </Text>
         </View>
       </ScrollView>

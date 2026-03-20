@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiPost } from "../config/api";
@@ -44,7 +45,7 @@ export default function LoginScreen() {
     const passwordClean = String(password || "").trim();
 
     if (!emailClean || !passwordClean) {
-      Alert.alert("Faltan datos", "IngresÃ¡ email y contraseÃ±a.");
+      Alert.alert("Faltan datos", "Ingresá email y contraseña.");
       return;
     }
 
@@ -60,9 +61,9 @@ export default function LoginScreen() {
         const rawMessage = String(data?.message || data?.error || "").toUpperCase();
 
         if (rawMessage.includes("INVALID_CREDENTIALS")) {
-          Alert.alert("Error", "Email o contraseÃ±a incorrectos.");
+          Alert.alert("Error", "Email o contraseña incorrectos.");
         } else {
-          Alert.alert("Error", data?.message || "No se pudo iniciar sesiÃ³n.");
+          Alert.alert("Error", data?.message || "No se pudo iniciar sesión.");
         }
         return;
       }
@@ -83,7 +84,7 @@ export default function LoginScreen() {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: "#0f9fb3", alignItems: "center", justifyContent: "center" }}>
         <Text style={{ color: "#ffffff", fontSize: 24, fontWeight: "700" }}>
-          Verificando sesiÃ³n...
+          Verificando sesión...
         </Text>
       </SafeAreaView>
     );
@@ -130,7 +131,7 @@ export default function LoginScreen() {
               }}
             >
               <Text style={{ fontSize: 26, fontWeight: "800", color: "#111827" }}>
-                Iniciar sesiÃ³n
+                Iniciar sesión
               </Text>
 
               <TextInput
@@ -166,7 +167,7 @@ export default function LoginScreen() {
                 <TextInput
                   value={password}
                   onChangeText={setPassword}
-                  placeholder="ContraseÃ±a"
+                  placeholder="Contraseña"
                   placeholderTextColor="#9ca3af"
                   secureTextEntry={!showPassword}
                   editable={!loading}
@@ -204,7 +205,7 @@ export default function LoginScreen() {
                     fontSize: 16
                   }}
                 >
-                  Â¿Olvidaste tu contraseÃ±a?
+                  ¿Olvidaste tu contraseña?
                 </Text>
               </Pressable>
 
@@ -226,7 +227,7 @@ export default function LoginScreen() {
               </Pressable>
 
               <Pressable
-                onPress={() => Alert.alert("PrÃ³ximo paso", "Google login se conecta despuÃ©s del flujo legal y recuperaciÃ³n.")}
+                onPress={() => Alert.alert("Próximo paso", "Google login se conecta después del flujo legal y recuperación.")}
                 style={{
                   borderWidth: 1,
                   borderColor: "#d1d5db",
@@ -243,7 +244,7 @@ export default function LoginScreen() {
               </Pressable>
 
               <Pressable
-                onPress={() => Alert.alert("PrÃ³ximo paso", "Facebook login se conecta despuÃ©s del flujo legal y recuperaciÃ³n.")}
+                onPress={() => Alert.alert("Próximo paso", "Facebook login se conecta después del flujo legal y recuperación.")}
                 style={{
                   borderWidth: 1,
                   borderColor: "#d1d5db",
@@ -261,7 +262,7 @@ export default function LoginScreen() {
 
               <View style={{ alignItems: "center", marginTop: 8 }}>
                 <Text style={{ color: "#1f3b63", fontSize: 18 }}>
-                  Â¿No tienes cuenta?
+                  ¿No tienes cuenta?
                 </Text>
 
                 <Pressable onPress={() => router.push("/register")} style={{ marginTop: 6 }}>
@@ -274,13 +275,13 @@ export default function LoginScreen() {
               <View style={{ alignItems: "center", marginTop: 6, gap: 10 }}>
                 <Pressable onPress={() => router.push("/legal/terms")}>
                   <Text style={{ color: "#1f3b63", fontSize: 15, textDecorationLine: "underline" }}>
-                    TÃ©rminos y condiciones
+                    Términos y condiciones
                   </Text>
                 </Pressable>
 
                 <Pressable onPress={() => router.push("/legal/privacy")}>
                   <Text style={{ color: "#1f3b63", fontSize: 15, textDecorationLine: "underline" }}>
-                    PolÃ­tica de privacidad
+                    Política de privacidad
                   </Text>
                 </Pressable>
               </View>

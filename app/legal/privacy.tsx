@@ -1,5 +1,6 @@
 import React from "react";
-import { Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 
 export default function PrivacyScreen() {
@@ -15,28 +16,28 @@ export default function PrivacyScreen() {
         </Pressable>
 
         <Text style={{ fontSize: 32, fontWeight: "800", color: "#111827" }}>
-          Pol铆tica de privacidad
+          Pol韙ica de privacidad
         </Text>
 
         <View style={{ gap: 14 }}>
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            I GUIDE U recopila datos b谩sicos de cuenta, reserva, ubicaci贸n y uso de la app para operar el servicio, mostrar gu铆as relevantes y procesar reservas y pagos.
+            I GUIDE U recopila datos b醩icos de cuenta, reserva, ubicaci髇 y uso de la app para operar el servicio, mostrar gu韆s relevantes y procesar reservas y pagos.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            La informaci贸n personal se utiliza para autenticaci贸n, soporte, seguridad, mejora del producto y comunicaci贸n vinculada a la operaci贸n de la plataforma.
+            La informaci髇 personal se utiliza para autenticaci髇, soporte, seguridad, mejora del producto y comunicaci髇 vinculada a la operaci髇 de la plataforma.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            Los datos solo se comparten con terceros cuando es necesario para procesar pagos, operar servicios t茅cnicos o cumplir obligaciones legales aplicables.
+            Los datos solo se comparten con terceros cuando es necesario para procesar pagos, operar servicios t閏nicos o cumplir obligaciones legales aplicables.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            I GUIDE U aplica medidas razonables de seguridad para proteger la informaci贸n, aunque ning煤n sistema conectado a internet puede garantizar seguridad absoluta.
+            I GUIDE U aplica medidas razonables de seguridad para proteger la informaci髇, aunque ning鷑 sistema conectado a internet puede garantizar seguridad absoluta.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            Al usar la app, el usuario acepta esta pol铆tica de privacidad y el tratamiento de datos necesario para el funcionamiento del servicio.
+            Al usar la app, el usuario acepta esta pol韙ica de privacidad y el tratamiento de datos necesario para el funcionamiento del servicio.
           </Text>
         </View>
       </ScrollView>

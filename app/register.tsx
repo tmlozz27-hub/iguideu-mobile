@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Alert, Pressable, SafeAreaView, Text, TextInput, View } from "react-native";
+import { Alert, Pressable, Text, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE } from "../config/api";
@@ -51,14 +52,14 @@ export default function RegisterScreen() {
       const response = await fetch(`${API_BASE}/api/auth/register`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           name: nameClean,
           email: emailClean,
           password: passwordClean,
-          role,
-        }),
+          role
+        })
       });
 
       const data = await response.json();
@@ -78,8 +79,8 @@ export default function RegisterScreen() {
         [
           {
             text: "OK",
-            onPress: () => router.replace("/login"),
-          },
+            onPress: () => router.replace("/login")
+          }
         ]
       );
     } catch (error) {
@@ -98,7 +99,7 @@ export default function RegisterScreen() {
           flex: 1,
           alignItems: "center",
           paddingHorizontal: 24,
-          paddingTop: 40,
+          paddingTop: 40
         }}
       >
         <Text
@@ -107,7 +108,7 @@ export default function RegisterScreen() {
             fontSize: 42,
             fontWeight: "800",
             marginBottom: 40,
-            marginTop: 10,
+            marginTop: 10
           }}
         >
           I GUIDE U
@@ -119,7 +120,7 @@ export default function RegisterScreen() {
             backgroundColor: "#ffffff",
             borderRadius: 28,
             padding: 22,
-            gap: 16,
+            gap: 16
           }}
         >
           <Text style={{ fontSize: 26, fontWeight: "800", color: "#111827" }}>
@@ -150,7 +151,7 @@ export default function RegisterScreen() {
               paddingVertical: 16,
               fontSize: 18,
               color: "#111827",
-              backgroundColor: "#ffffff",
+              backgroundColor: "#ffffff"
             }}
           />
 
@@ -170,7 +171,7 @@ export default function RegisterScreen() {
               paddingVertical: 16,
               fontSize: 18,
               color: "#111827",
-              backgroundColor: "#ffffff",
+              backgroundColor: "#ffffff"
             }}
           />
 
@@ -181,7 +182,7 @@ export default function RegisterScreen() {
               borderRadius: 14,
               backgroundColor: "#ffffff",
               flexDirection: "row",
-              alignItems: "center",
+              alignItems: "center"
             }}
           >
             <TextInput
@@ -196,7 +197,7 @@ export default function RegisterScreen() {
                 paddingHorizontal: 16,
                 paddingVertical: 16,
                 fontSize: 18,
-                color: "#111827",
+                color: "#111827"
               }}
             />
 
@@ -219,7 +220,7 @@ export default function RegisterScreen() {
               paddingVertical: 18,
               alignItems: "center",
               justifyContent: "center",
-              opacity: loading ? 0.7 : 1,
+              opacity: loading ? 0.7 : 1
             }}
           >
             <Text style={{ color: "#ffffff", fontSize: 22, fontWeight: "800" }}>
@@ -238,7 +239,7 @@ export default function RegisterScreen() {
                   color: "#0f3f78",
                   fontSize: 22,
                   fontWeight: "800",
-                  marginTop: 6,
+                  marginTop: 6
                 }}
               >
                 Volver a iniciar sesión

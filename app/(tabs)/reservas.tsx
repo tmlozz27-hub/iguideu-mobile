@@ -1,7 +1,11 @@
 ﻿import React, { useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiGet, apiPost } from "../../config/api";
+
+const TOKEN_KEY = "iguideu_token";
+const USER_EMAIL_KEY = "iguideu_user_email";
 
 type Guide = {
   _id: string;
@@ -41,13 +45,28 @@ function todayString() {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+async function getAuthHeaders() {
+  const token = await AsyncStorage.getItem(TOKEN_KEY);
+
+  if (!token) {
+    throw new Error("No hay sesión activa. Volvé a iniciar sesión.");
+  }
+
+  return {
+    Authorization: `Bearer ${token}`
+  };
+}
+
 export default function ReservasScreen() {
   const params = useLocalSearchParams<{ guideId?: string }>();
   const lockedGuideId = typeof params.guideId === "string" ? params.guideId : "";
 
-  const [travelerEmail, setTravelerEmail] = useState("test+frontend@iguideu.com");
+  const [travelerEmail, setTravelerEmail] = useState("");
   const [date, setDate] = useState(todayString());
   const [hours, setHours] = useState("1");
+  const [adults, setAdults] = useState("1");
+  const [youth, setYouth] = useState("0");
+  const [children, setChildren] = useState("0");
   const [guides, setGuides] = useState<Guide[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [selectedGuideId, setSelectedGuideId] = useState(lockedGuideId);
@@ -67,7 +86,8 @@ export default function ReservasScreen() {
   }
 
   async function loadBookings() {
-    const data = await apiGet("/api/bookings");
+    const headers = await getAuthHeaders();
+    const data = await apiGet("/api/bookings", headers);
     const list = Array.isArray(data) ? data : Array.isArray((data as any)?.items) ? (data as any).items : [];
     const paidOnly = list.filter((item: Booking) => String(item.status || "").toUpperCase() === "PAID");
     setBookings(paidOnly);
@@ -76,6 +96,12 @@ export default function ReservasScreen() {
   async function refreshAll() {
     try {
       setLoading(true);
+
+      const savedEmail = String((await AsyncStorage.getItem(USER_EMAIL_KEY)) || "").trim().toLowerCase();
+      if (savedEmail) {
+        setTravelerEmail(savedEmail);
+      }
+
       await Promise.all([loadGuides(), loadBookings()]);
     } catch (error: any) {
       console.log("ERROR refresh reservas", error);
@@ -103,11 +129,39 @@ export default function ReservasScreen() {
     return Number(selectedGuide?.priceHour ?? selectedGuide?.pricePerHour ?? 0);
   }, [selectedGuide]);
 
+  const adultsCount = useMemo(() => {
+    const n = Number(adults || 0);
+    if (!Number.isFinite(n) || n < 0) return 0;
+    return Math.floor(n);
+  }, [adults]);
+
+  const youthCount = useMemo(() => {
+    const n = Number(youth || 0);
+    if (!Number.isFinite(n) || n < 0) return 0;
+    return Math.floor(n);
+  }, [youth]);
+
+  const childrenCount = useMemo(() => {
+    const n = Number(children || 0);
+    if (!Number.isFinite(n) || n < 0) return 0;
+    return Math.floor(n);
+  }, [children]);
+
+  const travelersCount = useMemo(() => {
+    return adultsCount + youthCount + childrenCount;
+  }, [adultsCount, youthCount, childrenCount]);
+
+  const youthPriceHour = useMemo(() => {
+    return Number((selectedPriceHour * 0.5).toFixed(2));
+  }, [selectedPriceHour]);
+
   const totalAmount = useMemo(() => {
     const h = Number(hours || 0);
     if (!Number.isFinite(h) || h <= 0) return 0;
-    return Number((selectedPriceHour * h).toFixed(2));
-  }, [hours, selectedPriceHour]);
+    const adultTotal = adultsCount * selectedPriceHour * h;
+    const youthTotal = youthCount * youthPriceHour * h;
+    return Number((adultTotal + youthTotal).toFixed(2));
+  }, [hours, adultsCount, youthCount, selectedPriceHour, youthPriceHour]);
 
   const totalAmountCents = useMemo(() => {
     return Math.round(totalAmount * 100);
@@ -119,10 +173,15 @@ export default function ReservasScreen() {
     try {
       setLoading(true);
 
+      const headers = await getAuthHeaders();
       const h = Number(hours);
+      const emailClean = String(travelerEmail || "").trim().toLowerCase();
+      const adultsValue = adultsCount;
+      const youthValue = youthCount;
+      const childrenValue = childrenCount;
 
-      if (!travelerEmail.trim()) {
-        Alert.alert("Error", "Ingresá email.");
+      if (!emailClean) {
+        Alert.alert("Error", "Falta el email del viajero.");
         return;
       }
 
@@ -141,28 +200,44 @@ export default function ReservasScreen() {
         return;
       }
 
-      if (!Number.isFinite(totalAmount) || totalAmount <= 0) {
-        Alert.alert("Error", "Monto inválido.");
+      if (travelersCount <= 0) {
+        Alert.alert("Error", "Ingresá al menos 1 viajero.");
         return;
       }
 
-      if (!Number.isFinite(totalAmountCents) || totalAmountCents <= 0) {
-        Alert.alert("Error", "Monto en centavos inválido.");
-        return;
-      }
+      const created = await apiPost(
+        "/api/bookings",
+        {
+          travelerEmail: emailClean,
+          date: date.trim(),
+          hours: h,
+          guideId: selectedGuideId,
+          adults: adultsValue,
+          youth: youthValue,
+          children: childrenValue,
+          travelersCount,
+          amount: totalAmount,
+          totalAmount: totalAmount,
+          amountCents: totalAmountCents
+        },
+        headers
+      );
 
-      const payload = {
-        travelerEmail: travelerEmail.trim(),
-        date: date.trim(),
-        hours: h,
-        guideId: selectedGuideId
-      };
-
-      const created = await apiPost("/api/bookings", payload);
       const bookingId =
         (created as any)?._id ||
         (created as any)?.booking?._id ||
         (created as any)?.id;
+
+      const amountRaw =
+        (created as any)?.amount ??
+        (created as any)?.totalAmount ??
+        (created as any)?.amountUsd ??
+        (created as any)?.booking?.amount ??
+        (created as any)?.booking?.totalAmount ??
+        (created as any)?.booking?.amountUsd ??
+        totalAmount ?? 0;
+
+      const amount = Number(amountRaw);
 
       if (!bookingId) {
         Alert.alert("Error", "La reserva se creó pero no volvió el bookingId.");
@@ -170,14 +245,22 @@ export default function ReservasScreen() {
         return;
       }
 
-      await apiPost("/api/payments/pay-test", {
-        bookingId,
-        amount: totalAmount,
-        amountUsd: totalAmount,
-        amountCents: totalAmountCents
-      });
+      if (!Number.isFinite(amount) || amount <= 0) {
+        Alert.alert("Error", "No se pudo calcular un monto válido para el pago.");
+        await loadBookings();
+        return;
+      }
 
-      Alert.alert("OK", "Reserva creada y marcada como PAID en test");
+      await apiPost(
+        "/api/payments/pay-test",
+        {
+          bookingId,
+          amount
+        },
+        headers
+      );
+
+      Alert.alert("OK", "Reserva creada y marcada como PAID en test.");
       await loadBookings();
     } catch (error: any) {
       console.log("ERROR createBooking()", error);
@@ -237,14 +320,16 @@ export default function ReservasScreen() {
             onChangeText={setTravelerEmail}
             autoCapitalize="none"
             keyboardType="email-address"
+            editable={false}
             style={{
               borderWidth: 1,
-              borderColor: "#000000",
+              borderColor: "#d1d5db",
               borderRadius: 16,
               paddingHorizontal: 16,
               paddingVertical: 18,
               fontSize: 16,
-              backgroundColor: "#ffffff"
+              backgroundColor: "#f3f4f6",
+              color: "#111827"
             }}
           />
 
@@ -301,6 +386,57 @@ export default function ReservasScreen() {
             }}
           />
 
+          <Text style={{ fontSize: 16 }}>Adultos (18+)</Text>
+          <TextInput
+            value={adults}
+            onChangeText={setAdults}
+            keyboardType="numeric"
+            style={{
+              width: 120,
+              borderWidth: 1,
+              borderColor: "#000000",
+              borderRadius: 16,
+              paddingHorizontal: 16,
+              paddingVertical: 18,
+              fontSize: 16,
+              backgroundColor: "#ffffff"
+            }}
+          />
+
+          <Text style={{ fontSize: 16 }}>Jóvenes (13 a 17)</Text>
+          <TextInput
+            value={youth}
+            onChangeText={setYouth}
+            keyboardType="numeric"
+            style={{
+              width: 120,
+              borderWidth: 1,
+              borderColor: "#000000",
+              borderRadius: 16,
+              paddingHorizontal: 16,
+              paddingVertical: 18,
+              fontSize: 16,
+              backgroundColor: "#ffffff"
+            }}
+          />
+
+          <Text style={{ fontSize: 16 }}>Niños (0 a 12)</Text>
+          <TextInput
+            value={children}
+            onChangeText={setChildren}
+            keyboardType="numeric"
+            style={{
+              width: 120,
+              borderWidth: 1,
+              borderColor: "#000000",
+              borderRadius: 16,
+              paddingHorizontal: 16,
+              paddingVertical: 18,
+              fontSize: 16,
+              backgroundColor: "#ffffff"
+            }}
+          />
+
           <View
             style={{
               borderWidth: 1,
@@ -315,9 +451,14 @@ export default function ReservasScreen() {
             <Text>Guía: {selectedGuide?.name || "-"}</Text>
             <Text>Fecha: {date}</Text>
             <Text>Horas: {hours}</Text>
-            <Text>Precio/hora: USD {selectedPriceHour || 0}</Text>
+            <Text>Adultos (18+): {adultsCount}</Text>
+            <Text>Jóvenes (13 a 17): {youthCount}</Text>
+            <Text>Niños (0 a 12): {childrenCount}</Text>
+            <Text>Total viajeros: {travelersCount}</Text>
+            <Text>Precio adulto/hora: USD {selectedPriceHour || 0}</Text>
+            <Text>Precio joven/hora: USD {youthPriceHour.toFixed(2)}</Text>
+            <Text>Niños (0 a 12): sin cargo</Text>
             <Text>Total: USD {totalAmount.toFixed(2)}</Text>
-            <Text>Total centavos: {totalAmountCents}</Text>
           </View>
 
           <View
@@ -334,7 +475,7 @@ export default function ReservasScreen() {
               Antes de confirmar tu reserva
             </Text>
 
-            <Text>• La tarifa corresponde únicamente al servicio del guía según la modalidad indicada</Text>
+            <Text>• La tarifa corresponde únicamente al servicio del guía según la modalidad indicada y se calcula por viajero según edad</Text>
             <Text>• Gastos como comidas, transporte o entradas no están incluidos salvo que se indique expresamente</Text>
             <Text>• En actividades compartidas, el viajero cubre también los gastos del guía</Text>
             <Text>• Podés cancelar sin costo con más de 24 horas de anticipación</Text>

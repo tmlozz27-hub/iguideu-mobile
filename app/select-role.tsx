@@ -1,5 +1,6 @@
 import React from "react";
-import { Pressable, SafeAreaView, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -20,7 +21,7 @@ export default function SelectRoleScreen() {
           flex: 1,
           alignItems: "center",
           paddingHorizontal: 24,
-          paddingTop: 40,
+          paddingTop: 40
         }}
       >
         <Text
@@ -29,7 +30,7 @@ export default function SelectRoleScreen() {
             fontSize: 42,
             fontWeight: "800",
             marginBottom: 40,
-            marginTop: 10,
+            marginTop: 10
           }}
         >
           I GUIDE U
@@ -41,7 +42,7 @@ export default function SelectRoleScreen() {
             backgroundColor: "#ffffff",
             borderRadius: 28,
             padding: 22,
-            gap: 18,
+            gap: 18
           }}
         >
           <Text style={{ fontSize: 26, fontWeight: "800", color: "#111827" }}>
@@ -59,7 +60,7 @@ export default function SelectRoleScreen() {
               borderRadius: 14,
               paddingVertical: 18,
               alignItems: "center",
-              justifyContent: "center",
+              justifyContent: "center"
             }}
           >
             <Text style={{ color: "#ffffff", fontSize: 22, fontWeight: "800" }}>
@@ -76,7 +77,7 @@ export default function SelectRoleScreen() {
               paddingVertical: 18,
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: "#ffffff",
+              backgroundColor: "#ffffff"
             }}
           >
             <Text style={{ color: "#374151", fontSize: 20, fontWeight: "700" }}>
@@ -95,7 +96,7 @@ export default function SelectRoleScreen() {
                   color: "#0f3f78",
                   fontSize: 22,
                   fontWeight: "800",
-                  marginTop: 6,
+                  marginTop: 6
                 }}
               >
                 Iniciar sesión
