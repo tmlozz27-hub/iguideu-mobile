@@ -87,7 +87,14 @@ export default function ReservasScreen() {
 
   async function loadBookings() {
     const headers = await getAuthHeaders();
-    const data = await apiGet("/api/bookings", headers);
+
+    const savedEmail = String((await AsyncStorage.getItem(USER_EMAIL_KEY)) || "").trim().toLowerCase();
+
+    if (!savedEmail) {
+      throw new Error("No hay email de usuario.");
+    }
+
+    const data = await apiGet(`/api/bookings?travelerEmail=${savedEmail}`, headers);
     const list = Array.isArray(data) ? data : Array.isArray((data as any)?.items) ? (data as any).items : [];
     const paidOnly = list.filter((item: Booking) => String(item.status || "").toUpperCase() === "PAID");
     setBookings(paidOnly);
