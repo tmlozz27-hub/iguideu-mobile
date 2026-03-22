@@ -45,7 +45,7 @@ export default function LoginScreen() {
     const passwordClean = String(password || "").trim();
 
     if (!emailClean || !passwordClean) {
-      Alert.alert("Faltan datos", "Ingresá email y contraseña.");
+      Alert.alert("Faltan datos", "IngresÃ¡ email y contraseÃ±a.");
       return;
     }
 
@@ -54,16 +54,16 @@ export default function LoginScreen() {
 
       const data = await apiPost("/api/auth/login", {
         email: emailClean,
-        password: passwordClean
+        password: passwordClean,
       });
 
       if (!data?.ok || !data?.token) {
         const rawMessage = String(data?.message || data?.error || "").toUpperCase();
 
         if (rawMessage.includes("INVALID_CREDENTIALS")) {
-          Alert.alert("Error", "Email o contraseña incorrectos.");
+          Alert.alert("Error", "Email o contraseÃ±a incorrectos.");
         } else {
-          Alert.alert("Error", data?.message || "No se pudo iniciar sesión.");
+          Alert.alert("Error", data?.message || "No se pudo iniciar sesiÃ³n.");
         }
         return;
       }
@@ -84,7 +84,7 @@ export default function LoginScreen() {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: "#0f9fb3", alignItems: "center", justifyContent: "center" }}>
         <Text style={{ color: "#ffffff", fontSize: 24, fontWeight: "700" }}>
-          Verificando sesión...
+          Verificando sesiÃ³n...
         </Text>
       </SafeAreaView>
     );
@@ -106,7 +106,7 @@ export default function LoginScreen() {
               alignItems: "center",
               paddingHorizontal: 24,
               paddingTop: 40,
-              paddingBottom: 24
+              paddingBottom: 24,
             }}
           >
             <Text
@@ -115,7 +115,7 @@ export default function LoginScreen() {
                 fontSize: 42,
                 fontWeight: "800",
                 marginBottom: 40,
-                marginTop: 10
+                marginTop: 10,
               }}
             >
               I GUIDE U
@@ -127,11 +127,11 @@ export default function LoginScreen() {
                 backgroundColor: "#ffffff",
                 borderRadius: 28,
                 padding: 22,
-                gap: 16
+                gap: 16,
               }}
             >
               <Text style={{ fontSize: 26, fontWeight: "800", color: "#111827" }}>
-                Iniciar sesión
+                Iniciar sesiÃ³n
               </Text>
 
               <TextInput
@@ -150,7 +150,7 @@ export default function LoginScreen() {
                   paddingVertical: 16,
                   fontSize: 18,
                   color: "#111827",
-                  backgroundColor: "#ffffff"
+                  backgroundColor: "#ffffff",
                 }}
               />
 
@@ -161,13 +161,13 @@ export default function LoginScreen() {
                   borderRadius: 14,
                   backgroundColor: "#ffffff",
                   flexDirection: "row",
-                  alignItems: "center"
+                  alignItems: "center",
                 }}
               >
                 <TextInput
                   value={password}
                   onChangeText={setPassword}
-                  placeholder="Contraseña"
+                  placeholder="ContraseÃ±a"
                   placeholderTextColor="#9ca3af"
                   secureTextEntry={!showPassword}
                   editable={!loading}
@@ -176,7 +176,7 @@ export default function LoginScreen() {
                     paddingHorizontal: 16,
                     paddingVertical: 16,
                     fontSize: 18,
-                    color: "#111827"
+                    color: "#111827",
                   }}
                 />
 
@@ -188,7 +188,7 @@ export default function LoginScreen() {
                     paddingHorizontal: 12,
                     paddingVertical: 12,
                     alignItems: "center",
-                    justifyContent: "center"
+                    justifyContent: "center",
                   }}
                 >
                   <Text style={{ color: "#1f3b63", fontSize: 15, fontWeight: "700" }}>
@@ -202,10 +202,10 @@ export default function LoginScreen() {
                   style={{
                     textAlign: "right",
                     color: "#1f3b63",
-                    fontSize: 16
+                    fontSize: 16,
                   }}
                 >
-                  ¿Olvidaste tu contraseña?
+                  Â¿Olvidaste tu contraseÃ±a?
                 </Text>
               </Pressable>
 
@@ -218,7 +218,7 @@ export default function LoginScreen() {
                   paddingVertical: 18,
                   alignItems: "center",
                   justifyContent: "center",
-                  opacity: loading ? 0.7 : 1
+                  opacity: loading ? 0.7 : 1,
                 }}
               >
                 <Text style={{ color: "#ffffff", fontSize: 22, fontWeight: "800" }}>
@@ -227,7 +227,7 @@ export default function LoginScreen() {
               </Pressable>
 
               <Pressable
-                onPress={() => Alert.alert("Próximo paso", "Google login se conecta después del flujo legal y recuperación.")}
+                onPress={() => Alert.alert("PrÃ³ximo paso", "Google login se conecta despuÃ©s del flujo legal y recuperaciÃ³n.")}
                 style={{
                   borderWidth: 1,
                   borderColor: "#d1d5db",
@@ -235,7 +235,7 @@ export default function LoginScreen() {
                   paddingVertical: 18,
                   alignItems: "center",
                   justifyContent: "center",
-                  backgroundColor: "#ffffff"
+                  backgroundColor: "#ffffff",
                 }}
               >
                 <Text style={{ color: "#374151", fontSize: 18, fontWeight: "600" }}>
@@ -244,7 +244,7 @@ export default function LoginScreen() {
               </Pressable>
 
               <Pressable
-                onPress={() => Alert.alert("Próximo paso", "Facebook login se conecta después del flujo legal y recuperación.")}
+                onPress={() => Alert.alert("PrÃ³ximo paso", "Facebook login se conecta despuÃ©s del flujo legal y recuperaciÃ³n.")}
                 style={{
                   borderWidth: 1,
                   borderColor: "#d1d5db",
@@ -252,7 +252,7 @@ export default function LoginScreen() {
                   paddingVertical: 18,
                   alignItems: "center",
                   justifyContent: "center",
-                  backgroundColor: "#ffffff"
+                  backgroundColor: "#ffffff",
                 }}
               >
                 <Text style={{ color: "#374151", fontSize: 18, fontWeight: "600" }}>
@@ -262,7 +262,7 @@ export default function LoginScreen() {
 
               <View style={{ alignItems: "center", marginTop: 8 }}>
                 <Text style={{ color: "#1f3b63", fontSize: 18 }}>
-                  ¿No tienes cuenta?
+                  Â¿No tienes cuenta?
                 </Text>
 
                 <Pressable onPress={() => router.push("/register")} style={{ marginTop: 6 }}>
@@ -275,13 +275,13 @@ export default function LoginScreen() {
               <View style={{ alignItems: "center", marginTop: 6, gap: 10 }}>
                 <Pressable onPress={() => router.push("/legal/terms")}>
                   <Text style={{ color: "#1f3b63", fontSize: 15, textDecorationLine: "underline" }}>
-                    Términos y condiciones
+                    TÃ©rminos y condiciones
                   </Text>
                 </Pressable>
 
                 <Pressable onPress={() => router.push("/legal/privacy")}>
                   <Text style={{ color: "#1f3b63", fontSize: 15, textDecorationLine: "underline" }}>
-                    Política de privacidad
+                    PolÃ­tica de privacidad
                   </Text>
                 </Pressable>
               </View>
