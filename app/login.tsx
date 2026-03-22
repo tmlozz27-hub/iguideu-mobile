@@ -71,6 +71,10 @@ export default function LoginScreen() {
       await AsyncStorage.setItem(TOKEN_KEY, String(data.token));
       await AsyncStorage.setItem(USER_EMAIL_KEY, emailClean);
 
+      await AsyncStorage.setItem("travelerEmail", emailClean);
+      await AsyncStorage.setItem("userEmail", emailClean);
+      await AsyncStorage.setItem("email", emailClean);
+
       router.replace("/(tabs)");
     } catch (error) {
       const message = error instanceof Error ? error.message : "No se pudo conectar al backend.";
