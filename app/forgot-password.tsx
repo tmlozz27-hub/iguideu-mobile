@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+Ôªøimport React, { useState } from "react";
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -13,21 +13,42 @@ export default function ForgotPasswordScreen() {
     const emailClean = String(email || "").trim().toLowerCase();
 
     if (!emailClean) {
-      Alert.alert("Error", "Ingres· tu email.");
+      Alert.alert("Error", "Ingres√° tu email.");
       return;
     }
 
     try {
       setLoading(true);
 
-      await apiPost("/api/auth/forgot-password", {
-        email: emailClean
+      const data = await apiPost("/api/auth/forgot-password", {
+        email: emailClean,
       });
 
-      Alert.alert("OK", "Si el email existe, enviamos instrucciones para recuperar la contraseÒa.");
+      const resetToken = String(data?.resetToken || "").trim();
+
+      if (resetToken) {
+        Alert.alert(
+          "OK",
+          "Token generado correctamente. Continu√° con la nueva contrase√±a.",
+          [
+            {
+              text: "Seguir",
+              onPress: () => {
+                router.push({
+                  pathname: "/reset-password",
+                  params: { token: resetToken },
+                });
+              },
+            },
+          ]
+        );
+        return;
+      }
+
+      Alert.alert("OK", "Si el email existe, enviamos instrucciones para recuperar la contrase√±a.");
     } catch (error) {
       const message = error instanceof Error ? error.message : "";
-      Alert.alert("Aviso", message || "Pantalla lista. Falta conectar el endpoint de recuperaciÛn en backend.");
+      Alert.alert("Aviso", message || "No se pudo procesar la recuperaci√≥n.");
     } finally {
       setLoading(false);
     }
@@ -35,10 +56,7 @@ export default function ForgotPasswordScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#ffffff" }}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
           <View style={{ flex: 1, padding: 24, gap: 20 }}>
             <Pressable onPress={() => router.back()}>
@@ -48,11 +66,11 @@ export default function ForgotPasswordScreen() {
             </Pressable>
 
             <Text style={{ fontSize: 34, fontWeight: "800", color: "#111827" }}>
-              Recuperar contraseÒa
+              Recuperar contrase√±a
             </Text>
 
             <Text style={{ fontSize: 18, color: "#4b5563", lineHeight: 28 }}>
-              Ingres· tu email y te enviaremos instrucciones para recuperar el acceso.
+              Ingres√° tu email y te enviaremos instrucciones para recuperar el acceso.
             </Text>
 
             <TextInput
@@ -71,7 +89,7 @@ export default function ForgotPasswordScreen() {
                 paddingVertical: 18,
                 fontSize: 18,
                 color: "#111827",
-                backgroundColor: "#ffffff"
+                backgroundColor: "#ffffff",
               }}
             />
 
@@ -84,7 +102,7 @@ export default function ForgotPasswordScreen() {
                 paddingVertical: 18,
                 alignItems: "center",
                 justifyContent: "center",
-                opacity: loading ? 0.7 : 1
+                opacity: loading ? 0.7 : 1,
               }}
             >
               <Text style={{ color: "#ffffff", fontSize: 20, fontWeight: "800" }}>

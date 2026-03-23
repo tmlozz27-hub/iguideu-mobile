@@ -6,6 +6,7 @@ import { apiGet, apiPost } from "../../config/api";
 
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
+const PAYMENTS_MODE = "test";
 
 type Guide = {
   _id: string;
@@ -35,6 +36,9 @@ type Booking = {
   totalAmount?: number;
   status?: string;
   guideName?: string;
+  stripePaymentIntentId?: string;
+  paymentStatus?: string;
+  paymentMode?: string;
 };
 
 function todayString() {
@@ -87,7 +91,6 @@ export default function ReservasScreen() {
 
   async function loadBookings() {
     const headers = await getAuthHeaders();
-
     const savedEmail = String((await AsyncStorage.getItem(USER_EMAIL_KEY)) || "").trim().toLowerCase();
 
     if (!savedEmail) {
@@ -174,6 +177,43 @@ export default function ReservasScreen() {
     return Math.round(totalAmount * 100);
   }, [totalAmount]);
 
+  async function payBookingTest(bookingId: string, amount: number, headers: Record<string, string>) {
+    return apiPost(
+      "/api/payments/pay-test",
+      {
+        bookingId,
+        amount
+      },
+      headers
+    );
+  }
+
+  async function createPaymentIntent(bookingId: string, amount: number, amountCents: number, headers: Record<string, string>) {
+    return apiPost(
+      "/api/payments/create-intent",
+      {
+        bookingId,
+        amount,
+        amountCents
+      },
+      headers
+    );
+  }
+
+  async function processPayment(bookingId: string, amount: number, amountCents: number, headers: Record<string, string>) {
+    if (PAYMENTS_MODE === "test") {
+      await payBookingTest(bookingId, amount, headers);
+      return { mode: "test", paid: true };
+    }
+
+    const intent = await createPaymentIntent(bookingId, amount, amountCents, headers);
+    return {
+      mode: "stripe",
+      paid: false,
+      intent
+    };
+  }
+
   async function createBooking() {
     if (loading) return;
 
@@ -242,9 +282,18 @@ export default function ReservasScreen() {
         (created as any)?.booking?.amount ??
         (created as any)?.booking?.totalAmount ??
         (created as any)?.booking?.amountUsd ??
-        totalAmount ?? 0;
+        totalAmount ??
+        0;
+
+      const amountCentsRaw =
+        (created as any)?.amountCents ??
+        (created as any)?.totalAmountCents ??
+        (created as any)?.booking?.amountCents ??
+        totalAmountCents ??
+        0;
 
       const amount = Number(amountRaw);
+      const amountCents = Number(amountCentsRaw);
 
       if (!bookingId) {
         Alert.alert("Error", "La reserva se creó pero no volvió el bookingId.");
@@ -258,16 +307,21 @@ export default function ReservasScreen() {
         return;
       }
 
-      await apiPost(
-        "/api/payments/pay-test",
-        {
-          bookingId,
-          amount
-        },
-        headers
-      );
+      if (!Number.isFinite(amountCents) || amountCents <= 0) {
+        Alert.alert("Error", "No se pudo calcular un monto válido en centavos para el pago.");
+        await loadBookings();
+        return;
+      }
 
-      Alert.alert("OK", "Reserva creada y marcada como PAID en test.");
+      const paymentResult = await processPayment(bookingId, amount, amountCents, headers);
+
+      if ((paymentResult as any)?.mode === "test") {
+        Alert.alert("OK", "Reserva creada y marcada como PAID en test.");
+        await loadBookings();
+        return;
+      }
+
+      Alert.alert("Pendiente", "La reserva fue creada y el PaymentIntent quedó generado. Falta integrar el cobro Stripe en pantalla.");
       await loadBookings();
     } catch (error: any) {
       console.log("ERROR createBooking()", error);
@@ -572,6 +626,24 @@ export default function ReservasScreen() {
             <Text>Horas: {booking.hours ?? "-"}</Text>
             <Text>Monto: USD {Number(amount || 0).toFixed(2)}</Text>
             <Text>Estado: {booking.status || "-"}</Text>
+
+            <Pressable
+              onPress={() => router.push(`/chat?bookingId=${booking._id}`)}
+              style={{
+                marginTop: 10,
+                borderWidth: 1,
+                borderColor: "#0f9fb3",
+                borderRadius: 12,
+                paddingVertical: 12,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: "#ffffff"
+              }}
+            >
+              <Text style={{ color: "#0f9fb3", fontSize: 16, fontWeight: "700" }}>
+                ABRIR CHAT
+              </Text>
+            </Pressable>
           </View>
         );
       })}

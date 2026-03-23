@@ -1,81 +1,95 @@
-import React, { useEffect, useState } from "react"
-import { View, Text, TextInput, Pressable, ScrollView } from "react-native"
-import { apiGet, apiPost } from "../config/api"
+import React, { useEffect, useState } from "react";
+import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
+import { useLocalSearchParams } from "expo-router";
+import { apiGet, apiPost } from "../config/api";
 
 type Message = {
-  _id: string
-  text: string
-  sender: string
-  createdAt: string
-}
+  _id?: string;
+  text: string;
+  createdAt?: string;
+};
 
 export default function ChatScreen() {
-  const [messages, setMessages] = useState<Message[]>([])
-  const [text, setText] = useState("")
+  const { bookingId } = useLocalSearchParams();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [text, setText] = useState("");
 
-  const loadMessages = async () => {
+  async function loadMessages() {
     try {
-      const data = await apiGet("/api/chat")
-      if (Array.isArray(data)) setMessages(data)
-    } catch {}
+      if (!bookingId) return;
+
+      const data = await apiGet(`/api/chat/messages?bookingId=${bookingId}`);
+
+      if (data?.items) {
+        setMessages(data.items);
+      }
+    } catch (e) {
+      console.log("CHAT LOAD ERROR", e);
+    }
   }
 
-  const sendMessage = async () => {
-    const clean = text.trim()
-    if (!clean) return
-
+  async function sendMessage() {
     try {
-      const data = await apiPost("/api/chat", {
-        text: clean
-      })
+      if (!bookingId || !text.trim()) return;
 
-      if (data) {
-        setMessages((prev) => [...prev, data])
-        setText("")
+      const res = await apiPost("/api/chat/messages", {
+        bookingId,
+        senderId: "me",
+        senderType: "traveler",
+        text,
+      });
+
+      if (res?.item) {
+        setMessages((prev) => [...prev, res.item]);
+        setText("");
       }
-    } catch {}
+    } catch (e) {
+      console.log("CHAT SEND ERROR", e);
+    }
   }
 
   useEffect(() => {
-    loadMessages()
-  }, [])
+    loadMessages();
+  }, [bookingId]);
 
   return (
-    <View style={{ flex: 1, padding: 16, backgroundColor: "#fff" }}>
-      <ScrollView style={{ flex: 1, marginBottom: 12 }}>
-        {messages.map((m) => (
-          <View key={m._id} style={{ marginBottom: 10 }}>
-            <Text style={{ fontWeight: "700" }}>{m.sender}</Text>
-            <Text>{m.text}</Text>
-          </View>
+    <View style={{ flex: 1, padding: 20 }}>
+      <Text style={{ fontSize: 24, fontWeight: "700" }}>Chat</Text>
+
+      <ScrollView style={{ flex: 1, marginVertical: 10 }}>
+        {messages.map((m, i) => (
+          <Text key={i} style={{ marginBottom: 8 }}>
+            {m.text}
+          </Text>
         ))}
       </ScrollView>
 
-      <View style={{ flexDirection: "row", gap: 8 }}>
-        <TextInput
-          value={text}
-          onChangeText={setText}
-          placeholder="Mensaje..."
-          style={{
-            flex: 1,
-            borderWidth: 1,
-            borderColor: "#ccc",
-            borderRadius: 10,
-            padding: 10
-          }}
-        />
+      <TextInput
+        value={text}
+        onChangeText={setText}
+        placeholder="Mensaje..."
+        style={{
+          borderWidth: 1,
+          borderColor: "#ccc",
+          padding: 10,
+          borderRadius: 10,
+          marginBottom: 10,
+        }}
+      />
 
-        <Pressable
-          onPress={sendMessage}
-          style={{
-            backgroundColor: "#0f9fb3",
-            padding: 12,
-            borderRadius: 10
-          }}
-        >
-          <Text style={{ color: "#fff" }}>Enviar</Text>
-        </Pressable>
-      </View>
+      <Pressable
+        onPress={sendMessage}
+        style={{
+          backgroundColor: "#0f9fb3",
+          padding: 15,
+          borderRadius: 10,
+          alignItems: "center",
+        }}
+      >
+        <Text style={{ color: "#fff", fontWeight: "700" }}>
+          Enviar
+        </Text>
+      </Pressable>
     </View>
-  )
+  );
 }

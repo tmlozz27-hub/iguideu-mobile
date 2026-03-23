@@ -1,19 +1,31 @@
-﻿export const API_BASE = (process.env.EXPO_PUBLIC_API_BASE || "").replace(/\/+$/, "");
+﻿import AsyncStorage from "@react-native-async-storage/async-storage";
+
+export const API_BASE = (process.env.EXPO_PUBLIC_API_BASE || "").replace(/\/+$/, "");
 export const STRIPE_MODE = process.env.EXPO_PUBLIC_STRIPE_MODE || "test";
+
+const TOKEN_KEY = "iguideu_token";
+
+async function buildHeaders(extraHeaders?: HeadersInit) {
+  const token = (await AsyncStorage.getItem(TOKEN_KEY)) || "";
+
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(extraHeaders || {}),
+  };
+}
 
 async function apiFetch(path: string, options: RequestInit = {}) {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   const url = `${API_BASE}${normalizedPath}`;
+  const headers = await buildHeaders(options.headers);
 
   console.log("API_BASE_URL_RUNTIME", API_BASE);
   console.log("API_FETCH", options.method || "GET", url);
 
   const response = await fetch(url, {
     ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    },
+    headers,
   });
 
   const text = await response.text();

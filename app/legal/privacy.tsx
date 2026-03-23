@@ -21,23 +21,27 @@ export default function PrivacyScreen() {
 
         <View style={{ gap: 14 }}>
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            I GUIDE U recopila datos básicos de cuenta, reserva, ubicación y uso de la app para operar el servicio, mostrar guías relevantes y procesar reservas y pagos.
+            I GUIDE U utiliza los datos que ingresás para permitir el acceso a tu cuenta, gestionar reservas y mejorar la experiencia dentro de la plataforma.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            La información personal se utiliza para autenticación, soporte, seguridad, mejora del producto y comunicación vinculada a la operación de la plataforma.
+            La información básica de contacto y perfil se almacena únicamente para el funcionamiento del servicio y para la comunicación necesaria entre viajeros y guías.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            Los datos solo se comparten con terceros cuando es necesario para procesar pagos, operar servicios técnicos o cumplir obligaciones legales aplicables.
+            Tus datos no se comparten públicamente fuera de la plataforma, salvo en los casos necesarios para concretar una reserva o cumplir requisitos operativos del servicio.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            I GUIDE U aplica medidas razonables de seguridad para proteger la información, aunque ningún sistema conectado a internet puede garantizar seguridad absoluta.
+            Los pagos se procesan mediante servicios externos especializados. I GUIDE U no almacena en la app datos completos de tarjetas.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            Al usar la app, el usuario acepta esta política de privacidad y el tratamiento de datos necesario para el funcionamiento del servicio.
+            Podés solicitar actualizaciones o correcciones de tu información desde tu perfil, según las funciones disponibles en la aplicación.
+          </Text>
+
+          <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
+            Al usar I GUIDE U, aceptás esta política de privacidad y el tratamiento de datos necesario para operar la plataforma.
           </Text>
         </View>
       </ScrollView>

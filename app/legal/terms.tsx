@@ -25,19 +25,27 @@ export default function TermsScreen() {
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            El usuario acepta proporcionar información verdadera, utilizar la plataforma de forma lícita y respetar a otros usuarios durante todo el proceso de búsqueda, reserva y pago.
+            Cada guía publica su perfil, disponibilidad, idiomas, tarifa y condiciones de servicio bajo su propia responsabilidad.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            Los guías son responsables por la información publicada en sus perfiles, sus tarifas, su disponibilidad y la prestación efectiva del servicio acordado con el viajero.
+            Antes de confirmar una reserva, el viajero debe revisar cuidadosamente la tarifa, duración, fecha, punto de encuentro y cualquier condición adicional informada por el guía.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            I GUIDE U puede aplicar comisiones por intermediación y podrá actualizar funciones, tarifas, políticas operativas y medidas de seguridad cuando sea necesario.
+            Los gastos extra, entradas, transporte, comidas u otros costos no están incluidos salvo que se indique expresamente en la propuesta del guía.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            El uso continuado de la app implica la aceptación de estos términos y de la política de privacidad vigente.
+            Las cancelaciones, reprogramaciones y solicitudes especiales deben realizarse con la mayor anticipación posible para facilitar la coordinación entre las partes.
+          </Text>
+
+          <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
+            I GUIDE U actúa como plataforma de conexión y gestión de reservas, pero no reemplaza el criterio personal del viajero al momento de elegir un guía o contratar un servicio.
+          </Text>
+
+          <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
+            Al continuar usando la app, aceptás estas condiciones generales de uso de la plataforma.
           </Text>
         </View>
       </ScrollView>
