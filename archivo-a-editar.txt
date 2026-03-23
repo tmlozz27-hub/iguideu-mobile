@@ -1,3 +1,0 @@
-# archivo-a-editar
-# Este archivo NO se usa. Lo dejamos como placeholder.
-# (No poner API keys acá)
