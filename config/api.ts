@@ -1,7 +1,17 @@
 ﻿import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export const API_BASE = (process.env.EXPO_PUBLIC_API_BASE || "").replace(/\/+$/, "");
-export const STRIPE_MODE = process.env.EXPO_PUBLIC_STRIPE_MODE || "test";
+export const API_BASE =
+  (process.env.EXPO_PUBLIC_API_BASE || "https://iguideu-backend-1.onrender.com").trim();
+
+export const STRIPE_MODE =
+  (process.env.EXPO_PUBLIC_STRIPE_MODE || "live").trim();
+
+export const STRIPE_PUBLISHABLE_KEY =
+  (
+    process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ||
+    process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY_LIVE ||
+    ""
+  ).trim();
 
 const TOKEN_KEY = "iguideu_token";
 

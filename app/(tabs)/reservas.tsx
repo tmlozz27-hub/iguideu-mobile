@@ -6,7 +6,6 @@ import { apiGet, apiPost } from "../../config/api";
 
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
-const PAYMENTS_MODE = "test";
 
 type Guide = {
   _id: string;
@@ -36,9 +35,6 @@ type Booking = {
   totalAmount?: number;
   status?: string;
   guideName?: string;
-  stripePaymentIntentId?: string;
-  paymentStatus?: string;
-  paymentMode?: string;
 };
 
 function todayString() {
@@ -68,9 +64,6 @@ export default function ReservasScreen() {
   const [travelerEmail, setTravelerEmail] = useState("");
   const [date, setDate] = useState(todayString());
   const [hours, setHours] = useState("1");
-  const [adults, setAdults] = useState("1");
-  const [youth, setYouth] = useState("0");
-  const [children, setChildren] = useState("0");
   const [guides, setGuides] = useState<Guide[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [selectedGuideId, setSelectedGuideId] = useState(lockedGuideId);
@@ -92,15 +85,15 @@ export default function ReservasScreen() {
   async function loadBookings() {
     const headers = await getAuthHeaders();
     const savedEmail = String((await AsyncStorage.getItem(USER_EMAIL_KEY)) || "").trim().toLowerCase();
+    const email = String(travelerEmail || savedEmail || "").trim().toLowerCase();
 
-    if (!savedEmail) {
-      throw new Error("No hay email de usuario.");
-    }
+    const path = email
+      ? `/api/bookings?travelerEmail=${encodeURIComponent(email)}`
+      : "/api/bookings";
 
-    const data = await apiGet(`/api/bookings?travelerEmail=${savedEmail}`, headers);
+    const data = await apiGet(path, headers);
     const list = Array.isArray(data) ? data : Array.isArray((data as any)?.items) ? (data as any).items : [];
-    const paidOnly = list.filter((item: Booking) => String(item.status || "").toUpperCase() === "PAID");
-    setBookings(paidOnly);
+    setBookings(list);
   }
 
   async function refreshAll() {
@@ -139,80 +132,15 @@ export default function ReservasScreen() {
     return Number(selectedGuide?.priceHour ?? selectedGuide?.pricePerHour ?? 0);
   }, [selectedGuide]);
 
-  const adultsCount = useMemo(() => {
-    const n = Number(adults || 0);
-    if (!Number.isFinite(n) || n < 0) return 0;
-    return Math.floor(n);
-  }, [adults]);
-
-  const youthCount = useMemo(() => {
-    const n = Number(youth || 0);
-    if (!Number.isFinite(n) || n < 0) return 0;
-    return Math.floor(n);
-  }, [youth]);
-
-  const childrenCount = useMemo(() => {
-    const n = Number(children || 0);
-    if (!Number.isFinite(n) || n < 0) return 0;
-    return Math.floor(n);
-  }, [children]);
-
-  const travelersCount = useMemo(() => {
-    return adultsCount + youthCount + childrenCount;
-  }, [adultsCount, youthCount, childrenCount]);
-
-  const youthPriceHour = useMemo(() => {
-    return Number((selectedPriceHour * 0.5).toFixed(2));
-  }, [selectedPriceHour]);
-
   const totalAmount = useMemo(() => {
     const h = Number(hours || 0);
     if (!Number.isFinite(h) || h <= 0) return 0;
-    const adultTotal = adultsCount * selectedPriceHour * h;
-    const youthTotal = youthCount * youthPriceHour * h;
-    return Number((adultTotal + youthTotal).toFixed(2));
-  }, [hours, adultsCount, youthCount, selectedPriceHour, youthPriceHour]);
+    return Number((selectedPriceHour * h).toFixed(2));
+  }, [hours, selectedPriceHour]);
 
   const totalAmountCents = useMemo(() => {
     return Math.round(totalAmount * 100);
   }, [totalAmount]);
-
-  async function payBookingTest(bookingId: string, amount: number, headers: Record<string, string>) {
-    return apiPost(
-      "/api/payments/pay-test",
-      {
-        bookingId,
-        amount
-      },
-      headers
-    );
-  }
-
-  async function createPaymentIntent(bookingId: string, amount: number, amountCents: number, headers: Record<string, string>) {
-    return apiPost(
-      "/api/payments/create-intent",
-      {
-        bookingId,
-        amount,
-        amountCents
-      },
-      headers
-    );
-  }
-
-  async function processPayment(bookingId: string, amount: number, amountCents: number, headers: Record<string, string>) {
-    if (PAYMENTS_MODE === "test") {
-      await payBookingTest(bookingId, amount, headers);
-      return { mode: "test", paid: true };
-    }
-
-    const intent = await createPaymentIntent(bookingId, amount, amountCents, headers);
-    return {
-      mode: "stripe",
-      paid: false,
-      intent
-    };
-  }
 
   async function createBooking() {
     if (loading) return;
@@ -222,10 +150,8 @@ export default function ReservasScreen() {
 
       const headers = await getAuthHeaders();
       const h = Number(hours);
-      const emailClean = String(travelerEmail || "").trim().toLowerCase();
-      const adultsValue = adultsCount;
-      const youthValue = youthCount;
-      const childrenValue = childrenCount;
+      const savedEmail = String((await AsyncStorage.getItem(USER_EMAIL_KEY)) || "").trim().toLowerCase();
+      const emailClean = String(travelerEmail || savedEmail || "").trim().toLowerCase();
 
       if (!emailClean) {
         Alert.alert("Error", "Falta el email del viajero.");
@@ -247,81 +173,21 @@ export default function ReservasScreen() {
         return;
       }
 
-      if (travelersCount <= 0) {
-        Alert.alert("Error", "Ingresá al menos 1 viajero.");
-        return;
-      }
-
-      const created = await apiPost(
+      await apiPost(
         "/api/bookings",
         {
           travelerEmail: emailClean,
           date: date.trim(),
           hours: h,
           guideId: selectedGuideId,
-          adults: adultsValue,
-          youth: youthValue,
-          children: childrenValue,
-          travelersCount,
+          totalAmount,
           amount: totalAmount,
-          totalAmount: totalAmount,
           amountCents: totalAmountCents
         },
         headers
       );
 
-      const bookingId =
-        (created as any)?._id ||
-        (created as any)?.booking?._id ||
-        (created as any)?.id;
-
-      const amountRaw =
-        (created as any)?.amount ??
-        (created as any)?.totalAmount ??
-        (created as any)?.amountUsd ??
-        (created as any)?.booking?.amount ??
-        (created as any)?.booking?.totalAmount ??
-        (created as any)?.booking?.amountUsd ??
-        totalAmount ??
-        0;
-
-      const amountCentsRaw =
-        (created as any)?.amountCents ??
-        (created as any)?.totalAmountCents ??
-        (created as any)?.booking?.amountCents ??
-        totalAmountCents ??
-        0;
-
-      const amount = Number(amountRaw);
-      const amountCents = Number(amountCentsRaw);
-
-      if (!bookingId) {
-        Alert.alert("Error", "La reserva se creó pero no volvió el bookingId.");
-        await loadBookings();
-        return;
-      }
-
-      if (!Number.isFinite(amount) || amount <= 0) {
-        Alert.alert("Error", "No se pudo calcular un monto válido para el pago.");
-        await loadBookings();
-        return;
-      }
-
-      if (!Number.isFinite(amountCents) || amountCents <= 0) {
-        Alert.alert("Error", "No se pudo calcular un monto válido en centavos para el pago.");
-        await loadBookings();
-        return;
-      }
-
-      const paymentResult = await processPayment(bookingId, amount, amountCents, headers);
-
-      if ((paymentResult as any)?.mode === "test") {
-        Alert.alert("OK", "Reserva creada y marcada como PAID en test.");
-        await loadBookings();
-        return;
-      }
-
-      Alert.alert("Pendiente", "La reserva fue creada y el PaymentIntent quedó generado. Falta integrar el cobro Stripe en pantalla.");
+      Alert.alert("OK", "Reserva creada correctamente.");
       await loadBookings();
     } catch (error: any) {
       console.log("ERROR createBooking()", error);
@@ -447,149 +313,88 @@ export default function ReservasScreen() {
             }}
           />
 
-          <Text style={{ fontSize: 16 }}>Adultos (18+)</Text>
-          <TextInput
-            value={adults}
-            onChangeText={setAdults}
-            keyboardType="numeric"
-            style={{
-              width: 120,
-              borderWidth: 1,
-              borderColor: "#000000",
-              borderRadius: 16,
-              paddingHorizontal: 16,
-              paddingVertical: 18,
-              fontSize: 16,
-              backgroundColor: "#ffffff"
-            }}
-          />
-
-          <Text style={{ fontSize: 16 }}>Jóvenes (13 a 17)</Text>
-          <TextInput
-            value={youth}
-            onChangeText={setYouth}
-            keyboardType="numeric"
-            style={{
-              width: 120,
-              borderWidth: 1,
-              borderColor: "#000000",
-              borderRadius: 16,
-              paddingHorizontal: 16,
-              paddingVertical: 18,
-              fontSize: 16,
-              backgroundColor: "#ffffff"
-            }}
-          />
-
-          <Text style={{ fontSize: 16 }}>Niños (0 a 12)</Text>
-          <TextInput
-            value={children}
-            onChangeText={setChildren}
-            keyboardType="numeric"
-            style={{
-              width: 120,
-              borderWidth: 1,
-              borderColor: "#000000",
-              borderRadius: 16,
-              paddingHorizontal: 16,
-              paddingVertical: 18,
-              fontSize: 16,
-              backgroundColor: "#ffffff"
-            }}
-          />
-
           <View
             style={{
               borderWidth: 1,
               borderColor: "#d1d5db",
-              borderRadius: 16,
-              padding: 16,
+              borderRadius: 20,
+              padding: 18,
               backgroundColor: "#ffffff",
-              gap: 6
+              gap: 8
             }}
           >
-            <Text style={{ fontWeight: "700", fontSize: 18 }}>Resumen</Text>
-            <Text>Guía: {selectedGuide?.name || "-"}</Text>
-            <Text>Fecha: {date}</Text>
-            <Text>Horas: {hours}</Text>
-            <Text>Adultos (18+): {adultsCount}</Text>
-            <Text>Jóvenes (13 a 17): {youthCount}</Text>
-            <Text>Niños (0 a 12): {childrenCount}</Text>
-            <Text>Total viajeros: {travelersCount}</Text>
-            <Text>Precio adulto/hora: USD {selectedPriceHour || 0}</Text>
-            <Text>Precio joven/hora: USD {youthPriceHour.toFixed(2)}</Text>
-            <Text>Niños (0 a 12): sin cargo</Text>
-            <Text>Total: USD {totalAmount.toFixed(2)}</Text>
+            <Text style={{ fontSize: 20, fontWeight: "700" }}>Resumen</Text>
+            <Text style={{ fontSize: 16 }}>Guía: {selectedGuide.name}</Text>
+            <Text style={{ fontSize: 16 }}>Fecha: {date}</Text>
+            <Text style={{ fontSize: 16 }}>Horas: {hours}</Text>
+            <Text style={{ fontSize: 16 }}>Precio/hora: USD {selectedPriceHour}</Text>
+            <Text style={{ fontSize: 16 }}>Total: USD {totalAmount.toFixed(2)}</Text>
           </View>
 
           <View
             style={{
               borderWidth: 1,
               borderColor: "#d1d5db",
-              borderRadius: 16,
-              padding: 16,
+              borderRadius: 20,
+              padding: 18,
               backgroundColor: "#ffffff",
-              gap: 8
+              gap: 10
             }}
           >
-            <Text style={{ fontSize: 18, fontWeight: "700" }}>
-              Antes de confirmar tu reserva
-            </Text>
-
-            <Text>• La tarifa corresponde únicamente al servicio del guía según la modalidad indicada y se calcula por viajero según edad</Text>
-            <Text>• Gastos como comidas, transporte o entradas no están incluidos salvo que se indique expresamente</Text>
-            <Text>• En actividades compartidas, el viajero cubre también los gastos del guía</Text>
-            <Text>• Podés cancelar sin costo con más de 24 horas de anticipación</Text>
-            <Text>• Si surge un imprevisto, podés coordinar directamente con tu guía un cambio de horario o fecha</Text>
-            <Text>• Las horas adicionales se acuerdan con el guía y se cobran según la tarifa publicada</Text>
+            <Text style={{ fontSize: 20, fontWeight: "700" }}>Antes de confirmar tu reserva</Text>
+            <Text style={{ fontSize: 16 }}>• La tarifa corresponde únicamente al servicio del guía según la modalidad indicada</Text>
+            <Text style={{ fontSize: 16 }}>• Gastos como comidas, transporte o entradas no están incluidos salvo que se indique expresamente</Text>
+            <Text style={{ fontSize: 16 }}>• En actividades compartidas, el viajero cubre también los gastos del guía</Text>
+            <Text style={{ fontSize: 16 }}>• Podés cancelar sin costo con más de 24 horas de anticipación</Text>
+            <Text style={{ fontSize: 16 }}>• Si surge un imprevisto, podés coordinar directamente con tu guía un cambio de horario o fecha</Text>
+            <Text style={{ fontSize: 16 }}>• Las horas adicionales se acuerdan con el guía y se cobran según la tarifa publicada</Text>
           </View>
 
           <View
             style={{
               borderWidth: 1,
               borderColor: "#000000",
-              borderRadius: 16,
-              padding: 16,
-              backgroundColor: "#f9fafb",
-              gap: 8
+              borderRadius: 20,
+              padding: 18,
+              backgroundColor: "#ffffff",
+              gap: 10
             }}
           >
-            <Text style={{ fontSize: 18, fontWeight: "700" }}>
-              Confirmación
-            </Text>
-
-            <Text>• Confirmo que revisé la tarifa, duración y condiciones de esta reserva</Text>
-            <Text>• Confirmo que los gastos adicionales no están incluidos salvo que se indique expresamente</Text>
-            <Text>• Confirmo que leí las condiciones de cancelación, cambios e imprevistos</Text>
-
-            <Text style={{ marginTop: 6, fontSize: 14, color: "#4b5563" }}>
-              Pago seguro · Reserva registrada · Mayor transparencia para ambas partes
-            </Text>
+            <Text style={{ fontSize: 20, fontWeight: "700" }}>Confirmación</Text>
+            <Text style={{ fontSize: 16 }}>• Confirmo que revisé la tarifa, duración y condiciones de esta reserva</Text>
+            <Text style={{ fontSize: 16 }}>• Confirmo que los gastos adicionales no están incluidos salvo que se indique expresamente</Text>
           </View>
 
           <Pressable
             onPress={createBooking}
             disabled={loading}
             style={{
-              backgroundColor: loading ? "#6b7280" : "#000000",
+              backgroundColor: "#000000",
+              borderRadius: 18,
               paddingVertical: 18,
-              borderRadius: 16,
               alignItems: "center",
-              justifyContent: "center"
+              justifyContent: "center",
+              opacity: loading ? 0.7 : 1
             }}
           >
             <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
-              {loading ? "Cargando..." : "PAGAR AHORA"}
+              {loading ? "PROCESANDO..." : "CONFIRMAR RESERVA"}
             </Text>
           </Pressable>
 
-          <Text style={{ fontSize: 16, textAlign: "center", color: "#4b5563" }}>
+          <Text
+            style={{
+              textAlign: "center",
+              color: "#374151",
+              fontSize: 15
+            }}
+          >
             Tu información de contacto se compartirá solo después del pago
           </Text>
         </>
       ) : null}
 
-      <Text style={{ fontSize: 24, fontWeight: "700", marginTop: 12 }}>Mis reservas</Text>
+      <Text style={{ fontSize: 22, fontWeight: "700", marginTop: 10 }}>Mis reservas</Text>
 
       {bookings.length === 0 ? (
         <View
@@ -601,52 +406,35 @@ export default function ReservasScreen() {
             backgroundColor: "#ffffff"
           }}
         >
-          <Text style={{ fontSize: 16, color: "#4b5563" }}>Todavía no hay reservas pagadas.</Text>
+          <Text style={{ fontSize: 16, color: "#6b7280" }}>Todavía no hay reservas.</Text>
         </View>
-      ) : null}
-
-      {bookings.map((booking) => {
-        const amount = booking.amount ?? booking.amountUsd ?? booking.totalAmount ?? 0;
-
-        return (
-          <View
-            key={booking._id}
-            style={{
-              borderWidth: 1,
-              borderColor: "#000000",
-              borderRadius: 16,
-              padding: 16,
-              backgroundColor: "#ffffff",
-              gap: 4
-            }}
-          >
-            <Text style={{ fontSize: 18, fontWeight: "700" }}>{booking.guideName || "Guía"}</Text>
-            <Text>Email: {booking.travelerEmail || booking.email || "-"}</Text>
-            <Text>Fecha: {booking.date || "-"}</Text>
-            <Text>Horas: {booking.hours ?? "-"}</Text>
-            <Text>Monto: USD {Number(amount || 0).toFixed(2)}</Text>
-            <Text>Estado: {booking.status || "-"}</Text>
-
-            <Pressable
-              onPress={() => router.push(`/chat?bookingId=${booking._id}`)}
+      ) : (
+        <View style={{ gap: 12 }}>
+          {bookings.map((item) => (
+            <View
+              key={item._id}
               style={{
-                marginTop: 10,
                 borderWidth: 1,
-                borderColor: "#0f9fb3",
-                borderRadius: 12,
-                paddingVertical: 12,
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "#ffffff"
+                borderColor: "#d1d5db",
+                borderRadius: 16,
+                padding: 16,
+                backgroundColor: "#ffffff",
+                gap: 6
               }}
             >
-              <Text style={{ color: "#0f9fb3", fontSize: 16, fontWeight: "700" }}>
-                ABRIR CHAT
+              <Text style={{ fontSize: 18, fontWeight: "700" }}>{item.guideName || "Reserva"}</Text>
+              <Text style={{ fontSize: 15 }}>Fecha: {item.date || "-"}</Text>
+              <Text style={{ fontSize: 15 }}>Horas: {item.hours ?? "-"}</Text>
+              <Text style={{ fontSize: 15 }}>
+                Total: USD {Number(item.totalAmount ?? item.amount ?? item.amountUsd ?? 0).toFixed(2)}
               </Text>
-            </Pressable>
-          </View>
-        );
-      })}
+              <Text style={{ fontSize: 15, fontWeight: "700" }}>
+                Estado: {String(item.status || "PENDING").toUpperCase()}
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
     </ScrollView>
   );
 }

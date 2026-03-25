@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useState } from "react";
-import { Tabs, useRouter, useSegments } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -7,7 +7,6 @@ const TOKEN_KEY = "iguideu_token";
 
 export default function TabsLayout() {
   const router = useRouter();
-  const segments = useSegments();
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
@@ -36,7 +35,7 @@ export default function TabsLayout() {
     return () => {
       mounted = false;
     };
-  }, [router, segments]);
+  }, []);
 
   if (checkingAuth) {
     return (
