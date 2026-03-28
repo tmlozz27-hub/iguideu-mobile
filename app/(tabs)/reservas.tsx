@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -583,6 +583,22 @@ export default function ReservasScreen() {
             <Text>Horas: {booking.hours ?? "-"}</Text>
             <Text>Monto: USD {Number(amount || 0).toFixed(2)}</Text>
             <Text>Estado: {booking.status || "-"}</Text>
+
+            <Pressable
+              onPress={() => router.push({ pathname: "/chat", params: { bookingId: booking._id } })}
+              style={{
+                marginTop: 10,
+                backgroundColor: "#000000",
+                paddingVertical: 14,
+                borderRadius: 14,
+                alignItems: "center",
+                justifyContent: "center"
+              }}
+            >
+              <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "700" }}>
+                ABRIR CHAT
+              </Text>
+            </Pressable>
           </View>
         );
       })}
