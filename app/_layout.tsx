@@ -26,15 +26,7 @@ export default function RootLayout() {
 
   return (
     <StripeProvider publishableKey={publishableKey}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="login" />
-        <Stack.Screen name="register" />
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="guia-detalle" />
-        <Stack.Screen name="select-role" />
-        <Stack.Screen name="legal/terms" />
-        <Stack.Screen name="legal/privacy" />
-      </Stack>
+      <Stack screenOptions={{ headerShown: false }} />
     </StripeProvider>
   );
 }

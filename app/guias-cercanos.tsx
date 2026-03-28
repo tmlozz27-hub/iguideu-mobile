@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+﻿import React, { useEffect, useState } from "react"
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
@@ -53,7 +53,6 @@ export default function GuiasCercanosScreen() {
 
       let arr = Array.isArray(data?.items) ? data.items : []
 
-      // 🔥 fallback SIEMPRE
       if (arr.length === 0) {
         const fallback = await apiGet("/api/guides")
         arr = Array.isArray(fallback) ? fallback : []
@@ -115,7 +114,10 @@ export default function GuiasCercanosScreen() {
               onPress={() =>
                 router.push({
                   pathname: "/guia-detalle",
-                  params: { id }
+                  params: {
+                    id,
+                    guideData: JSON.stringify(g)
+                  }
                 })
               }
               style={{

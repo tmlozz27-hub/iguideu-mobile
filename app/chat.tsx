@@ -1,95 +1,268 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import {
+  Alert,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  Text,
+  TextInput,
+  View
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { apiGet, apiPost } from "../config/api";
 
-type Message = {
+const TOKEN_KEY = "iguideu_token";
+const USER_EMAIL_KEY = "iguideu_user_email";
+
+type ChatMessage = {
   _id?: string;
-  text: string;
+  id?: string;
+  text?: string;
+  message?: string;
+  body?: string;
+  content?: string;
+  senderId?: string;
+  senderName?: string;
+  senderEmail?: string;
+  senderType?: string;
   createdAt?: string;
 };
 
 export default function ChatScreen() {
-  const { bookingId } = useLocalSearchParams();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { bookingId } = useLocalSearchParams<{ bookingId?: string }>();
+  const insets = useSafeAreaInsets();
+  const listRef = useRef<FlatList<ChatMessage>>(null);
+
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [text, setText] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [senderId, setSenderId] = useState("");
+  const [senderName, setSenderName] = useState("");
+  const [senderEmail, setSenderEmail] = useState("");
+  const [senderType, setSenderType] = useState("traveler");
+
+  async function getAuthHeaders() {
+    const token = await AsyncStorage.getItem(TOKEN_KEY);
+
+    if (!token) {
+      throw new Error("No hay sesión activa. Volvé a iniciar sesión.");
+    }
+
+    return {
+      Authorization: `Bearer ${token}`
+    };
+  }
+
+  async function loadMe() {
+    const headers = await getAuthHeaders();
+    const me = await apiGet("/api/auth/me", headers);
+    const user = (me as any)?.user || me || {};
+
+    const id = String(user?._id || user?.id || user?.userId || "").trim();
+    const name = String(user?.name || user?.fullName || "").trim();
+    const emailFromApi = String(user?.email || "").trim().toLowerCase();
+    const emailFromStorage = String((await AsyncStorage.getItem(USER_EMAIL_KEY)) || "").trim().toLowerCase();
+
+    setSenderId(id);
+    setSenderName(name);
+    setSenderEmail(emailFromApi || emailFromStorage || "");
+    setSenderType("traveler");
+  }
 
   async function loadMessages() {
+    if (!bookingId) return;
+
+    const data = await apiGet(`/api/chat/messages?bookingId=${bookingId}`);
+    const list = Array.isArray(data)
+      ? data
+      : Array.isArray((data as any)?.items)
+        ? (data as any).items
+        : [];
+
+    setMessages(list);
+
+    setTimeout(() => {
+      listRef.current?.scrollToEnd({ animated: false });
+    }, 50);
+  }
+
+  async function refreshChat() {
     try {
-      if (!bookingId) return;
-
-      const data = await apiGet(`/api/chat/messages?bookingId=${bookingId}`);
-
-      if (data?.items) {
-        setMessages(data.items);
-      }
-    } catch (e) {
-      console.log("CHAT LOAD ERROR", e);
+      setLoading(true);
+      await loadMe();
+      await loadMessages();
+    } catch (error: any) {
+      console.log("ERROR refreshChat()", error);
+      Alert.alert("Error", error?.message || "No se pudo abrir el chat.");
+    } finally {
+      setLoading(false);
     }
   }
 
   async function sendMessage() {
     try {
-      if (!bookingId || !text.trim()) return;
+      const clean = String(text || "").trim();
 
-      const res = await apiPost("/api/chat/messages", {
+      if (!clean) return;
+      if (!bookingId) {
+        Alert.alert("Error", "Falta bookingId.");
+        return;
+      }
+      if (!senderId) {
+        Alert.alert("Error", "No se pudo identificar el remitente.");
+        return;
+      }
+
+      await apiPost("/api/chat/messages", {
         bookingId,
-        senderId: "me",
-        senderType: "traveler",
-        text,
+        senderId,
+        senderName,
+        senderEmail,
+        senderType,
+        text: clean
       });
 
-      if (res?.item) {
-        setMessages((prev) => [...prev, res.item]);
-        setText("");
-      }
-    } catch (e) {
-      console.log("CHAT SEND ERROR", e);
+      setText("");
+      await loadMessages();
+
+      setTimeout(() => {
+        listRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    } catch (error: any) {
+      console.log("ERROR sendMessage()", error);
+      Alert.alert("Error", error?.message || "No se pudo enviar el mensaje.");
     }
   }
 
   useEffect(() => {
-    loadMessages();
+    refreshChat();
   }, [bookingId]);
 
+  const bottomGap = useMemo(() => {
+    return Math.max(insets.bottom, 10) + 10;
+  }, [insets.bottom]);
+
   return (
-    <View style={{ flex: 1, padding: 20 }}>
-      <Text style={{ fontSize: 24, fontWeight: "700" }}>Chat</Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: "#ffffff" }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 88 : 20}
+    >
+      <View style={{ flex: 1 }}>
+        <FlatList
+          ref={listRef}
+          data={messages}
+          keyExtractor={(item, index) => item._id || item.id || String(index)}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            paddingTop: 16,
+            paddingBottom: 12
+          }}
+          onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
+          renderItem={({ item }) => {
+            const body =
+              item.text ||
+              item.message ||
+              item.body ||
+              item.content ||
+              "";
 
-      <ScrollView style={{ flex: 1, marginVertical: 10 }}>
-        {messages.map((m, i) => (
-          <Text key={i} style={{ marginBottom: 8 }}>
-            {m.text}
-          </Text>
-        ))}
-      </ScrollView>
+            const mine =
+              !!senderId &&
+              String(item.senderId || "") === String(senderId);
 
-      <TextInput
-        value={text}
-        onChangeText={setText}
-        placeholder="Mensaje..."
-        style={{
-          borderWidth: 1,
-          borderColor: "#ccc",
-          padding: 10,
-          borderRadius: 10,
-          marginBottom: 10,
-        }}
-      />
+            return (
+              <View
+                style={{
+                  marginBottom: 10,
+                  alignItems: mine ? "flex-end" : "flex-start"
+                }}
+              >
+                <View
+                  style={{
+                    maxWidth: "82%",
+                    borderRadius: 16,
+                    paddingHorizontal: 14,
+                    paddingVertical: 10,
+                    backgroundColor: mine ? "#111827" : "#f3f4f6"
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: mine ? "#ffffff" : "#111827",
+                      fontSize: 16
+                    }}
+                  >
+                    {body}
+                  </Text>
+                </View>
+              </View>
+            );
+          }}
+          ListEmptyComponent={
+            <View style={{ paddingTop: 24 }}>
+              <Text style={{ fontSize: 16, color: "#6b7280" }}>
+                {loading ? "Cargando mensajes..." : "Todavía no hay mensajes."}
+              </Text>
+            </View>
+          }
+        />
 
-      <Pressable
-        onPress={sendMessage}
-        style={{
-          backgroundColor: "#0f9fb3",
-          padding: 15,
-          borderRadius: 10,
-          alignItems: "center",
-        }}
-      >
-        <Text style={{ color: "#fff", fontWeight: "700" }}>
-          Enviar
-        </Text>
-      </Pressable>
-    </View>
+        <View
+          style={{
+            paddingHorizontal: 16,
+            paddingTop: 8,
+            paddingBottom: bottomGap,
+            borderTopWidth: 1,
+            borderTopColor: "#e5e7eb",
+            backgroundColor: "#ffffff"
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center"
+            }}
+          >
+            <TextInput
+              value={text}
+              onChangeText={setText}
+              placeholder="Escribir mensaje..."
+              placeholderTextColor="#9ca3af"
+              style={{
+                flex: 1,
+                borderWidth: 1,
+                borderColor: "#d1d5db",
+                borderRadius: 22,
+                paddingHorizontal: 18,
+                paddingVertical: 14,
+                backgroundColor: "#ffffff",
+                fontSize: 16
+              }}
+            />
+
+            <Pressable
+              onPress={sendMessage}
+              style={{
+                marginLeft: 12,
+                backgroundColor: "#000000",
+                borderRadius: 22,
+                paddingHorizontal: 20,
+                paddingVertical: 14,
+                alignItems: "center",
+                justifyContent: "center"
+              }}
+            >
+              <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "700" }}>
+                Enviar
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 }

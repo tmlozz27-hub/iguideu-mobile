@@ -1,7 +1,6 @@
 ﻿import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export const API_BASE =
-  (process.env.EXPO_PUBLIC_API_BASE || "https://iguideu-backend-1.onrender.com").trim();
+export const API_BASE = "https://iguideu-backend-1.onrender.com".trim();
 
 export const STRIPE_MODE =
   (process.env.EXPO_PUBLIC_STRIPE_MODE || "live").trim();

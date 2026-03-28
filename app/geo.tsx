@@ -1,38 +1,21 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
-import * as Location from "expo-location";
+import React, { useEffect } from "react";
+import { ActivityIndicator, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 
 export default function GeoScreen() {
-  const [coords, setCoords] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        setLoading(false);
-        return;
-      }
-
-      const loc = await Location.getCurrentPositionAsync({});
-      setCoords(loc.coords);
-      setLoading(false);
-    })();
-  }, []);
-
-  if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator />
-        <Text>Obteniendo ubicación...</Text>
-      </View>
-    );
-  }
+    router.replace("/guias-cercanos");
+  }, [router]);
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text>Latitude: {coords?.latitude}</Text>
-      <Text>Longitude: {coords?.longitude}</Text>
-    </View>
+    <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View style={{ alignItems: "center", gap: 10 }}>
+        <ActivityIndicator size="large" />
+        <Text>Redirigiendo...</Text>
+      </View>
+    </SafeAreaView>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -35,7 +35,7 @@ export default function Profile() {
       }
 
       const data = await apiGet("/api/auth/me", {
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
       });
 
       if (!data?.ok || !data?.user) {
@@ -83,7 +83,7 @@ export default function Profile() {
         "/api/auth/me",
         { name: nextName },
         {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         }
       );
 
@@ -96,7 +96,8 @@ export default function Profile() {
       setNameInput(String(data.user?.name || ""));
       Alert.alert("OK", "Perfil actualizado.");
     } catch (error) {
-      const message = error instanceof Error ? error.message : "No se pudo conectar al backend.";
+      const message =
+        error instanceof Error ? error.message : "No se pudo conectar al backend.";
       Alert.alert("Error", message);
     } finally {
       setSaving(false);
@@ -118,7 +119,7 @@ export default function Profile() {
       "¿Querés salir de tu cuenta ahora?",
       [
         { text: "Cancelar", style: "cancel" },
-        { text: "Salir", style: "destructive", onPress: handleLogout }
+        { text: "Salir", style: "destructive", onPress: handleLogout },
       ]
     );
   };
@@ -136,7 +137,7 @@ export default function Profile() {
             borderColor: "#e5e7eb",
             borderRadius: 16,
             padding: 16,
-            backgroundColor: "#ffffff"
+            backgroundColor: "#ffffff",
           }}
         >
           <Text style={{ fontSize: 18, fontWeight: "800", marginBottom: 12 }}>
@@ -168,7 +169,7 @@ export default function Profile() {
               paddingVertical: 14,
               fontSize: 16,
               backgroundColor: "#ffffff",
-              marginBottom: 12
+              marginBottom: 12,
             }}
           />
 
@@ -181,7 +182,7 @@ export default function Profile() {
               paddingVertical: 14,
               alignItems: "center",
               justifyContent: "center",
-              opacity: loadingUser || saving ? 0.7 : 1
+              opacity: loadingUser || saving ? 0.7 : 1,
             }}
           >
             <Text style={{ color: "#ffffff", fontWeight: "800", fontSize: 16 }}>
@@ -196,7 +197,7 @@ export default function Profile() {
               borderWidth: 1,
               borderColor: "#e5e7eb",
               borderRadius: 12,
-              padding: 14
+              padding: 14,
             }}
           >
             <Text style={{ fontWeight: "700" }}>Seguridad</Text>
@@ -212,7 +213,7 @@ export default function Profile() {
               borderColor: "#e5e7eb",
               borderRadius: 12,
               padding: 14,
-              backgroundColor: "#ffffff"
+              backgroundColor: "#ffffff",
             }}
           >
             <Text style={{ fontWeight: "800", color: "#111827" }}>
@@ -230,7 +231,7 @@ export default function Profile() {
               borderColor: "#e5e7eb",
               borderRadius: 12,
               padding: 14,
-              backgroundColor: "#ffffff"
+              backgroundColor: "#ffffff",
             }}
           >
             <Text style={{ fontWeight: "800", color: "#111827" }}>
@@ -248,7 +249,7 @@ export default function Profile() {
               borderColor: "#ef4444",
               borderRadius: 12,
               padding: 14,
-              backgroundColor: "#fff5f5"
+              backgroundColor: "#fff5f5",
             }}
           >
             <Text style={{ fontWeight: "800", color: "#b91c1c" }}>
@@ -265,7 +266,7 @@ export default function Profile() {
             borderWidth: 1,
             borderColor: "#e5e7eb",
             borderRadius: 16,
-            padding: 16
+            padding: 16,
           }}
         >
           <Text style={{ fontSize: 18, fontWeight: "800", marginBottom: 12 }}>
@@ -273,8 +274,7 @@ export default function Profile() {
           </Text>
           <Text style={{ marginBottom: 6 }}>Guías cercanos: OK</Text>
           <Text style={{ marginBottom: 6 }}>Reservas: OK</Text>
-          <Text style={{ marginBottom: 6 }}>Pago test: OK</Text>
-          <Text style={{ marginBottom: 6 }}>Webhook: OK</Text>
+          <Text style={{ marginBottom: 6 }}>Pago Stripe: OK</Text>
           <Text style={{ marginBottom: 6 }}>Login Mongo: OK</Text>
           <Text>Perfil Mongo editable: OK</Text>
         </View>

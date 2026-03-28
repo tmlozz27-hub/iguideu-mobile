@@ -292,7 +292,7 @@ export default function BuscarPaisScreen() {
             key={item.code}
             onPress={() =>
               router.push({
-                pathname: "/guides-country",
+                pathname: "/guides-by-country",
                 params: {
                   country: item.name,
                   code: item.code

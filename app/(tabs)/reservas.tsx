@@ -1,6 +1,7 @@
 ﻿import React, { useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
-import { useLocalSearchParams, router } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useStripe } from "@stripe/stripe-react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiGet, apiPost } from "../../config/api";
 
@@ -8,433 +9,479 @@ const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
 
 type Guide = {
-  _id: string;
-  name: string;
+  _id?: string;
+  id?: string;
+  name?: string;
   country?: string;
   city?: string;
-  languages?: string[];
-  rating?: number;
   pricePerHour?: number;
   priceHour?: number;
   priceDay?: number;
   price24h?: number;
   priceFullDay24h?: number;
-  bio?: string;
-  guideType?: string;
 };
 
-type Booking = {
-  _id: string;
-  travelerEmail?: string;
-  email?: string;
-  date?: string;
-  hours?: number;
-  amount?: number;
-  amountUsd?: number;
-  amountCents?: number;
-  totalAmount?: number;
-  status?: string;
-  guideName?: string;
-};
-
-function todayString() {
-  const d = new Date();
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
-}
+type Mode = "hour" | "day8" | "day24";
 
 async function getAuthHeaders() {
   const token = await AsyncStorage.getItem(TOKEN_KEY);
+  if (!token) throw new Error("No hay sesión activa");
+  return { Authorization: `Bearer ${token}` };
+}
 
-  if (!token) {
-    throw new Error("No hay sesión activa. Volvé a iniciar sesión.");
-  }
+async function getStoredTravelerEmail() {
+  return String((await AsyncStorage.getItem(USER_EMAIL_KEY)) || "")
+    .trim()
+    .toLowerCase();
+}
 
-  return {
-    Authorization: `Bearer ${token}`
-  };
+function todayYmd() {
+  return new Date().toISOString().slice(0, 10);
 }
 
 export default function ReservasScreen() {
-  const params = useLocalSearchParams<{ guideId?: string }>();
-  const lockedGuideId = typeof params.guideId === "string" ? params.guideId : "";
+  const router = useRouter();
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const params = useLocalSearchParams<any>();
+
+  const routeGuideId = useMemo(() => {
+    const raw = params.guideId || params.id || params._id || params.guide || "";
+    return String(Array.isArray(raw) ? raw[0] : raw).trim();
+  }, [params]);
 
   const [travelerEmail, setTravelerEmail] = useState("");
-  const [date, setDate] = useState(todayString());
-  const [hours, setHours] = useState("1");
-  const [guides, setGuides] = useState<Guide[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [selectedGuideId, setSelectedGuideId] = useState(lockedGuideId);
   const [loading, setLoading] = useState(false);
+  const [guide, setGuide] = useState<Guide | null>(null);
 
-  async function loadGuides() {
-    const data = await apiGet("/api/guides");
-    const list = Array.isArray(data) ? data : Array.isArray((data as any)?.guides) ? (data as any).guides : [];
-    setGuides(list);
-
-    if (lockedGuideId) {
-      setSelectedGuideId(lockedGuideId);
-      return;
-    }
-
-    setSelectedGuideId("");
-  }
-
-  async function loadBookings() {
-    const headers = await getAuthHeaders();
-    const savedEmail = String((await AsyncStorage.getItem(USER_EMAIL_KEY)) || "").trim().toLowerCase();
-    const email = String(travelerEmail || savedEmail || "").trim().toLowerCase();
-
-    const path = email
-      ? `/api/bookings?travelerEmail=${encodeURIComponent(email)}`
-      : "/api/bookings";
-
-    const data = await apiGet(path, headers);
-    const list = Array.isArray(data) ? data : Array.isArray((data as any)?.items) ? (data as any).items : [];
-    setBookings(list);
-  }
-
-  async function refreshAll() {
-    try {
-      setLoading(true);
-
-      const savedEmail = String((await AsyncStorage.getItem(USER_EMAIL_KEY)) || "").trim().toLowerCase();
-      if (savedEmail) {
-        setTravelerEmail(savedEmail);
-      }
-
-      await Promise.all([loadGuides(), loadBookings()]);
-    } catch (error: any) {
-      console.log("ERROR refresh reservas", error);
-      Alert.alert("Error", error?.message || "No se pudieron cargar las reservas.");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const [date, setDate] = useState(todayYmd());
+  const [mode, setMode] = useState<Mode>("hour");
+  const [hours, setHours] = useState("1");
 
   useEffect(() => {
-    refreshAll();
+    (async () => {
+      try {
+        const email = await getStoredTravelerEmail();
+        setTravelerEmail(email);
+      } catch {}
+    })();
   }, []);
 
   useEffect(() => {
-    if (lockedGuideId) {
-      setSelectedGuideId(lockedGuideId);
-    }
-  }, [lockedGuideId]);
+    (async () => {
+      try {
+        if (!routeGuideId) return;
 
-  const selectedGuide = useMemo(() => {
-    return guides.find((g) => g._id === selectedGuideId) || null;
-  }, [guides, selectedGuideId]);
+        const data = await apiGet("/api/guides");
+        const list = data?.items || data?.guides || data?.data || data || [];
+        const guidesArray = Array.isArray(list) ? list : [];
 
-  const selectedPriceHour = useMemo(() => {
-    return Number(selectedGuide?.priceHour ?? selectedGuide?.pricePerHour ?? 0);
-  }, [selectedGuide]);
+        const found =
+          guidesArray.find((g: any) => g._id === routeGuideId) ||
+          guidesArray.find((g: any) => g.id === routeGuideId) ||
+          null;
 
-  const totalAmount = useMemo(() => {
-    const h = Number(hours || 0);
-    if (!Number.isFinite(h) || h <= 0) return 0;
-    return Number((selectedPriceHour * h).toFixed(2));
-  }, [hours, selectedPriceHour]);
+        setGuide(found);
+      } catch (e) {
+        console.log("RESERVAS_LOAD_GUIDE_ERROR", e);
+      }
+    })();
+  }, [routeGuideId]);
 
-  const totalAmountCents = useMemo(() => {
-    return Math.round(totalAmount * 100);
-  }, [totalAmount]);
+  const pricePerHour = Number(guide?.priceHour ?? guide?.pricePerHour ?? 0);
+  const priceDay8 = Number(guide?.priceDay ?? 0);
+  const price24 = Number(guide?.price24h ?? guide?.priceFullDay24h ?? 0);
+
+  const hoursNumber = Number(hours);
+
+  const effectiveHours =
+    mode === "hour"
+      ? Number.isFinite(hoursNumber) && hoursNumber > 0
+        ? hoursNumber
+        : 0
+      : mode === "day8"
+      ? 8
+      : 24;
+
+  const totalAmount =
+    mode === "hour"
+      ? Number((pricePerHour * effectiveHours).toFixed(2))
+      : mode === "day8"
+      ? priceDay8
+      : price24;
 
   async function createBooking() {
-    if (loading) return;
-
     try {
       setLoading(true);
 
       const headers = await getAuthHeaders();
-      const h = Number(hours);
-      const savedEmail = String((await AsyncStorage.getItem(USER_EMAIL_KEY)) || "").trim().toLowerCase();
-      const emailClean = String(travelerEmail || savedEmail || "").trim().toLowerCase();
+      const emailClean = await getStoredTravelerEmail();
 
-      if (!emailClean) {
-        Alert.alert("Error", "Falta el email del viajero.");
-        return;
+      if (!routeGuideId) throw new Error("Falta guideId");
+      if (!emailClean) throw new Error("Falta email");
+      if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Fecha inválida");
+      if (!guide) throw new Error("No se encontró el guía");
+
+      if (mode === "hour") {
+        if (!Number.isFinite(hoursNumber) || hoursNumber <= 0) {
+          throw new Error("Ingresá una cantidad de horas válida");
+        }
+        if (pricePerHour <= 0) {
+          throw new Error("El guía no tiene tarifa por hora");
+        }
       }
 
-      if (!date.trim()) {
-        Alert.alert("Error", "Ingresá fecha.");
-        return;
+      if (mode === "day8" && priceDay8 <= 0) {
+        throw new Error("El guía no tiene tarifa de jornada");
       }
 
-      if (!selectedGuideId) {
-        Alert.alert("Error", "Primero elegí un guía.");
-        return;
+      if (mode === "day24" && price24 <= 0) {
+        throw new Error("El guía no tiene tarifa de 24 horas");
       }
 
-      if (!Number.isFinite(h) || h <= 0) {
-        Alert.alert("Error", "Ingresá horas válidas.");
-        return;
-      }
+      const bookingPayload = {
+        guideId: routeGuideId,
+        travelerEmail: emailClean,
+        date,
+        hours: effectiveHours,
+        amount: totalAmount,
+        totalAmount,
+        amountCents: Math.round(totalAmount * 100),
+      };
 
-      await apiPost(
-        "/api/bookings",
-        {
-          travelerEmail: emailClean,
-          date: date.trim(),
-          hours: h,
-          guideId: selectedGuideId,
-          totalAmount,
-          amount: totalAmount,
-          amountCents: totalAmountCents
-        },
+      console.log("BOOKING_PAYLOAD", bookingPayload);
+
+      const bookingResponse = await apiPost("/api/bookings", bookingPayload, headers);
+
+      console.log("BOOKING_RESPONSE", bookingResponse);
+
+      const bookingId =
+        bookingResponse?._id ||
+        bookingResponse?.id ||
+        bookingResponse?.booking?._id ||
+        bookingResponse?.booking?.id ||
+        bookingResponse?.item?._id ||
+        bookingResponse?.item?.id;
+
+      if (!bookingId) throw new Error("No se creó la reserva");
+
+      const paymentResponse = await apiPost(
+        "/api/payments/create-intent",
+        { bookingId },
         headers
       );
 
-      Alert.alert("OK", "Reserva creada correctamente.");
-      await loadBookings();
-    } catch (error: any) {
-      console.log("ERROR createBooking()", error);
-      Alert.alert("Error", error?.message || "No se pudo crear la reserva.");
+      console.log("PAYMENT_RESPONSE", paymentResponse);
+
+      const clientSecret = paymentResponse?.clientSecret;
+      if (!clientSecret) throw new Error("No se pudo iniciar el pago");
+
+      const init = await initPaymentSheet({
+        merchantDisplayName: "I GUIDE U",
+        paymentIntentClientSecret: clientSecret,
+        defaultBillingDetails: { email: emailClean },
+      });
+
+      if (init.error) {
+        throw new Error(init.error.message);
+      }
+
+      const result = await presentPaymentSheet();
+
+      if (result.error) {
+        Alert.alert("Pago no completado", result.error.message);
+        return;
+      }
+
+      console.log("GO TO CHAT WITH BOOKING", bookingId);
+
+      Alert.alert("OK", "Pago realizado correctamente", [
+        {
+          text: "OK",
+          onPress: () =>
+            router.push({
+              pathname: "/chat",
+              params: { bookingId },
+            }),
+        },
+      ]);
+    } catch (e: any) {
+      console.log("RESERVAS_ERROR", e);
+      Alert.alert("Error", e?.message || "Error inesperado");
     } finally {
       setLoading(false);
     }
   }
 
-  const showReservationForm = !!selectedGuide;
+  function ModeButton({
+    value,
+    label,
+    active,
+    onPress,
+  }: {
+    value: Mode;
+    label: string;
+    active: boolean;
+    onPress: (value: Mode) => void;
+  }) {
+    return (
+      <Pressable
+        onPress={() => onPress(value)}
+        style={{
+          flex: 1,
+          backgroundColor: active ? "#27D3BE" : "#3A6EA5",
+          borderWidth: 1,
+          borderColor: active ? "#27D3BE" : "#5E89B7",
+          paddingVertical: 14,
+          borderRadius: 14,
+          alignItems: "center",
+        }}
+      >
+        <Text
+          style={{
+            color: "#FFFFFF",
+            fontWeight: "800",
+            fontSize: 15,
+          }}
+        >
+          {label}
+        </Text>
+      </Pressable>
+    );
+  }
 
   return (
     <ScrollView
-      keyboardShouldPersistTaps="handled"
-      contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: 40 }}
+      style={{ flex: 1, backgroundColor: "#15539A" }}
+      contentContainerStyle={{ padding: 18, paddingBottom: 40 }}
     >
-      <Text style={{ fontSize: 24, fontWeight: "700" }}>Reservas</Text>
+      <View
+        style={{
+          backgroundColor: "#2F5F93",
+          borderRadius: 24,
+          padding: 18,
+        }}
+      >
+        <Text style={{ color: "#FFFFFF", fontSize: 28, fontWeight: "800" }}>
+          Reserva
+        </Text>
 
-      {!showReservationForm ? (
+        <Text style={{ color: "#FFFFFF", marginTop: 14, fontSize: 20, fontWeight: "700" }}>
+          {guide?.name || "Guía"}
+        </Text>
+
+        <Text style={{ color: "#DCEBFF", marginTop: 6, fontSize: 16 }}>
+          {[guide?.city, guide?.country].filter(Boolean).join(", ") || "-"}
+        </Text>
+
         <View
           style={{
-            borderWidth: 1,
-            borderColor: "#d1d5db",
-            borderRadius: 16,
+            marginTop: 18,
+            backgroundColor: "#376AA0",
+            borderRadius: 20,
             padding: 16,
-            backgroundColor: "#ffffff",
-            gap: 10
           }}
         >
-          <Text style={{ fontSize: 18, fontWeight: "700" }}>Todavía no elegiste un guía</Text>
-          <Text style={{ fontSize: 16, color: "#4b5563" }}>
-            Primero elegí un guía desde Buscar guías por país o Guías cercanos.
+          <Text style={{ color: "#FFFFFF", fontSize: 16, fontWeight: "700" }}>
+            Elegí modalidad
           </Text>
 
-          <Pressable
-            onPress={() => router.push("/buscar-pais")}
-            style={{
-              borderWidth: 1,
-              borderColor: "#000000",
-              borderRadius: 16,
-              paddingVertical: 16,
-              alignItems: "center",
-              justifyContent: "center",
-              marginTop: 4
-            }}
-          >
-            <Text style={{ fontSize: 18, fontWeight: "700" }}>IR A BUSCAR GUÍAS</Text>
-          </Pressable>
+          <View style={{ flexDirection: "row", gap: 10, marginTop: 14 }}>
+            <ModeButton
+              value="hour"
+              label="Por hora"
+              active={mode === "hour"}
+              onPress={setMode}
+            />
+            <ModeButton
+              value="day8"
+              label="Jornada 8h"
+              active={mode === "day8"}
+              onPress={setMode}
+            />
+            <ModeButton
+              value="day24"
+              label="24 hs"
+              active={mode === "day24"}
+              onPress={setMode}
+            />
+          </View>
         </View>
-      ) : null}
 
-      {showReservationForm ? (
-        <>
-          <Text style={{ fontSize: 16 }}>Traveler Email</Text>
-          <TextInput
-            value={travelerEmail}
-            onChangeText={setTravelerEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            editable={false}
-            style={{
-              borderWidth: 1,
-              borderColor: "#d1d5db",
-              borderRadius: 16,
-              paddingHorizontal: 16,
-              paddingVertical: 18,
-              fontSize: 16,
-              backgroundColor: "#f3f4f6",
-              color: "#111827"
-            }}
-          />
+        <View
+          style={{
+            marginTop: 18,
+            backgroundColor: "#376AA0",
+            borderRadius: 20,
+            padding: 16,
+          }}
+        >
+          <Text style={{ color: "#FFFFFF", fontSize: 16, fontWeight: "700" }}>
+            Fecha
+          </Text>
 
-          <Text style={{ fontSize: 16 }}>Fecha</Text>
           <TextInput
             value={date}
             onChangeText={setDate}
             placeholder="YYYY-MM-DD"
+            placeholderTextColor="#BFD5F1"
             style={{
+              marginTop: 10,
+              backgroundColor: "#2B5D93",
               borderWidth: 1,
-              borderColor: "#000000",
-              borderRadius: 16,
-              paddingHorizontal: 16,
-              paddingVertical: 18,
+              borderColor: "#5E89B7",
+              borderRadius: 14,
+              paddingHorizontal: 14,
+              paddingVertical: 14,
+              color: "#FFFFFF",
               fontSize: 16,
-              backgroundColor: "#ffffff"
             }}
           />
+        </View>
 
-          <Text style={{ fontSize: 16 }}>Guía</Text>
-
+        {mode === "hour" ? (
           <View
             style={{
-              borderWidth: 1,
-              borderColor: "#000000",
-              borderRadius: 16,
-              paddingHorizontal: 16,
-              paddingVertical: 18,
-              backgroundColor: "#000000"
-            }}
-          >
-            <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
-              {selectedGuide.name} — {[selectedGuide.city, selectedGuide.country].filter(Boolean).join(", ")}
-            </Text>
-            <Text style={{ color: "#d1d5db", marginTop: 8, fontSize: 16 }}>
-              Guía seleccionada desde el perfil
-            </Text>
-          </View>
-
-          <Text style={{ fontSize: 16 }}>Horas</Text>
-          <TextInput
-            value={hours}
-            onChangeText={setHours}
-            keyboardType="numeric"
-            style={{
-              width: 120,
-              borderWidth: 1,
-              borderColor: "#000000",
-              borderRadius: 16,
-              paddingHorizontal: 16,
-              paddingVertical: 18,
-              fontSize: 16,
-              backgroundColor: "#ffffff"
-            }}
-          />
-
-          <View
-            style={{
-              borderWidth: 1,
-              borderColor: "#d1d5db",
+              marginTop: 18,
+              backgroundColor: "#376AA0",
               borderRadius: 20,
-              padding: 18,
-              backgroundColor: "#ffffff",
-              gap: 8
+              padding: 16,
             }}
           >
-            <Text style={{ fontSize: 20, fontWeight: "700" }}>Resumen</Text>
-            <Text style={{ fontSize: 16 }}>Guía: {selectedGuide.name}</Text>
-            <Text style={{ fontSize: 16 }}>Fecha: {date}</Text>
-            <Text style={{ fontSize: 16 }}>Horas: {hours}</Text>
-            <Text style={{ fontSize: 16 }}>Precio/hora: USD {selectedPriceHour}</Text>
-            <Text style={{ fontSize: 16 }}>Total: USD {totalAmount.toFixed(2)}</Text>
-          </View>
-
-          <View
-            style={{
-              borderWidth: 1,
-              borderColor: "#d1d5db",
-              borderRadius: 20,
-              padding: 18,
-              backgroundColor: "#ffffff",
-              gap: 10
-            }}
-          >
-            <Text style={{ fontSize: 20, fontWeight: "700" }}>Antes de confirmar tu reserva</Text>
-            <Text style={{ fontSize: 16 }}>• La tarifa corresponde únicamente al servicio del guía según la modalidad indicada</Text>
-            <Text style={{ fontSize: 16 }}>• Gastos como comidas, transporte o entradas no están incluidos salvo que se indique expresamente</Text>
-            <Text style={{ fontSize: 16 }}>• En actividades compartidas, el viajero cubre también los gastos del guía</Text>
-            <Text style={{ fontSize: 16 }}>• Podés cancelar sin costo con más de 24 horas de anticipación</Text>
-            <Text style={{ fontSize: 16 }}>• Si surge un imprevisto, podés coordinar directamente con tu guía un cambio de horario o fecha</Text>
-            <Text style={{ fontSize: 16 }}>• Las horas adicionales se acuerdan con el guía y se cobran según la tarifa publicada</Text>
-          </View>
-
-          <View
-            style={{
-              borderWidth: 1,
-              borderColor: "#000000",
-              borderRadius: 20,
-              padding: 18,
-              backgroundColor: "#ffffff",
-              gap: 10
-            }}
-          >
-            <Text style={{ fontSize: 20, fontWeight: "700" }}>Confirmación</Text>
-            <Text style={{ fontSize: 16 }}>• Confirmo que revisé la tarifa, duración y condiciones de esta reserva</Text>
-            <Text style={{ fontSize: 16 }}>• Confirmo que los gastos adicionales no están incluidos salvo que se indique expresamente</Text>
-          </View>
-
-          <Pressable
-            onPress={createBooking}
-            disabled={loading}
-            style={{
-              backgroundColor: "#000000",
-              borderRadius: 18,
-              paddingVertical: 18,
-              alignItems: "center",
-              justifyContent: "center",
-              opacity: loading ? 0.7 : 1
-            }}
-          >
-            <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
-              {loading ? "PROCESANDO..." : "CONFIRMAR RESERVA"}
+            <Text style={{ color: "#FFFFFF", fontSize: 16, fontWeight: "700" }}>
+              Cantidad de horas
             </Text>
-          </Pressable>
 
-          <Text
-            style={{
-              textAlign: "center",
-              color: "#374151",
-              fontSize: 15
-            }}
-          >
-            Tu información de contacto se compartirá solo después del pago
-          </Text>
-        </>
-      ) : null}
+            <TextInput
+              value={hours}
+              onChangeText={setHours}
+              keyboardType="numeric"
+              placeholder="Ej: 1, 2, 5, 15"
+              placeholderTextColor="#BFD5F1"
+              style={{
+                marginTop: 10,
+                backgroundColor: "#2B5D93",
+                borderWidth: 1,
+                borderColor: "#5E89B7",
+                borderRadius: 14,
+                paddingHorizontal: 14,
+                paddingVertical: 14,
+                color: "#FFFFFF",
+                fontSize: 16,
+              }}
+            />
 
-      <Text style={{ fontSize: 22, fontWeight: "700", marginTop: 10 }}>Mis reservas</Text>
+            <Text style={{ color: "#DCEBFF", marginTop: 10, fontSize: 14 }}>
+              Podés elegir la cantidad de horas que quieras.
+            </Text>
+          </View>
+        ) : null}
 
-      {bookings.length === 0 ? (
         <View
           style={{
-            borderWidth: 1,
-            borderColor: "#d1d5db",
-            borderRadius: 16,
+            marginTop: 18,
+            backgroundColor: "#376AA0",
+            borderRadius: 20,
             padding: 16,
-            backgroundColor: "#ffffff"
           }}
         >
-          <Text style={{ fontSize: 16, color: "#6b7280" }}>Todavía no hay reservas.</Text>
+          <Text style={{ color: "#FFFFFF", fontSize: 16, fontWeight: "700" }}>
+            Tarifas
+          </Text>
+
+          <Text style={{ color: "#FFFFFF", marginTop: 12, fontSize: 15 }}>
+            Por hora: USD {pricePerHour > 0 ? pricePerHour : "-"}
+          </Text>
+
+          <Text style={{ color: "#FFFFFF", marginTop: 10, fontSize: 15 }}>
+            Jornada de 8h: USD {priceDay8 > 0 ? priceDay8 : "-"}
+          </Text>
+
+          <Text style={{ color: "#FFFFFF", marginTop: 10, fontSize: 15 }}>
+            24 horas: USD {price24 > 0 ? price24 : "-"}
+          </Text>
         </View>
-      ) : (
-        <View style={{ gap: 12 }}>
-          {bookings.map((item) => (
-            <View
-              key={item._id}
-              style={{
-                borderWidth: 1,
-                borderColor: "#d1d5db",
-                borderRadius: 16,
-                padding: 16,
-                backgroundColor: "#ffffff",
-                gap: 6
-              }}
-            >
-              <Text style={{ fontSize: 18, fontWeight: "700" }}>{item.guideName || "Reserva"}</Text>
-              <Text style={{ fontSize: 15 }}>Fecha: {item.date || "-"}</Text>
-              <Text style={{ fontSize: 15 }}>Horas: {item.hours ?? "-"}</Text>
-              <Text style={{ fontSize: 15 }}>
-                Total: USD {Number(item.totalAmount ?? item.amount ?? item.amountUsd ?? 0).toFixed(2)}
-              </Text>
-              <Text style={{ fontSize: 15, fontWeight: "700" }}>
-                Estado: {String(item.status || "PENDING").toUpperCase()}
-              </Text>
-            </View>
-          ))}
+
+        <View
+          style={{
+            marginTop: 18,
+            borderRadius: 20,
+            padding: 18,
+            borderWidth: 1,
+            borderColor: "#6F94BC",
+            backgroundColor: "#2F5F93",
+          }}
+        >
+          <Text style={{ color: "#FFFFFF", fontSize: 18, fontWeight: "800" }}>
+            Antes de reservar
+          </Text>
+
+          <Text style={{ color: "#E4F0FF", marginTop: 14, lineHeight: 30, fontSize: 15 }}>
+            • Cada guía ofrece una experiencia personalizada según tus intereses{"\n"}
+            • Podés coordinar directamente los detalles para adaptar el recorrido{"\n"}
+            • Las tarifas corresponden al servicio del guía según la modalidad indicada{"\n"}
+            • Gastos como comidas, transporte o entradas no están incluidos salvo que se indique expresamente{"\n"}
+            • En actividades compartidas, el viajero cubre también los gastos del guía{"\n"}
+            • Reservando a través de la plataforma asegurás una experiencia clara, segura y registrada
+          </Text>
         </View>
-      )}
+
+        <View
+          style={{
+            marginTop: 18,
+            backgroundColor: "#376AA0",
+            borderRadius: 20,
+            padding: 16,
+          }}
+        >
+          <Text style={{ color: "#FFFFFF", fontSize: 16, fontWeight: "700" }}>
+            Resumen
+          </Text>
+
+          <Text style={{ color: "#FFFFFF", marginTop: 12, fontSize: 15 }}>
+            Email: {travelerEmail || "-"}
+          </Text>
+
+          <Text style={{ color: "#FFFFFF", marginTop: 10, fontSize: 15 }}>
+            Modalidad: {mode === "hour" ? "Por hora" : mode === "day8" ? "Jornada 8h" : "24 hs"}
+          </Text>
+
+          <Text style={{ color: "#FFFFFF", marginTop: 10, fontSize: 15 }}>
+            Horas: {effectiveHours || "-"}
+          </Text>
+
+          <Text style={{ color: "#FFFFFF", marginTop: 10, fontSize: 15, fontWeight: "800" }}>
+            Total: USD {totalAmount > 0 ? totalAmount : "-"}
+          </Text>
+        </View>
+
+        <Pressable
+          onPress={createBooking}
+          disabled={loading}
+          style={{
+            marginTop: 22,
+            backgroundColor: "#27D3BE",
+            paddingVertical: 20,
+            borderRadius: 22,
+            alignItems: "center",
+            opacity: loading ? 0.7 : 1,
+          }}
+        >
+          <Text style={{ color: "#FFFFFF", fontSize: 20, fontWeight: "800" }}>
+            {loading ? "PROCESANDO..." : "Pagar"}
+          </Text>
+        </Pressable>
+
+        <Text
+          style={{
+            color: "#E4F0FF",
+            textAlign: "center",
+            marginTop: 18,
+            fontSize: 15,
+          }}
+        >
+          El chat con el guía se habilita únicamente después del pago.
+        </Text>
+      </View>
     </ScrollView>
   );
 }

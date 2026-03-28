@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+﻿import React, { useEffect } from "react";
 import { Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -67,7 +67,7 @@ export default function SplashScreen() {
           textAlign: "center",
         }}
       >
-        Gu�as personales para viajeros en todo el mundo
+        Guías personales para viajeros en todo el mundo
       </Text>
     </View>
   );

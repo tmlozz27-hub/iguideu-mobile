@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+ï»¿import React, { useEffect, useState } from "react";
 import { Alert, Pressable, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -37,12 +37,12 @@ export default function RegisterScreen() {
     const passwordClean = String(password || "").trim();
 
     if (!nameClean || !emailClean || !passwordClean) {
-      Alert.alert("Faltan datos", "Completá nombre, email y contraseña.");
+      Alert.alert("Faltan datos", "CompletÃ¡ nombre, email y contraseÃ±a.");
       return;
     }
 
     if (passwordClean.length < 6) {
-      Alert.alert("Contraseña inválida", "La contraseña debe tener al menos 6 caracteres.");
+      Alert.alert("ContraseÃ±a invÃ¡lida", "La contraseÃ±a debe tener al menos 6 caracteres.");
       return;
     }
 
@@ -52,14 +52,14 @@ export default function RegisterScreen() {
       const response = await fetch(`${API_BASE}/api/auth/register`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           name: nameClean,
           email: emailClean,
           password: passwordClean,
-          role
-        })
+          role,
+        }),
       });
 
       const data = await response.json();
@@ -69,18 +69,18 @@ export default function RegisterScreen() {
         return;
       }
 
-      await AsyncStorage.multiRemove([TOKEN_KEY]);
+      await AsyncStorage.multiRemove([TOKEN_KEY, USER_EMAIL_KEY]);
       await AsyncStorage.setItem(USER_EMAIL_KEY, emailClean);
       await AsyncStorage.removeItem(ROLE_KEY);
 
       Alert.alert(
         "OK",
-        "Cuenta creada correctamente. Ahora iniciá sesión con tu email y contraseña.",
+        "Cuenta creada correctamente. Ahora iniciÃ¡ sesiÃ³n con tu email y contraseÃ±a.",
         [
           {
             text: "OK",
-            onPress: () => router.replace("/login")
-          }
+            onPress: () => router.replace("/login"),
+          },
         ]
       );
     } catch (error) {
@@ -99,7 +99,7 @@ export default function RegisterScreen() {
           flex: 1,
           alignItems: "center",
           paddingHorizontal: 24,
-          paddingTop: 40
+          paddingTop: 40,
         }}
       >
         <Text
@@ -108,7 +108,7 @@ export default function RegisterScreen() {
             fontSize: 42,
             fontWeight: "800",
             marginBottom: 40,
-            marginTop: 10
+            marginTop: 10,
           }}
         >
           I GUIDE U
@@ -120,7 +120,7 @@ export default function RegisterScreen() {
             backgroundColor: "#ffffff",
             borderRadius: 28,
             padding: 22,
-            gap: 16
+            gap: 16,
           }}
         >
           <Text style={{ fontSize: 26, fontWeight: "800", color: "#111827" }}>
@@ -128,7 +128,7 @@ export default function RegisterScreen() {
           </Text>
 
           <Text style={{ color: "#1f3b63", fontSize: 16 }}>
-            Perfil elegido: {role === "guide" ? "Guía" : "Viajero"}
+            Perfil elegido: {role === "guide" ? "GuÃ­a" : "Viajero"}
           </Text>
 
           <Pressable onPress={() => router.replace("/select-role")}>
@@ -151,7 +151,7 @@ export default function RegisterScreen() {
               paddingVertical: 16,
               fontSize: 18,
               color: "#111827",
-              backgroundColor: "#ffffff"
+              backgroundColor: "#ffffff",
             }}
           />
 
@@ -171,7 +171,7 @@ export default function RegisterScreen() {
               paddingVertical: 16,
               fontSize: 18,
               color: "#111827",
-              backgroundColor: "#ffffff"
+              backgroundColor: "#ffffff",
             }}
           />
 
@@ -182,13 +182,13 @@ export default function RegisterScreen() {
               borderRadius: 14,
               backgroundColor: "#ffffff",
               flexDirection: "row",
-              alignItems: "center"
+              alignItems: "center",
             }}
           >
             <TextInput
               value={password}
               onChangeText={setPassword}
-              placeholder="Contraseña"
+              placeholder="ContraseÃ±a"
               placeholderTextColor="#9ca3af"
               secureTextEntry={!showPassword}
               editable={!loading}
@@ -197,15 +197,22 @@ export default function RegisterScreen() {
                 paddingHorizontal: 16,
                 paddingVertical: 16,
                 fontSize: 18,
-                color: "#111827"
+                color: "#111827",
               }}
             />
 
             <Pressable
-              onPress={() => setShowPassword((v) => !v)}
-              style={{ paddingHorizontal: 16, paddingVertical: 16 }}
+              onPress={() => setShowPassword((prev) => !prev)}
+              disabled={loading}
+              style={{
+                minWidth: 72,
+                paddingHorizontal: 12,
+                paddingVertical: 12,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
-              <Text style={{ color: "#1f3b63", fontSize: 16, fontWeight: "700" }}>
+              <Text style={{ color: "#1f3b63", fontSize: 15, fontWeight: "700" }}>
                 {showPassword ? "Ocultar" : "Ver"}
               </Text>
             </Pressable>
@@ -220,29 +227,22 @@ export default function RegisterScreen() {
               paddingVertical: 18,
               alignItems: "center",
               justifyContent: "center",
-              opacity: loading ? 0.7 : 1
+              opacity: loading ? 0.7 : 1,
             }}
           >
             <Text style={{ color: "#ffffff", fontSize: 22, fontWeight: "800" }}>
-              {loading ? "Creando cuenta..." : "REGISTRARSE"}
+              {loading ? "Creando cuenta..." : "Crear cuenta"}
             </Text>
           </Pressable>
 
           <View style={{ alignItems: "center", marginTop: 8 }}>
             <Text style={{ color: "#1f3b63", fontSize: 18 }}>
-              ¿Ya tienes cuenta?
+              Â¿Ya tienes cuenta?
             </Text>
 
-            <Pressable onPress={() => router.replace("/login")}>
-              <Text
-                style={{
-                  color: "#0f3f78",
-                  fontSize: 22,
-                  fontWeight: "800",
-                  marginTop: 6
-                }}
-              >
-                Volver a iniciar sesión
+            <Pressable onPress={() => router.replace("/login")} style={{ marginTop: 6 }}>
+              <Text style={{ color: "#0f3f78", fontWeight: "800", fontSize: 18 }}>
+                Iniciar sesiÃ³n
               </Text>
             </Pressable>
           </View>

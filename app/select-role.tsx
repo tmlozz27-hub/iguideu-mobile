@@ -1,4 +1,4 @@
-import React from "react";
+ï»¿import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -46,11 +46,11 @@ export default function SelectRoleScreen() {
           }}
         >
           <Text style={{ fontSize: 26, fontWeight: "800", color: "#111827" }}>
-            Elegí tu perfil
+            ElegÃ­ tu perfil
           </Text>
 
           <Text style={{ fontSize: 16, color: "#374151" }}>
-            Seleccioná cómo querés usar I GUIDE U.
+            SeleccionÃ¡ cÃ³mo querÃ©s usar I GUIDE U.
           </Text>
 
           <Pressable
@@ -81,13 +81,13 @@ export default function SelectRoleScreen() {
             }}
           >
             <Text style={{ color: "#374151", fontSize: 20, fontWeight: "700" }}>
-              Soy guía
+              Soy guÃ­a
             </Text>
           </Pressable>
 
           <View style={{ alignItems: "center", marginTop: 8 }}>
             <Text style={{ color: "#1f3b63", fontSize: 18 }}>
-              ¿Ya tienes cuenta?
+              Â¿Ya tienes cuenta?
             </Text>
 
             <Pressable onPress={() => router.push("/login")}>
@@ -99,7 +99,7 @@ export default function SelectRoleScreen() {
                   marginTop: 6
                 }}
               >
-                Iniciar sesión
+                Iniciar sesiÃ³n
               </Text>
             </Pressable>
           </View>
@@ -108,3 +108,4 @@ export default function SelectRoleScreen() {
     </SafeAreaView>
   );
 }
+
