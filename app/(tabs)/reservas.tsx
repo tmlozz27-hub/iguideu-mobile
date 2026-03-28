@@ -1,7 +1,8 @@
 ﻿import React, { useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
-import { useLocalSearchParams, router } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useStripe } from "@stripe/stripe-react-native";
 import { apiGet, apiPost } from "../../config/api";
 
 const TOKEN_KEY = "iguideu_token";
@@ -58,6 +59,8 @@ async function getAuthHeaders() {
 }
 
 export default function ReservasScreen() {
+  const router = useRouter();
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const params = useLocalSearchParams<{ guideId?: string }>();
   const lockedGuideId = typeof params.guideId === "string" ? params.guideId : "";
 
@@ -74,7 +77,13 @@ export default function ReservasScreen() {
 
   async function loadGuides() {
     const data = await apiGet("/api/guides");
-    const list = Array.isArray(data) ? data : Array.isArray((data as any)?.guides) ? (data as any).guides : [];
+    const list = Array.isArray(data)
+      ? data
+      : Array.isArray((data as any)?.guides)
+        ? (data as any).guides
+        : Array.isArray((data as any)?.items)
+          ? (data as any).items
+          : [];
     setGuides(list);
 
     if (lockedGuideId) {
@@ -88,7 +97,11 @@ export default function ReservasScreen() {
   async function loadBookings() {
     const headers = await getAuthHeaders();
     const data = await apiGet("/api/bookings", headers);
-    const list = Array.isArray(data) ? data : Array.isArray((data as any)?.items) ? (data as any).items : [];
+    const list = Array.isArray(data)
+      ? data
+      : Array.isArray((data as any)?.items)
+        ? (data as any).items
+        : [];
     const paidOnly = list.filter((item: Booking) => String(item.status || "").toUpperCase() === "PAID");
     setBookings(paidOnly);
   }
@@ -176,9 +189,6 @@ export default function ReservasScreen() {
       const headers = await getAuthHeaders();
       const h = Number(hours);
       const emailClean = String(travelerEmail || "").trim().toLowerCase();
-      const adultsValue = adultsCount;
-      const youthValue = youthCount;
-      const childrenValue = childrenCount;
 
       if (!emailClean) {
         Alert.alert("Error", "Falta el email del viajero.");
@@ -212,12 +222,12 @@ export default function ReservasScreen() {
           date: date.trim(),
           hours: h,
           guideId: selectedGuideId,
-          adults: adultsValue,
-          youth: youthValue,
-          children: childrenValue,
+          adults: adultsCount,
+          youth: youthCount,
+          children: childrenCount,
           travelersCount,
           amount: totalAmount,
-          totalAmount: totalAmount,
+          totalAmount,
           amountCents: totalAmountCents
         },
         headers
@@ -228,39 +238,47 @@ export default function ReservasScreen() {
         (created as any)?.booking?._id ||
         (created as any)?.id;
 
-      const amountRaw =
-        (created as any)?.amount ??
-        (created as any)?.totalAmount ??
-        (created as any)?.amountUsd ??
-        (created as any)?.booking?.amount ??
-        (created as any)?.booking?.totalAmount ??
-        (created as any)?.booking?.amountUsd ??
-        totalAmount ?? 0;
-
-      const amount = Number(amountRaw);
-
       if (!bookingId) {
         Alert.alert("Error", "La reserva se creó pero no volvió el bookingId.");
         await loadBookings();
         return;
       }
 
-      if (!Number.isFinite(amount) || amount <= 0) {
-        Alert.alert("Error", "No se pudo calcular un monto válido para el pago.");
+      const intentResponse = await apiPost(
+        "/api/payments/create-intent",
+        { bookingId },
+        headers
+      );
+
+      const clientSecret = String(intentResponse?.clientSecret || "").trim();
+
+      if (!clientSecret) {
+        Alert.alert("Error", "No se pudo iniciar el pago.");
         await loadBookings();
         return;
       }
 
-      await apiPost(
-        "/api/payments/pay-test",
-        {
-          bookingId,
-          amount
-        },
-        headers
-      );
+      const init = await initPaymentSheet({
+        merchantDisplayName: "I GUIDE U",
+        paymentIntentClientSecret: clientSecret,
+        defaultBillingDetails: {
+          email: emailClean
+        }
+      });
 
-      Alert.alert("OK", "Reserva creada y marcada como PAID en test.");
+      if (init.error) {
+        Alert.alert("Error", init.error.message || "No se pudo preparar el pago.");
+        return;
+      }
+
+      const result = await presentPaymentSheet();
+
+      if (result.error) {
+        Alert.alert("Pago no completado", result.error.message || "El pago fue cancelado.");
+        return;
+      }
+
+      Alert.alert("OK", "Pago realizado correctamente.");
       await loadBookings();
     } catch (error: any) {
       console.log("ERROR createBooking()", error);
