@@ -9,17 +9,25 @@ export default function RegisterScreen() {
   const isGuide = role === "guide";
   const isTraveler = role === "traveler";
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [accepted, setAccepted] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [travelerName, setTravelerName] = useState("");
+  const [travelerEmail, setTravelerEmail] = useState("");
+  const [travelerPassword, setTravelerPassword] = useState("");
+  const [travelerConfirmPassword, setTravelerConfirmPassword] = useState("");
+  const [travelerAccepted, setTravelerAccepted] = useState(false);
+  const [travelerShowPassword, setTravelerShowPassword] = useState(false);
+  const [travelerShowConfirmPassword, setTravelerShowConfirmPassword] = useState(false);
+
+  const [guideName, setGuideName] = useState("");
+  const [guideEmail, setGuideEmail] = useState("");
+  const [guidePassword, setGuidePassword] = useState("");
+  const [guideConfirmPassword, setGuideConfirmPassword] = useState("");
+  const [guideAccepted, setGuideAccepted] = useState(false);
+  const [guideShowPassword, setGuideShowPassword] = useState(false);
+  const [guideShowConfirmPassword, setGuideShowConfirmPassword] = useState(false);
 
   const handleTravelerContinue = () => {
-    const cleanName = name.trim();
-    const cleanEmail = email.trim().toLowerCase();
+    const cleanName = travelerName.trim();
+    const cleanEmail = travelerEmail.trim().toLowerCase();
 
     if (!cleanName) {
       Alert.alert("Falta el nombre", "Ingresá tu nombre.");
@@ -36,27 +44,27 @@ export default function RegisterScreen() {
       return;
     }
 
-    if (!password) {
+    if (!travelerPassword) {
       Alert.alert("Falta la contraseña", "Ingresá una contraseña.");
       return;
     }
 
-    if (password.length < 6) {
+    if (travelerPassword.length < 6) {
       Alert.alert("Contraseña débil", "La contraseña debe tener al menos 6 caracteres.");
       return;
     }
 
-    if (!confirmPassword) {
+    if (!travelerConfirmPassword) {
       Alert.alert("Falta confirmar", "Confirmá tu contraseña.");
       return;
     }
 
-    if (password !== confirmPassword) {
+    if (travelerPassword !== travelerConfirmPassword) {
       Alert.alert("Contraseñas distintas", "La contraseña y su confirmación no coinciden.");
       return;
     }
 
-    if (!accepted) {
+    if (!travelerAccepted) {
       Alert.alert(
         "Falta aceptación",
         "Debés aceptar los Términos y Condiciones y la Política de Privacidad."
@@ -65,6 +73,56 @@ export default function RegisterScreen() {
     }
 
     Alert.alert("OK", "Validación viajero completa. El próximo paso es conectar este alta al backend.");
+  };
+
+  const handleGuideContinue = () => {
+    const cleanName = guideName.trim();
+    const cleanEmail = guideEmail.trim().toLowerCase();
+
+    if (!cleanName) {
+      Alert.alert("Falta el nombre", "Ingresá tu nombre completo.");
+      return;
+    }
+
+    if (!cleanEmail) {
+      Alert.alert("Falta el correo", "Ingresá tu correo electrónico.");
+      return;
+    }
+
+    if (!cleanEmail.includes("@") || !cleanEmail.includes(".")) {
+      Alert.alert("Correo inválido", "Ingresá un correo electrónico válido.");
+      return;
+    }
+
+    if (!guidePassword) {
+      Alert.alert("Falta la contraseña", "Ingresá una contraseña.");
+      return;
+    }
+
+    if (guidePassword.length < 6) {
+      Alert.alert("Contraseña débil", "La contraseña debe tener al menos 6 caracteres.");
+      return;
+    }
+
+    if (!guideConfirmPassword) {
+      Alert.alert("Falta confirmar", "Confirmá tu contraseña.");
+      return;
+    }
+
+    if (guidePassword !== guideConfirmPassword) {
+      Alert.alert("Contraseñas distintas", "La contraseña y su confirmación no coinciden.");
+      return;
+    }
+
+    if (!guideAccepted) {
+      Alert.alert(
+        "Falta aceptación",
+        "Debés aceptar los Términos y Condiciones y la Política de Privacidad."
+      );
+      return;
+    }
+
+    Alert.alert("OK", "Validación guía completa. El próximo paso es agregar los campos profesionales.");
   };
 
   return (
@@ -118,8 +176,8 @@ export default function RegisterScreen() {
       {isTraveler ? (
         <View style={{ width: "100%" }}>
           <TextInput
-            value={name}
-            onChangeText={setName}
+            value={travelerName}
+            onChangeText={setTravelerName}
             placeholder="Nombre"
             placeholderTextColor="#EAF4FF"
             autoCapitalize="words"
@@ -136,8 +194,8 @@ export default function RegisterScreen() {
           />
 
           <TextInput
-            value={email}
-            onChangeText={setEmail}
+            value={travelerEmail}
+            onChangeText={setTravelerEmail}
             placeholder="Correo electrónico"
             placeholderTextColor="#EAF4FF"
             autoCapitalize="none"
@@ -165,11 +223,11 @@ export default function RegisterScreen() {
             }}
           >
             <TextInput
-              value={password}
-              onChangeText={setPassword}
+              value={travelerPassword}
+              onChangeText={setTravelerPassword}
               placeholder="Contraseña"
               placeholderTextColor="#EAF4FF"
-              secureTextEntry={!showPassword}
+              secureTextEntry={!travelerShowPassword}
               style={{
                 flex: 1,
                 color: "#FFFFFF",
@@ -179,20 +237,11 @@ export default function RegisterScreen() {
               }}
             />
             <Pressable
-              onPress={() => setShowPassword((prev) => !prev)}
-              style={{
-                paddingHorizontal: 14,
-                paddingVertical: 12,
-              }}
+              onPress={() => setTravelerShowPassword((prev) => !prev)}
+              style={{ paddingHorizontal: 14, paddingVertical: 12 }}
             >
-              <Text
-                style={{
-                  color: "#FFFFFF",
-                  fontSize: 15,
-                  fontWeight: "700",
-                }}
-              >
-                {showPassword ? "Ocultar" : "Ver"}
+              <Text style={{ color: "#FFFFFF", fontSize: 15, fontWeight: "700" }}>
+                {travelerShowPassword ? "Ocultar" : "Ver"}
               </Text>
             </Pressable>
           </View>
@@ -208,11 +257,11 @@ export default function RegisterScreen() {
             }}
           >
             <TextInput
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
+              value={travelerConfirmPassword}
+              onChangeText={setTravelerConfirmPassword}
               placeholder="Confirmar contraseña"
               placeholderTextColor="#EAF4FF"
-              secureTextEntry={!showConfirmPassword}
+              secureTextEntry={!travelerShowConfirmPassword}
               style={{
                 flex: 1,
                 color: "#FFFFFF",
@@ -222,26 +271,17 @@ export default function RegisterScreen() {
               }}
             />
             <Pressable
-              onPress={() => setShowConfirmPassword((prev) => !prev)}
-              style={{
-                paddingHorizontal: 14,
-                paddingVertical: 12,
-              }}
+              onPress={() => setTravelerShowConfirmPassword((prev) => !prev)}
+              style={{ paddingHorizontal: 14, paddingVertical: 12 }}
             >
-              <Text
-                style={{
-                  color: "#FFFFFF",
-                  fontSize: 15,
-                  fontWeight: "700",
-                }}
-              >
-                {showConfirmPassword ? "Ocultar" : "Ver"}
+              <Text style={{ color: "#FFFFFF", fontSize: 15, fontWeight: "700" }}>
+                {travelerShowConfirmPassword ? "Ocultar" : "Ver"}
               </Text>
             </Pressable>
           </View>
 
           <Pressable
-            onPress={() => setAccepted((prev) => !prev)}
+            onPress={() => setTravelerAccepted((prev) => !prev)}
             style={{
               flexDirection: "row",
               alignItems: "flex-start",
@@ -255,7 +295,7 @@ export default function RegisterScreen() {
                 borderRadius: 6,
                 borderWidth: 2,
                 borderColor: "#FFFFFF",
-                backgroundColor: accepted ? "#FFFFFF" : "transparent",
+                backgroundColor: travelerAccepted ? "#FFFFFF" : "transparent",
                 marginRight: 12,
                 marginTop: 2,
               }}
@@ -284,21 +324,12 @@ export default function RegisterScreen() {
               marginTop: 4,
             }}
           >
-            <Text
-              style={{
-                color: "#0B66B3",
-                fontSize: 22,
-                fontWeight: "800",
-              }}
-            >
+            <Text style={{ color: "#0B66B3", fontSize: 22, fontWeight: "800" }}>
               CONTINUAR
             </Text>
           </Pressable>
 
-          <Pressable
-            onPress={() => router.replace("/login")}
-            style={{ marginTop: 14 }}
-          >
+          <Pressable onPress={() => router.replace("/login")} style={{ marginTop: 14 }}>
             <Text
               style={{
                 color: "#FFFFFF",
@@ -314,8 +345,8 @@ export default function RegisterScreen() {
       ) : (
         <View style={{ width: "100%" }}>
           <TextInput
-            value={name}
-            onChangeText={setName}
+            value={guideName}
+            onChangeText={setGuideName}
             placeholder="Nombre completo"
             placeholderTextColor="#EAF4FF"
             autoCapitalize="words"
@@ -332,8 +363,8 @@ export default function RegisterScreen() {
           />
 
           <TextInput
-            value={email}
-            onChangeText={setEmail}
+            value={guideEmail}
+            onChangeText={setGuideEmail}
             placeholder="Correo electrónico"
             placeholderTextColor="#EAF4FF"
             autoCapitalize="none"
@@ -350,7 +381,108 @@ export default function RegisterScreen() {
             }}
           />
 
+          <View
+            style={{
+              width: "100%",
+              backgroundColor: "rgba(255,255,255,0.22)",
+              borderRadius: 18,
+              flexDirection: "row",
+              alignItems: "center",
+              marginBottom: 14,
+            }}
+          >
+            <TextInput
+              value={guidePassword}
+              onChangeText={setGuidePassword}
+              placeholder="Contraseña"
+              placeholderTextColor="#EAF4FF"
+              secureTextEntry={!guideShowPassword}
+              style={{
+                flex: 1,
+                color: "#FFFFFF",
+                paddingHorizontal: 18,
+                paddingVertical: 18,
+                fontSize: 18,
+              }}
+            />
+            <Pressable
+              onPress={() => setGuideShowPassword((prev) => !prev)}
+              style={{ paddingHorizontal: 14, paddingVertical: 12 }}
+            >
+              <Text style={{ color: "#FFFFFF", fontSize: 15, fontWeight: "700" }}>
+                {guideShowPassword ? "Ocultar" : "Ver"}
+              </Text>
+            </Pressable>
+          </View>
+
+          <View
+            style={{
+              width: "100%",
+              backgroundColor: "rgba(255,255,255,0.22)",
+              borderRadius: 18,
+              flexDirection: "row",
+              alignItems: "center",
+              marginBottom: 14,
+            }}
+          >
+            <TextInput
+              value={guideConfirmPassword}
+              onChangeText={setGuideConfirmPassword}
+              placeholder="Confirmar contraseña"
+              placeholderTextColor="#EAF4FF"
+              secureTextEntry={!guideShowConfirmPassword}
+              style={{
+                flex: 1,
+                color: "#FFFFFF",
+                paddingHorizontal: 18,
+                paddingVertical: 18,
+                fontSize: 18,
+              }}
+            />
+            <Pressable
+              onPress={() => setGuideShowConfirmPassword((prev) => !prev)}
+              style={{ paddingHorizontal: 14, paddingVertical: 12 }}
+            >
+              <Text style={{ color: "#FFFFFF", fontSize: 15, fontWeight: "700" }}>
+                {guideShowConfirmPassword ? "Ocultar" : "Ver"}
+              </Text>
+            </Pressable>
+          </View>
+
           <Pressable
+            onPress={() => setGuideAccepted((prev) => !prev)}
+            style={{
+              flexDirection: "row",
+              alignItems: "flex-start",
+              marginBottom: 18,
+            }}
+          >
+            <View
+              style={{
+                width: 22,
+                height: 22,
+                borderRadius: 6,
+                borderWidth: 2,
+                borderColor: "#FFFFFF",
+                backgroundColor: guideAccepted ? "#FFFFFF" : "transparent",
+                marginRight: 12,
+                marginTop: 2,
+              }}
+            />
+            <Text
+              style={{
+                color: "#FFFFFF",
+                fontSize: 14,
+                flex: 1,
+                lineHeight: 20,
+              }}
+            >
+              Acepto los Términos y Condiciones y la Política de Privacidad
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={handleGuideContinue}
             style={{
               width: "100%",
               backgroundColor: "#FFFFFF",
@@ -361,21 +493,12 @@ export default function RegisterScreen() {
               marginTop: 4,
             }}
           >
-            <Text
-              style={{
-                color: "#0B66B3",
-                fontSize: 22,
-                fontWeight: "800",
-              }}
-            >
+            <Text style={{ color: "#0B66B3", fontSize: 22, fontWeight: "800" }}>
               CONTINUAR
             </Text>
           </Pressable>
 
-          <Pressable
-            onPress={() => router.replace("/login")}
-            style={{ marginTop: 14 }}
-          >
+          <Pressable onPress={() => router.replace("/login")} style={{ marginTop: 14 }}>
             <Text
               style={{
                 color: "#FFFFFF",
