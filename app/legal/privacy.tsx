@@ -21,27 +21,43 @@ export default function PrivacyScreen() {
 
         <View style={{ gap: 14 }}>
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            I GUIDE U utiliza los datos que ingresás para permitir el acceso a tu cuenta, gestionar reservas y mejorar la experiencia dentro de la plataforma.
+            I GUIDE U recopila y utiliza información personal únicamente en la medida necesaria para operar la plataforma y brindar sus servicios.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            La información básica de contacto y perfil se almacena únicamente para el funcionamiento del servicio y para la comunicación necesaria entre viajeros y guías.
+            La información que podés proporcionar incluye nombre, correo electrónico, número de teléfono, datos de perfil y detalles relacionados con reservas.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            Tus datos no se comparten públicamente fuera de la plataforma, salvo en los casos necesarios para concretar una reserva o cumplir requisitos operativos del servicio.
+            Estos datos se utilizan para gestionar tu cuenta, facilitar la comunicación entre viajeros y guías, procesar reservas y mejorar la experiencia dentro de la aplicación.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            Los pagos se procesan mediante servicios externos especializados. I GUIDE U no almacena en la app datos completos de tarjetas.
+            Con tu autorización, la aplicación puede utilizar información de ubicación para mostrar guías cercanos y mejorar los resultados de búsqueda.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            Podés solicitar actualizaciones o correcciones de tu información desde tu perfil, según las funciones disponibles en la aplicación.
+            Los pagos se procesan a través de proveedores externos especializados como Stripe. I GUIDE U no almacena información completa de tarjetas de crédito o débito.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            Al usar I GUIDE U, aceptás esta política de privacidad y el tratamiento de datos necesario para operar la plataforma.
+            La información puede compartirse únicamente cuando sea necesario para el funcionamiento del servicio, como en el caso de una reserva entre viajero y guía o con proveedores tecnológicos que operan la plataforma.
+          </Text>
+
+          <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
+            I GUIDE U no vende datos personales. Se aplican medidas razonables de seguridad para proteger la información, aunque ningún sistema es completamente seguro.
+          </Text>
+
+          <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
+            Los datos podrán ser almacenados y procesados en distintos países debido al carácter global de la plataforma.
+          </Text>
+
+          <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
+            Podés solicitar la actualización o eliminación de tu información en la medida permitida por la ley.
+          </Text>
+
+          <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
+            El uso de la plataforma implica la aceptación de esta política de privacidad.
           </Text>
         </View>
       </ScrollView>

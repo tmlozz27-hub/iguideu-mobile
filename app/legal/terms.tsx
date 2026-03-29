@@ -21,31 +21,43 @@ export default function TermsScreen() {
 
         <View style={{ gap: 14 }}>
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            I GUIDE U conecta viajeros con guías locales independientes para facilitar reservas y experiencias personalizadas.
+            I GUIDE U es una plataforma digital que conecta viajeros con guías locales independientes que ofrecen experiencias personalizadas.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            Cada guía publica su perfil, disponibilidad, idiomas, tarifa y condiciones de servicio bajo su propia responsabilidad.
+            La plataforma no organiza, presta ni ejecuta directamente las experiencias. Los guías actúan como prestadores independientes y son los únicos responsables de los servicios que ofrecen.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            Antes de confirmar una reserva, el viajero debe revisar cuidadosamente la tarifa, duración, fecha, punto de encuentro y cualquier condición adicional informada por el guía.
+            Cada guía es responsable de la veracidad de su perfil, del cumplimiento de las leyes locales, de la seguridad de la actividad y de la calidad del servicio brindado.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            Los gastos extra, entradas, transporte, comidas u otros costos no están incluidos salvo que se indique expresamente en la propuesta del guía.
+            Al realizar una reserva, el viajero acepta el precio informado y el guía se compromete a brindar el servicio en las condiciones publicadas.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            Las cancelaciones, reprogramaciones y solicitudes especiales deben realizarse con la mayor anticipación posible para facilitar la coordinación entre las partes.
+            Política de cancelación: las cancelaciones realizadas con más de 24 horas de anticipación podrán recibir un reembolso completo. Las cancelaciones dentro de las 24 horas previas no son reembolsables. Si el guía cancela, el viajero recibirá un reembolso completo.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            I GUIDE U actúa como plataforma de conexión y gestión de reservas, pero no reemplaza el criterio personal del viajero al momento de elegir un guía o contratar un servicio.
+            En caso de no presentación del viajero en el horario acordado, la reserva podrá considerarse no show y no corresponderá reembolso.
           </Text>
 
           <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
-            Al continuar usando la app, aceptás estas condiciones generales de uso de la plataforma.
+            Los gastos adicionales como entradas, transporte o consumos no están incluidos salvo indicación expresa del guía.
+          </Text>
+
+          <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
+            I GUIDE U actúa únicamente como intermediario tecnológico. No garantiza la calidad, seguridad o legalidad de las experiencias ofrecidas.
+          </Text>
+
+          <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
+            El usuario participa en las experiencias bajo su propia responsabilidad y criterio.
+          </Text>
+
+          <Text style={{ fontSize: 17, color: "#374151", lineHeight: 28 }}>
+            El uso de la plataforma implica la aceptación de estos términos.
           </Text>
         </View>
       </ScrollView>
