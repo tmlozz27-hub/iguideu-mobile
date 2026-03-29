@@ -1,231 +1,291 @@
 import React, { useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Pressable, Text, TextInput, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { apiPost } from "@/config/api";
 
 export default function RegisterScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ role?: string }>();
+  const { role } = useLocalSearchParams<{ role?: string }>();
 
-  const initialRole = params?.role === "guide" ? "guide" : "traveler";
+  const isGuide = role === "guide";
+  const isTraveler = role === "traveler";
 
-  const [role] = useState<"guide" | "traveler">(initialRole);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const handleRegister = async () => {
-    const nameClean = String(name || "").trim();
-    const emailClean = String(email || "").trim().toLowerCase();
-    const passwordClean = String(password || "").trim();
-
-    if (!nameClean || !emailClean || !passwordClean) {
-      Alert.alert("Faltan datos", "Completá nombre, email y contraseña.");
-      return;
-    }
-
-    if (passwordClean.length < 6) {
-      Alert.alert("Contraseña inválida", "La contraseña debe tener al menos 6 caracteres.");
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      const data = await apiPost("/api/auth/register", {
-        name: nameClean,
-        email: emailClean,
-        password: passwordClean,
-        role,
-      });
-
-      if (!data?.ok) {
-        Alert.alert("Error", data?.message || "No se pudo crear la cuenta.");
-        return;
-      }
-
-      Alert.alert(
-        "Cuenta creada",
-        "Cuenta creada correctamente. Ahora iniciá sesión con tu email y contraseña.",
-        [
-          {
-            text: "OK",
-            onPress: () => router.replace("/login"),
-          },
-        ]
-      );
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "No se pudo conectar al backend.";
-      Alert.alert("Error", message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [accepted, setAccepted] = useState(false);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#0f9fb3" }}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: "#A9C9F5",
+        justifyContent: "center",
+        alignItems: "center",
+        paddingHorizontal: 24,
+      }}
+    >
+      <Text
+        style={{
+          color: "#FFFFFF",
+          fontSize: 42,
+          fontWeight: "800",
+          marginBottom: 24,
+          textAlign: "center",
+        }}
       >
-        <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View
+        I GUIDE U
+      </Text>
+
+      <Text
+        style={{
+          color: "#FFFFFF",
+          fontSize: 28,
+          fontWeight: "800",
+          marginBottom: 16,
+          textAlign: "center",
+        }}
+      >
+        {isGuide ? "Registro de Guía" : "Registro de Viajero"}
+      </Text>
+
+      <Text
+        style={{
+          color: "#FFFFFF",
+          fontSize: 18,
+          fontWeight: "600",
+          marginBottom: 24,
+          textAlign: "center",
+        }}
+      >
+        {isGuide
+          ? "Completá tu alta como guía"
+          : "Completá tu alta como viajero"}
+      </Text>
+
+      {isTraveler ? (
+        <View style={{ width: "100%" }}>
+          <TextInput
+            value={name}
+            onChangeText={setName}
+            placeholder="Nombre"
+            placeholderTextColor="#EAF4FF"
+            autoCapitalize="words"
             style={{
-              flex: 1,
+              width: "100%",
+              backgroundColor: "rgba(255,255,255,0.22)",
+              color: "#FFFFFF",
+              borderRadius: 18,
+              paddingHorizontal: 18,
+              paddingVertical: 18,
+              fontSize: 18,
+              marginBottom: 14,
+            }}
+          />
+
+          <TextInput
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Correo electrónico"
+            placeholderTextColor="#EAF4FF"
+            autoCapitalize="none"
+            keyboardType="email-address"
+            style={{
+              width: "100%",
+              backgroundColor: "rgba(255,255,255,0.22)",
+              color: "#FFFFFF",
+              borderRadius: 18,
+              paddingHorizontal: 18,
+              paddingVertical: 18,
+              fontSize: 18,
+              marginBottom: 14,
+            }}
+          />
+
+          <TextInput
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Contraseña"
+            placeholderTextColor="#EAF4FF"
+            secureTextEntry
+            style={{
+              width: "100%",
+              backgroundColor: "rgba(255,255,255,0.22)",
+              color: "#FFFFFF",
+              borderRadius: 18,
+              paddingHorizontal: 18,
+              paddingVertical: 18,
+              fontSize: 18,
+              marginBottom: 14,
+            }}
+          />
+
+          <TextInput
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            placeholder="Confirmar contraseña"
+            placeholderTextColor="#EAF4FF"
+            secureTextEntry
+            style={{
+              width: "100%",
+              backgroundColor: "rgba(255,255,255,0.22)",
+              color: "#FFFFFF",
+              borderRadius: 18,
+              paddingHorizontal: 18,
+              paddingVertical: 18,
+              fontSize: 18,
+              marginBottom: 14,
+            }}
+          />
+
+          <Pressable
+            onPress={() => setAccepted((prev) => !prev)}
+            style={{
+              flexDirection: "row",
+              alignItems: "flex-start",
+              marginBottom: 18,
+            }}
+          >
+            <View
+              style={{
+                width: 22,
+                height: 22,
+                borderRadius: 6,
+                borderWidth: 2,
+                borderColor: "#FFFFFF",
+                backgroundColor: accepted ? "#FFFFFF" : "transparent",
+                marginRight: 12,
+                marginTop: 2,
+              }}
+            />
+            <Text
+              style={{
+                color: "#FFFFFF",
+                fontSize: 14,
+                flex: 1,
+                lineHeight: 20,
+              }}
+            >
+              Acepto los Términos y Condiciones y la Política de Privacidad
+            </Text>
+          </Pressable>
+
+          <Pressable
+            style={{
+              width: "100%",
+              backgroundColor: "#FFFFFF",
+              borderRadius: 22,
+              paddingVertical: 18,
               alignItems: "center",
-              paddingHorizontal: 24,
-              paddingTop: 40,
-              paddingBottom: 24,
+              justifyContent: "center",
+              marginTop: 4,
             }}
           >
             <Text
               style={{
-                color: "#ffffff",
-                fontSize: 42,
+                color: "#0B66B3",
+                fontSize: 22,
                 fontWeight: "800",
-                marginBottom: 40,
-                marginTop: 10,
               }}
             >
-              I GUIDE U
+              CONTINUAR
             </Text>
+          </Pressable>
 
-            <View
+          <Pressable
+            onPress={() => router.replace("/login")}
+            style={{ marginTop: 14 }}
+          >
+            <Text
               style={{
-                width: "100%",
-                backgroundColor: "#ffffff",
-                borderRadius: 28,
-                padding: 22,
-                gap: 16,
+                color: "#FFFFFF",
+                fontSize: 16,
+                textAlign: "center",
+                textDecorationLine: "underline",
               }}
             >
-              <Text style={{ fontSize: 26, fontWeight: "800", color: "#111827" }}>
-                Crear cuenta
-              </Text>
+              Volver al login
+            </Text>
+          </Pressable>
+        </View>
+      ) : (
+        <View style={{ width: "100%" }}>
+          <TextInput
+            value={name}
+            onChangeText={setName}
+            placeholder="Nombre completo"
+            placeholderTextColor="#EAF4FF"
+            autoCapitalize="words"
+            style={{
+              width: "100%",
+              backgroundColor: "rgba(255,255,255,0.22)",
+              color: "#FFFFFF",
+              borderRadius: 18,
+              paddingHorizontal: 18,
+              paddingVertical: 18,
+              fontSize: 18,
+              marginBottom: 14,
+            }}
+          />
 
-              <Text style={{ color: "#374151", fontSize: 16 }}>
-                Perfil elegido: {role === "guide" ? "Guía" : "Viajero"}
-              </Text>
+          <TextInput
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Correo electrónico"
+            placeholderTextColor="#EAF4FF"
+            autoCapitalize="none"
+            keyboardType="email-address"
+            style={{
+              width: "100%",
+              backgroundColor: "rgba(255,255,255,0.22)",
+              color: "#FFFFFF",
+              borderRadius: 18,
+              paddingHorizontal: 18,
+              paddingVertical: 18,
+              fontSize: 18,
+              marginBottom: 14,
+            }}
+          />
 
-              <TextInput
-                value={name}
-                onChangeText={setName}
-                placeholder="Nombre"
-                placeholderTextColor="#9ca3af"
-                editable={!loading}
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#d1d5db",
-                  borderRadius: 14,
-                  paddingHorizontal: 16,
-                  paddingVertical: 16,
-                  fontSize: 18,
-                  color: "#111827",
-                  backgroundColor: "#ffffff",
-                }}
-              />
+          <Pressable
+            style={{
+              width: "100%",
+              backgroundColor: "#FFFFFF",
+              borderRadius: 22,
+              paddingVertical: 18,
+              alignItems: "center",
+              justifyContent: "center",
+              marginTop: 4,
+            }}
+          >
+            <Text
+              style={{
+                color: "#0B66B3",
+                fontSize: 22,
+                fontWeight: "800",
+              }}
+            >
+              CONTINUAR
+            </Text>
+          </Pressable>
 
-              <TextInput
-                value={email}
-                onChangeText={setEmail}
-                placeholder="Email"
-                placeholderTextColor="#9ca3af"
-                autoCapitalize="none"
-                keyboardType="email-address"
-                editable={!loading}
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#d1d5db",
-                  borderRadius: 14,
-                  paddingHorizontal: 16,
-                  paddingVertical: 16,
-                  fontSize: 18,
-                  color: "#111827",
-                  backgroundColor: "#ffffff",
-                }}
-              />
-
-              <View
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#d1d5db",
-                  borderRadius: 14,
-                  backgroundColor: "#ffffff",
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <TextInput
-                  value={password}
-                  onChangeText={setPassword}
-                  placeholder="Contraseña"
-                  placeholderTextColor="#9ca3af"
-                  secureTextEntry={!showPassword}
-                  editable={!loading}
-                  style={{
-                    flex: 1,
-                    paddingHorizontal: 16,
-                    paddingVertical: 16,
-                    fontSize: 18,
-                    color: "#111827",
-                  }}
-                />
-
-                <Pressable
-                  onPress={() => setShowPassword((prev) => !prev)}
-                  disabled={loading}
-                  style={{
-                    minWidth: 72,
-                    paddingHorizontal: 12,
-                    paddingVertical: 12,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Text style={{ color: "#1f3b63", fontSize: 15, fontWeight: "700" }}>
-                    {showPassword ? "Ocultar" : "Ver"}
-                  </Text>
-                </Pressable>
-              </View>
-
-              <Pressable
-                onPress={handleRegister}
-                disabled={loading}
-                style={{
-                  backgroundColor: "#f6c744",
-                  borderRadius: 14,
-                  paddingVertical: 18,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  opacity: loading ? 0.7 : 1,
-                }}
-              >
-                <Text style={{ color: "#ffffff", fontSize: 22, fontWeight: "800" }}>
-                  {loading ? "Creando..." : "Crear cuenta"}
-                </Text>
-              </Pressable>
-
-              <View style={{ alignItems: "center", marginTop: 8 }}>
-                <Text style={{ color: "#1f3b63", fontSize: 18 }}>
-                  ¿Ya tienes cuenta?
-                </Text>
-
-                <Pressable onPress={() => router.replace("/login")} style={{ marginTop: 6 }}>
-                  <Text style={{ color: "#0f3f78", fontWeight: "800", fontSize: 18 }}>
-                    Iniciar sesión
-                  </Text>
-                </Pressable>
-              </View>
-            </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+          <Pressable
+            onPress={() => router.replace("/login")}
+            style={{ marginTop: 14 }}
+          >
+            <Text
+              style={{
+                color: "#FFFFFF",
+                fontSize: 16,
+                textAlign: "center",
+                textDecorationLine: "underline",
+              }}
+            >
+              Volver al login
+            </Text>
+          </Pressable>
+        </View>
+      )}
+    </View>
   );
 }
