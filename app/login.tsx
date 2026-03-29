@@ -3,7 +3,7 @@ import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, Tex
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { apiPost } from "../config/api";
+import { apiPost } from "@/config/api";
 
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
@@ -227,7 +227,9 @@ export default function LoginScreen() {
               </Pressable>
 
               <Pressable
-                onPress={() => Alert.alert("Próximo paso", "Google login se conecta después del flujo legal y recuperación.")}
+                onPress={() =>
+                  Alert.alert("Próximo paso", "Google login se conecta después del flujo legal y recuperación.")
+                }
                 style={{
                   borderWidth: 1,
                   borderColor: "#d1d5db",
@@ -244,7 +246,9 @@ export default function LoginScreen() {
               </Pressable>
 
               <Pressable
-                onPress={() => Alert.alert("Próximo paso", "Facebook login se conecta después del flujo legal y recuperación.")}
+                onPress={() =>
+                  Alert.alert("Próximo paso", "Facebook login se conecta después del flujo legal y recuperación.")
+                }
                 style={{
                   borderWidth: 1,
                   borderColor: "#d1d5db",

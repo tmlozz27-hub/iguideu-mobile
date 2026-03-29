@@ -7,7 +7,8 @@
       "@/*": [
         "*"
       ]
-    }
+    },
+    "allowSyntheticDefaultImports": true
   },
   "include": [
     "**/*.ts",
@@ -15,15 +16,7 @@
   ],
   "exclude": [
     "node_modules",
-    ".expo",
-    "dist",
-    "build",
     "__DISABLED__ROUTES",
-    "_backup_api_dupes_20260128_000957",
-    "app/guides-country.tsx",
-    "app/guia/**",
-    "components/parallax-scroll-view.tsx",
-    "config/bookingFlow.ts",
-    "lib/socket.ts"
+    "_backup_api_dupes_20260128_000957"
   ]
 }

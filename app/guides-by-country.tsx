@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { apiGet } from "../config/api";
+import { apiGet } from "@/config/api";
 
 type Guide = {
   _id?: string;
@@ -112,11 +112,11 @@ export default function GuidesByCountryScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f8fafc" }}>
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 28 }}>
         <Text style={{ fontSize: 28, fontWeight: "800", color: "#0f172a" }}>
-          Guías en {country || code || "este país"}
+          GuÃ­as en {country || code || "este paÃ­s"}
         </Text>
 
         <Text style={{ marginTop: 8, fontSize: 15, color: "#475569" }}>
-          Resultado: {guides.length} guía(s)
+          Resultado: {guides.length} guÃ­a(s)
         </Text>
 
         {guides.length === 0 ? (
@@ -131,11 +131,11 @@ export default function GuidesByCountryScreen() {
             }}
           >
             <Text style={{ fontSize: 16, fontWeight: "700", color: "#0f172a" }}>
-              No encontramos guías para {country || code || "este país"}
+              No encontramos guÃ­as para {country || code || "este paÃ­s"}
             </Text>
 
             <Text style={{ marginTop: 8, fontSize: 14, color: "#64748b" }}>
-              Total de guías cargados en app: {allGuidesCount}
+              Total de guÃ­as cargados en app: {allGuidesCount}
             </Text>
 
             <Pressable
@@ -176,7 +176,7 @@ export default function GuidesByCountryScreen() {
               }}
             >
               <Text style={{ fontSize: 18, fontWeight: "800", color: "#0f172a" }}>
-                {g.name || "Guía"}
+                {g.name || "GuÃ­a"}
               </Text>
 
               <Text style={{ marginTop: 4, color: "#475569" }}>

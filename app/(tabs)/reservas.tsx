@@ -74,6 +74,7 @@ export default function ReservasScreen() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [selectedGuideId, setSelectedGuideId] = useState(lockedGuideId);
   const [loading, setLoading] = useState(false);
+  const [lastPaidBookingId, setLastPaidBookingId] = useState("");
 
   async function loadGuides() {
     const data = await apiGet("/api/guides");
@@ -185,6 +186,7 @@ export default function ReservasScreen() {
 
     try {
       setLoading(true);
+      setLastPaidBookingId("");
 
       const headers = await getAuthHeaders();
       const h = Number(hours);
@@ -278,6 +280,7 @@ export default function ReservasScreen() {
         return;
       }
 
+      setLastPaidBookingId(String(bookingId));
       Alert.alert("OK", "Pago realizado correctamente.");
       await loadBookings();
     } catch (error: any) {
@@ -540,6 +543,23 @@ export default function ReservasScreen() {
             </Text>
           </Pressable>
 
+          {lastPaidBookingId ? (
+            <Pressable
+              onPress={() => router.push({ pathname: "/chat", params: { bookingId: lastPaidBookingId } })}
+              style={{
+                backgroundColor: "#000000",
+                paddingVertical: 18,
+                borderRadius: 16,
+                alignItems: "center",
+                justifyContent: "center"
+              }}
+            >
+              <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
+                ABRIR CHAT
+              </Text>
+            </Pressable>
+          ) : null}
+
           <Text style={{ fontSize: 16, textAlign: "center", color: "#4b5563" }}>
             Tu información de contacto se compartirá solo después del pago
           </Text>
@@ -583,22 +603,6 @@ export default function ReservasScreen() {
             <Text>Horas: {booking.hours ?? "-"}</Text>
             <Text>Monto: USD {Number(amount || 0).toFixed(2)}</Text>
             <Text>Estado: {booking.status || "-"}</Text>
-
-            <Pressable
-              onPress={() => router.push({ pathname: "/chat", params: { bookingId: booking._id } })}
-              style={{
-                marginTop: 10,
-                backgroundColor: "#000000",
-                paddingVertical: 14,
-                borderRadius: 14,
-                alignItems: "center",
-                justifyContent: "center"
-              }}
-            >
-              <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "700" }}>
-                ABRIR CHAT
-              </Text>
-            </Pressable>
           </View>
         );
       })}

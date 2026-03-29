@@ -1,7 +1,7 @@
-﻿import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import { apiGet } from "../../config/api";
+import { apiGet } from "@/config/api";
 
 type Guide = {
   _id?: string;
@@ -11,15 +11,15 @@ type Guide = {
   city?: string;
   languages?: string[];
   rating?: number;
-  pricePerHour?: number;
-  priceHour?: number;
   priceDay?: number;
   price24h?: number;
-  priceFullDay24h?: number;
   bio?: string;
-  avatarUrl?: string;
-  distanceKm?: number;
 };
+
+function money(value?: number) {
+  if (!value || value <= 0) return "-";
+  return `USD ${value}`;
+}
 
 export default function GuiasScreen() {
   const router = useRouter();
@@ -29,19 +29,17 @@ export default function GuiasScreen() {
   const loadGuides = useCallback(async () => {
     try {
       setLoading(true);
-
       const data = (await apiGet("/api/guides")) as any;
 
-      const list = Array.isArray(data)
-        ? data
-        : Array.isArray(data?.items)
-        ? data.items
-        : [];
+      const list =
+        Array.isArray(data) ? data :
+        Array.isArray(data?.items) ? data.items :
+        Array.isArray(data?.guides) ? data.guides :
+        Array.isArray(data?.data) ? data.data :
+        [];
 
       setGuides(list);
-      console.log("GUIDES_LIST_OK", { count: list.length });
-    } catch (error: any) {
-      console.log("ERROR loadGuides()", error);
+    } catch {
       setGuides([]);
     } finally {
       setLoading(false);
@@ -53,77 +51,81 @@ export default function GuiasScreen() {
   }, [loadGuides]);
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 40 }}>
-      <Text style={{ fontSize: 24, fontWeight: "700" }}>Guías</Text>
-
-      <Pressable
-        onPress={() => router.push("/guias-cercanos")}
-        style={{
-          backgroundColor: "#0f172a",
-          paddingVertical: 12,
-          paddingHorizontal: 16,
-          borderRadius: 10,
-          alignSelf: "flex-start",
-        }}
-      >
-        <Text style={{ color: "#ffffff", fontWeight: "700" }}>
-          Ver guías cercanos en mapa
+    <ScrollView style={{ flex: 1, backgroundColor: "#eaf4ff" }} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+      <View style={{ backgroundColor: "#15539A", borderRadius: 24, padding: 18 }}>
+        <Text style={{ fontSize: 28, fontWeight: "800", color: "#ffffff" }}>
+          {"Gu\u00EDas"}
         </Text>
-      </Pressable>
 
-      <Pressable
-        onPress={loadGuides}
-        style={{
-          backgroundColor: "#ffffff",
-          paddingVertical: 12,
-          paddingHorizontal: 16,
-          borderRadius: 10,
-          alignSelf: "flex-start",
-          borderWidth: 1,
-          borderColor: "#d1d5db",
-        }}
-      >
-        <Text style={{ color: "#111827", fontWeight: "700" }}>Recargar guías</Text>
-      </Pressable>
+        <Text style={{ marginTop: 8, fontSize: 15, color: "#dbeafe" }}>
+          {"Abr\u00ED perfiles reales, revis\u00E1 tarifas y segu\u00ED directo a reserva."}
+        </Text>
 
-      {loading ? <ActivityIndicator size="large" /> : null}
+        <View style={{ flexDirection: "row", gap: 10, marginTop: 16 }}>
+          <Pressable
+            onPress={() => router.push("/guias-cercanos")}
+            style={{ flex: 1, backgroundColor: "#27D3BE", paddingVertical: 14, borderRadius: 14, alignItems: "center" }}
+          >
+            <Text style={{ color: "#ffffff", fontWeight: "800" }}>
+              {"Gu\u00EDas cercanos"}
+            </Text>
+          </Pressable>
 
-      {!loading && guides.length === 0 ? (
-        <View style={{ paddingVertical: 20 }}>
+          <Pressable
+            onPress={loadGuides}
+            style={{ flex: 1, backgroundColor: "#ffffff", paddingVertical: 14, borderRadius: 14, alignItems: "center" }}
+          >
+            <Text style={{ color: "#15539A", fontWeight: "800" }}>
+              Recargar
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+
+      {loading && (
+        <View style={{ paddingTop: 30 }}>
+          <ActivityIndicator size="large" />
+        </View>
+      )}
+
+      {!loading && guides.length === 0 && (
+        <View style={{ marginTop: 16, backgroundColor: "#ffffff", borderRadius: 18, padding: 18 }}>
           <Text>No hay guías para mostrar.</Text>
         </View>
-      ) : null}
+      )}
 
       {guides.map((guide, index) => {
         const guideId = guide._id || guide.id || String(index);
+        const location = [guide.city, guide.country].filter(Boolean).join(", ");
+        const languages = Array.isArray(guide.languages) && guide.languages.length > 0
+          ? guide.languages.join(", ")
+          : "A confirmar";
 
         return (
           <Pressable
             key={guideId}
-            onPress={() =>
-              router.push({
-                pathname: "/guia-detalle",
-                params: {
-                  guideId,
-                },
-              })
-            }
-            style={{
-              borderWidth: 1,
-              borderColor: "#d1d5db",
-              borderRadius: 14,
-              padding: 14,
-              gap: 6,
-              backgroundColor: "#ffffff",
-            }}
+            onPress={() => router.push({ pathname: "/guia-detalle", params: { guideId } })}
+            style={{ marginTop: 16, borderRadius: 18, padding: 18, backgroundColor: "#ffffff" }}
           >
-            <Text style={{ fontSize: 18, fontWeight: "700" }}>{guide.name || "Guía"}</Text>
-            <Text>{[guide.city, guide.country].filter(Boolean).join(", ") || "-"}</Text>
-            <Text>Idiomas: {Array.isArray(guide.languages) ? guide.languages.join(", ") : "-"}</Text>
+            <Text style={{ fontSize: 22, fontWeight: "800" }}>
+              {guide.name || "Guía"}
+            </Text>
+
+            <Text>{location || "Ubicación a confirmar"}</Text>
+            <Text>Idiomas: {languages}</Text>
             <Text>Rating: {guide.rating ?? "-"}</Text>
-            <Text>Precio/hora: USD {guide.priceHour ?? guide.pricePerHour ?? "-"}</Text>
-            <Text>{guide.bio || "Sin descripción."}</Text>
-            <Text style={{ marginTop: 6, fontWeight: "700" }}>Ver perfil</Text>
+            <Text>Jornada 8h: {money(guide.priceDay)}</Text>
+            <Text>24 horas: {money(guide.price24h)}</Text>
+
+            <Text style={{ marginTop: 10 }}>
+              {guide.bio || "Guía local disponible para experiencias personalizadas."}
+            </Text>
+
+            <View style={{ marginTop: 12, backgroundColor: "#0f172a", padding: 10, borderRadius: 10 }}>
+              <Text style={{ color: "#ffffff", fontWeight: "800" }}>
+                Ver perfil
+              </Text>
+            </View>
           </Pressable>
         );
       })}

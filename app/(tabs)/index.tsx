@@ -1,45 +1,36 @@
 import React from "react";
-import { Pressable, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 
-export default function HomeScreen() {
+export default function HomeTabScreen() {
   const router = useRouter();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#f8fafc" }}>
-      <View
-        style={{
-          flex: 1,
-          paddingHorizontal: 20,
-          paddingTop: 24,
-          paddingBottom: 24
-        }}
-      >
-        <Text style={{ fontSize: 30, fontWeight: "800", color: "#0f172a" }}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: "#15539A" }}
+      contentContainerStyle={{ padding: 18, paddingBottom: 40 }}
+    >
+      <View style={{ backgroundColor: "#2F5F93", borderRadius: 24, padding: 18 }}>
+        <Text style={{ color: "#FFFFFF", fontSize: 28, fontWeight: "800" }}>
           I GUIDE U
         </Text>
 
-        <Text style={{ marginTop: 8, fontSize: 16, color: "#475569" }}>
-          Elegí cómo querés encontrar tu guía.
+        <Text style={{ color: "#FFFFFF", marginTop: 10, fontSize: 16 }}>
+          Elegí qué querés hacer
         </Text>
 
         <Pressable
           onPress={() => router.push("/buscar-pais")}
           style={{
-            marginTop: 24,
-            backgroundColor: "#ffffff",
-            borderWidth: 1,
-            borderColor: "#e5e7eb",
+            marginTop: 18,
+            backgroundColor: "#27D3BE",
+            paddingVertical: 18,
+            paddingHorizontal: 16,
             borderRadius: 20,
-            padding: 20
           }}
         >
-          <Text style={{ fontSize: 20, fontWeight: "800", color: "#0f172a" }}>
+          <Text style={{ color: "#FFFFFF", fontSize: 18, fontWeight: "800", textAlign: "center" }}>
             Buscar guías por país
-          </Text>
-          <Text style={{ marginTop: 6, fontSize: 14, color: "#64748b" }}>
-            Explorá guías disponibles según el país que elijas.
           </Text>
         </Pressable>
 
@@ -47,40 +38,62 @@ export default function HomeScreen() {
           onPress={() => router.push("/guias-cercanos")}
           style={{
             marginTop: 14,
-            backgroundColor: "#ffffff",
-            borderWidth: 1,
-            borderColor: "#e5e7eb",
+            backgroundColor: "#27D3BE",
+            paddingVertical: 18,
+            paddingHorizontal: 16,
             borderRadius: 20,
-            padding: 20
           }}
         >
-          <Text style={{ fontSize: 20, fontWeight: "800", color: "#0f172a" }}>
+          <Text style={{ color: "#FFFFFF", fontSize: 18, fontWeight: "800", textAlign: "center" }}>
             Guías cercanos
-          </Text>
-          <Text style={{ marginTop: 6, fontSize: 14, color: "#64748b" }}>
-            Encontrá guías cerca de tu ubicación actual.
           </Text>
         </Pressable>
 
         <Pressable
-          onPress={() => router.push("/(tabs)/perfil")}
+          onPress={() => router.push("/guias")}
           style={{
             marginTop: 14,
-            backgroundColor: "#ffffff",
-            borderWidth: 1,
-            borderColor: "#e5e7eb",
+            backgroundColor: "#1E88E5",
+            paddingVertical: 18,
+            paddingHorizontal: 16,
             borderRadius: 20,
-            padding: 20
           }}
         >
-          <Text style={{ fontSize: 20, fontWeight: "800", color: "#0f172a" }}>
-            Mi perfil
+          <Text style={{ color: "#FFFFFF", fontSize: 18, fontWeight: "800", textAlign: "center" }}>
+            Ver guías
           </Text>
-          <Text style={{ marginTop: 6, fontSize: 14, color: "#64748b" }}>
-            Revisá tu cuenta, reservas y opciones legales.
+        </Pressable>
+
+        <Pressable
+          onPress={() => router.push("/reservas")}
+          style={{
+            marginTop: 14,
+            backgroundColor: "#1E88E5",
+            paddingVertical: 18,
+            paddingHorizontal: 16,
+            borderRadius: 20,
+          }}
+        >
+          <Text style={{ color: "#FFFFFF", fontSize: 18, fontWeight: "800", textAlign: "center" }}>
+            Mis reservas
+          </Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => router.push("/perfil")}
+          style={{
+            marginTop: 14,
+            backgroundColor: "#1E88E5",
+            paddingVertical: 18,
+            paddingHorizontal: 16,
+            borderRadius: 20,
+          }}
+        >
+          <Text style={{ color: "#FFFFFF", fontSize: 18, fontWeight: "800", textAlign: "center" }}>
+            Mi perfil
           </Text>
         </Pressable>
       </View>
-    </SafeAreaView>
+    </ScrollView>
   );
 }

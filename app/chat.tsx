@@ -12,7 +12,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { apiGet, apiPost } from "../config/api";
+import { apiGet, apiPost } from "@/config/api";
 
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";

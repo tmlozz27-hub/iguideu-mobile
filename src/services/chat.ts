@@ -1,4 +1,4 @@
-import { API_BASE } from "../../config/api"
+import { API_BASE } from "@/config/api"
 
 async function readJsonSafe(res) {
   const raw = await res.text()

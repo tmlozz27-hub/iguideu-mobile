@@ -1,9 +1,9 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { apiGet, apiPut } from "../../config/api";
+import { apiGet, apiPut } from "@/config/api";
 
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
