@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Alert, Pressable, Text, TextInput, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 export default function RegisterScreen() {
@@ -14,6 +14,58 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [accepted, setAccepted] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const handleTravelerContinue = () => {
+    const cleanName = name.trim();
+    const cleanEmail = email.trim().toLowerCase();
+
+    if (!cleanName) {
+      Alert.alert("Falta el nombre", "Ingresá tu nombre.");
+      return;
+    }
+
+    if (!cleanEmail) {
+      Alert.alert("Falta el correo", "Ingresá tu correo electrónico.");
+      return;
+    }
+
+    if (!cleanEmail.includes("@") || !cleanEmail.includes(".")) {
+      Alert.alert("Correo inválido", "Ingresá un correo electrónico válido.");
+      return;
+    }
+
+    if (!password) {
+      Alert.alert("Falta la contraseña", "Ingresá una contraseña.");
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert("Contraseña débil", "La contraseña debe tener al menos 6 caracteres.");
+      return;
+    }
+
+    if (!confirmPassword) {
+      Alert.alert("Falta confirmar", "Confirmá tu contraseña.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert("Contraseñas distintas", "La contraseña y su confirmación no coinciden.");
+      return;
+    }
+
+    if (!accepted) {
+      Alert.alert(
+        "Falta aceptación",
+        "Debés aceptar los Términos y Condiciones y la Política de Privacidad."
+      );
+      return;
+    }
+
+    Alert.alert("OK", "Validación viajero completa. El próximo paso es conectar este alta al backend.");
+  };
 
   return (
     <View
@@ -102,41 +154,91 @@ export default function RegisterScreen() {
             }}
           />
 
-          <TextInput
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Contraseña"
-            placeholderTextColor="#EAF4FF"
-            secureTextEntry
+          <View
             style={{
               width: "100%",
               backgroundColor: "rgba(255,255,255,0.22)",
-              color: "#FFFFFF",
               borderRadius: 18,
-              paddingHorizontal: 18,
-              paddingVertical: 18,
-              fontSize: 18,
+              flexDirection: "row",
+              alignItems: "center",
               marginBottom: 14,
             }}
-          />
+          >
+            <TextInput
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Contraseña"
+              placeholderTextColor="#EAF4FF"
+              secureTextEntry={!showPassword}
+              style={{
+                flex: 1,
+                color: "#FFFFFF",
+                paddingHorizontal: 18,
+                paddingVertical: 18,
+                fontSize: 18,
+              }}
+            />
+            <Pressable
+              onPress={() => setShowPassword((prev) => !prev)}
+              style={{
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+              }}
+            >
+              <Text
+                style={{
+                  color: "#FFFFFF",
+                  fontSize: 15,
+                  fontWeight: "700",
+                }}
+              >
+                {showPassword ? "Ocultar" : "Ver"}
+              </Text>
+            </Pressable>
+          </View>
 
-          <TextInput
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            placeholder="Confirmar contraseña"
-            placeholderTextColor="#EAF4FF"
-            secureTextEntry
+          <View
             style={{
               width: "100%",
               backgroundColor: "rgba(255,255,255,0.22)",
-              color: "#FFFFFF",
               borderRadius: 18,
-              paddingHorizontal: 18,
-              paddingVertical: 18,
-              fontSize: 18,
+              flexDirection: "row",
+              alignItems: "center",
               marginBottom: 14,
             }}
-          />
+          >
+            <TextInput
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              placeholder="Confirmar contraseña"
+              placeholderTextColor="#EAF4FF"
+              secureTextEntry={!showConfirmPassword}
+              style={{
+                flex: 1,
+                color: "#FFFFFF",
+                paddingHorizontal: 18,
+                paddingVertical: 18,
+                fontSize: 18,
+              }}
+            />
+            <Pressable
+              onPress={() => setShowConfirmPassword((prev) => !prev)}
+              style={{
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+              }}
+            >
+              <Text
+                style={{
+                  color: "#FFFFFF",
+                  fontSize: 15,
+                  fontWeight: "700",
+                }}
+              >
+                {showConfirmPassword ? "Ocultar" : "Ver"}
+              </Text>
+            </Pressable>
+          </View>
 
           <Pressable
             onPress={() => setAccepted((prev) => !prev)}
@@ -171,6 +273,7 @@ export default function RegisterScreen() {
           </Pressable>
 
           <Pressable
+            onPress={handleTravelerContinue}
             style={{
               width: "100%",
               backgroundColor: "#FFFFFF",
