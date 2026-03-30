@@ -1,7 +1,6 @@
 import React from "react";
 import { Stack } from "expo-router";
 import { StripeProvider } from "@stripe/stripe-react-native";
-import { Text, View } from "react-native";
 
 export default function RootLayout() {
   const publishableKey =
@@ -15,17 +14,11 @@ export default function RootLayout() {
   );
 
   if (!publishableKey) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ fontSize: 16, color: "red" }}>
-          ERROR: Stripe Publishable Key no configurada
-        </Text>
-      </View>
-    );
+    console.warn("Stripe Publishable Key no configurada");
   }
 
   return (
-    <StripeProvider publishableKey={publishableKey}>
+    <StripeProvider publishableKey={publishableKey || "pk_test_placeholder"}>
       <Stack screenOptions={{ headerShown: false }} />
     </StripeProvider>
   );
