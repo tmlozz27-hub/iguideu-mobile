@@ -1,19 +1,16 @@
 import React from "react";
-import { Alert, Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 
 export default function SelectRoleScreen() {
   const router = useRouter();
 
   const goTraveler = () => {
-    router.push("/register");
+    router.push("/register?role=traveler");
   };
 
   const goGuide = () => {
-    Alert.alert(
-      "Registro de guía",
-      "El alta de guía todavía no está habilitada en esta versión. Por ahora podés ingresar como viajero."
-    );
+    router.push("/register?role=guide");
   };
 
   return (
@@ -90,16 +87,6 @@ export default function SelectRoleScreen() {
               }}
             >
               Guía
-            </Text>
-            <Text
-              style={{
-                color: "#EAF4FF",
-                fontSize: 13,
-                textAlign: "center",
-                marginTop: 6,
-              }}
-            >
-              Próximamente
             </Text>
           </Pressable>
         </View>

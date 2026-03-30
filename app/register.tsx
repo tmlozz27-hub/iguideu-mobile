@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Alert, Pressable, Text, TextInput, View } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiPost } from "@/config/api";
 
@@ -31,6 +31,8 @@ function mapRegisterError(message?: string) {
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const { role } = useLocalSearchParams<{ role?: string }>();
+  const isGuide = role === "guide";
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -46,7 +48,7 @@ export default function RegisterScreen() {
     const cleanEmail = email.trim().toLowerCase();
 
     if (!cleanName) {
-      Alert.alert("Error", "Ingresá tu nombre");
+      Alert.alert("Error", isGuide ? "Ingresá tu nombre completo" : "Ingresá tu nombre");
       return;
     }
 
@@ -93,8 +95,10 @@ export default function RegisterScreen() {
       await AsyncStorage.setItem(USER_EMAIL_KEY, cleanEmail);
 
       Alert.alert(
-        "Cuenta creada",
-        "Tu cuenta fue creada correctamente. Ya ingresaste a la app.",
+        isGuide ? "Cuenta de guía creada" : "Cuenta creada",
+        isGuide
+          ? "Tu cuenta de guía fue creada correctamente. Ya ingresaste a la app."
+          : "Tu cuenta fue creada correctamente. Ya ingresaste a la app.",
         [
           {
             text: "OK",
@@ -131,11 +135,11 @@ export default function RegisterScreen() {
           marginBottom: 20
         }}
       >
-        Crear cuenta
+        {isGuide ? "Registro de guía" : "Crear cuenta"}
       </Text>
 
       <TextInput
-        placeholder="Nombre"
+        placeholder={isGuide ? "Nombre completo" : "Nombre"}
         value={name}
         onChangeText={setName}
         editable={!loading}
@@ -207,7 +211,7 @@ export default function RegisterScreen() {
         }}
       >
         <Text style={{ textAlign: "center", fontWeight: "800" }}>
-          {loading ? "Creando..." : "Crear cuenta"}
+          {loading ? "Creando..." : isGuide ? "Crear cuenta de guía" : "Crear cuenta"}
         </Text>
       </Pressable>
 
