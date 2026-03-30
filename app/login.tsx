@@ -82,7 +82,7 @@ export default function LoginScreen() {
 
   if (checkingSession) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#0f9fb3", alignItems: "center", justifyContent: "center" }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#0B8FA4", alignItems: "center", justifyContent: "center" }}>
         <Text style={{ color: "#ffffff", fontSize: 24, fontWeight: "700" }}>
           Verificando sesión...
         </Text>
@@ -91,7 +91,7 @@ export default function LoginScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#0f9fb3" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#0B8FA4" }}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -105,39 +105,69 @@ export default function LoginScreen() {
               flex: 1,
               alignItems: "center",
               paddingHorizontal: 24,
-              paddingTop: 40,
+              paddingTop: 26,
               paddingBottom: 24,
             }}
           >
-            <Text
+            <View
               style={{
-                color: "#ffffff",
-                fontSize: 42,
-                fontWeight: "800",
-                marginBottom: 40,
-                marginTop: 10,
+                width: "100%",
+                alignItems: "center",
+                justifyContent: "center",
+                marginTop: 8,
+                marginBottom: 34,
+                position: "relative",
               }}
             >
-              I GUIDE U
-            </Text>
+              <Text
+                style={{
+                  position: "absolute",
+                  left: 40,
+                  top: 6,
+                  fontSize: 28,
+                }}
+              >
+                📍
+              </Text>
+
+              <Text
+                style={{
+                  color: "#ffffff",
+                  fontSize: 42,
+                  fontWeight: "800",
+                  letterSpacing: 1,
+                  textAlign: "center",
+                }}
+              >
+                I GUIDE U
+              </Text>
+            </View>
 
             <View
               style={{
                 width: "100%",
                 backgroundColor: "#ffffff",
                 borderRadius: 28,
-                padding: 22,
-                gap: 16,
+                paddingHorizontal: 22,
+                paddingTop: 24,
+                paddingBottom: 24,
               }}
             >
-              <Text style={{ fontSize: 26, fontWeight: "800", color: "#111827" }}>
+              <Text
+                style={{
+                  fontSize: 28,
+                  fontWeight: "800",
+                  color: "#162033",
+                  marginBottom: 20,
+                }}
+              >
                 Iniciar sesión
               </Text>
 
               <TextInput
                 value={email}
                 onChangeText={setEmail}
-                placeholder="Email"
+                placeholder="Correo electrónico"
                 placeholderTextColor="#9ca3af"
                 autoCapitalize="none"
                 keyboardType="email-address"
@@ -147,10 +177,11 @@ export default function LoginScreen() {
                   borderColor: "#d1d5db",
                   borderRadius: 14,
                   paddingHorizontal: 16,
-                  paddingVertical: 16,
+                  paddingVertical: 18,
                   fontSize: 18,
                   color: "#111827",
                   backgroundColor: "#ffffff",
+                  marginBottom: 14,
                 }}
               />
 
@@ -174,7 +205,7 @@ export default function LoginScreen() {
                   style={{
                     flex: 1,
                     paddingHorizontal: 16,
-                    paddingVertical: 16,
+                    paddingVertical: 18,
                     fontSize: 18,
                     color: "#111827",
                   }}
@@ -184,7 +215,7 @@ export default function LoginScreen() {
                   onPress={() => setShowPassword((prev) => !prev)}
                   disabled={loading}
                   style={{
-                    minWidth: 72,
+                    minWidth: 82,
                     paddingHorizontal: 12,
                     paddingVertical: 12,
                     alignItems: "center",
@@ -197,14 +228,8 @@ export default function LoginScreen() {
                 </Pressable>
               </View>
 
-              <Pressable onPress={() => router.push("/forgot-password")}>
-                <Text
-                  style={{
-                    textAlign: "right",
-                    color: "#1f3b63",
-                    fontSize: 16,
-                  }}
-                >
+              <Pressable onPress={() => router.push("/forgot-password")} style={{ marginTop: 14 }}>
+                <Text style={{ textAlign: "right", color: "#183B63", fontSize: 16 }}>
                   ¿Olvidaste tu contraseña?
                 </Text>
               </Pressable>
@@ -213,78 +238,41 @@ export default function LoginScreen() {
                 onPress={handleLogin}
                 disabled={loading}
                 style={{
-                  backgroundColor: "#f6c744",
+                  backgroundColor: "#F4C63D",
                   borderRadius: 14,
-                  paddingVertical: 18,
+                  paddingVertical: 20,
                   alignItems: "center",
                   justifyContent: "center",
                   opacity: loading ? 0.7 : 1,
+                  marginTop: 18,
                 }}
               >
-                <Text style={{ color: "#ffffff", fontSize: 22, fontWeight: "800" }}>
+                <Text style={{ color: "#ffffff", fontSize: 24, fontWeight: "800" }}>
                   {loading ? "Ingresando..." : "Acceder"}
                 </Text>
               </Pressable>
 
-              <Pressable
-                onPress={() =>
-                  Alert.alert("Próximo paso", "Google login se conecta después del flujo legal y recuperación.")
-                }
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#d1d5db",
-                  borderRadius: 14,
-                  paddingVertical: 18,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: "#ffffff",
-                }}
-              >
-                <Text style={{ color: "#374151", fontSize: 18, fontWeight: "600" }}>
-                  Acceder con Google
-                </Text>
-              </Pressable>
-
-              <Pressable
-                onPress={() =>
-                  Alert.alert("Próximo paso", "Facebook login se conecta después del flujo legal y recuperación.")
-                }
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#d1d5db",
-                  borderRadius: 14,
-                  paddingVertical: 18,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: "#ffffff",
-                }}
-              >
-                <Text style={{ color: "#374151", fontSize: 18, fontWeight: "600" }}>
-                  Acceder con Facebook
-                </Text>
-              </Pressable>
-
-              <View style={{ alignItems: "center", marginTop: 8 }}>
-                <Text style={{ color: "#1f3b63", fontSize: 18 }}>
+              <View style={{ alignItems: "center", marginTop: 26 }}>
+                <Text style={{ color: "#183B63", fontSize: 18 }}>
                   ¿No tienes cuenta?
                 </Text>
 
-                <Pressable onPress={() => router.push("/register")} style={{ marginTop: 6 }}>
-                  <Text style={{ color: "#0f3f78", fontWeight: "800", fontSize: 18 }}>
+                <Pressable onPress={() => router.push("/select-role")} style={{ marginTop: 8 }}>
+                  <Text style={{ color: "#0F3F78", fontWeight: "800", fontSize: 20 }}>
                     Registrarse
                   </Text>
                 </Pressable>
               </View>
 
-              <View style={{ alignItems: "center", marginTop: 6, gap: 10 }}>
+              <View style={{ alignItems: "center", marginTop: 20, gap: 10 }}>
                 <Pressable onPress={() => router.push("/legal/terms")}>
-                  <Text style={{ color: "#1f3b63", fontSize: 15, textDecorationLine: "underline" }}>
+                  <Text style={{ color: "#1f3b63", fontSize: 14, textDecorationLine: "underline" }}>
                     Términos y condiciones
                   </Text>
                 </Pressable>
 
                 <Pressable onPress={() => router.push("/legal/privacy")}>
-                  <Text style={{ color: "#1f3b63", fontSize: 15, textDecorationLine: "underline" }}>
+                  <Text style={{ color: "#1f3b63", fontSize: 14, textDecorationLine: "underline" }}>
                     Política de privacidad
                   </Text>
                 </Pressable>
