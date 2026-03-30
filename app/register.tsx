@@ -1,517 +1,120 @@
 import React, { useState } from "react";
 import { Alert, Pressable, Text, TextInput, View } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiPost } from "@/config/api";
+
+const TOKEN_KEY = "iguideu_token";
+const USER_EMAIL_KEY = "iguideu_user_email";
 
 export default function RegisterScreen() {
   const router = useRouter();
-  const { role } = useLocalSearchParams<{ role?: string }>();
 
-  const isGuide = role === "guide";
-  const isTraveler = role === "traveler";
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [accepted, setAccepted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const [travelerName, setTravelerName] = useState("");
-  const [travelerEmail, setTravelerEmail] = useState("");
-  const [travelerPassword, setTravelerPassword] = useState("");
-  const [travelerConfirmPassword, setTravelerConfirmPassword] = useState("");
-  const [travelerAccepted, setTravelerAccepted] = useState(false);
-  const [travelerShowPassword, setTravelerShowPassword] = useState(false);
-  const [travelerShowConfirmPassword, setTravelerShowConfirmPassword] = useState(false);
+  const handleRegister = async () => {
+    const cleanName = name.trim();
+    const cleanEmail = email.trim().toLowerCase();
 
-  const [guideName, setGuideName] = useState("");
-  const [guideEmail, setGuideEmail] = useState("");
-  const [guidePassword, setGuidePassword] = useState("");
-  const [guideConfirmPassword, setGuideConfirmPassword] = useState("");
-  const [guideAccepted, setGuideAccepted] = useState(false);
-  const [guideShowPassword, setGuideShowPassword] = useState(false);
-  const [guideShowConfirmPassword, setGuideShowConfirmPassword] = useState(false);
+    if (!cleanName) return Alert.alert("Error", "Ingresá tu nombre");
+    if (!cleanEmail) return Alert.alert("Error", "Ingresá tu email");
+    if (!password) return Alert.alert("Error", "Ingresá contraseña");
+    if (password.length < 6) return Alert.alert("Error", "Mínimo 6 caracteres");
+    if (password !== confirmPassword) return Alert.alert("Error", "No coinciden");
+    if (!accepted) return Alert.alert("Error", "Debés aceptar términos");
 
-  const handleTravelerContinue = () => {
-    const cleanName = travelerName.trim();
-    const cleanEmail = travelerEmail.trim().toLowerCase();
+    try {
+      setLoading(true);
 
-    if (!cleanName) {
-      Alert.alert("Falta el nombre", "Ingresá tu nombre.");
-      return;
+      const data = await apiPost("/api/auth/register", {
+        name: cleanName,
+        email: cleanEmail,
+        password
+      });
+
+      if (!data?.ok || !data?.token) {
+        Alert.alert("Error", data?.message || "No se pudo registrar");
+        return;
+      }
+
+      await AsyncStorage.setItem(TOKEN_KEY, data.token);
+      await AsyncStorage.setItem(USER_EMAIL_KEY, cleanEmail);
+
+      router.replace("/(tabs)");
+
+    } catch (err: any) {
+      Alert.alert("Error", err?.message || "Error conexión");
+    } finally {
+      setLoading(false);
     }
-
-    if (!cleanEmail) {
-      Alert.alert("Falta el correo", "Ingresá tu correo electrónico.");
-      return;
-    }
-
-    if (!cleanEmail.includes("@") || !cleanEmail.includes(".")) {
-      Alert.alert("Correo inválido", "Ingresá un correo electrónico válido.");
-      return;
-    }
-
-    if (!travelerPassword) {
-      Alert.alert("Falta la contraseña", "Ingresá una contraseña.");
-      return;
-    }
-
-    if (travelerPassword.length < 6) {
-      Alert.alert("Contraseña débil", "La contraseña debe tener al menos 6 caracteres.");
-      return;
-    }
-
-    if (!travelerConfirmPassword) {
-      Alert.alert("Falta confirmar", "Confirmá tu contraseña.");
-      return;
-    }
-
-    if (travelerPassword !== travelerConfirmPassword) {
-      Alert.alert("Contraseñas distintas", "La contraseña y su confirmación no coinciden.");
-      return;
-    }
-
-    if (!travelerAccepted) {
-      Alert.alert(
-        "Falta aceptación",
-        "Debés aceptar los Términos y Condiciones y la Política de Privacidad."
-      );
-      return;
-    }
-
-    Alert.alert("OK", "Validación viajero completa. El próximo paso es conectar este alta al backend.");
-  };
-
-  const handleGuideContinue = () => {
-    const cleanName = guideName.trim();
-    const cleanEmail = guideEmail.trim().toLowerCase();
-
-    if (!cleanName) {
-      Alert.alert("Falta el nombre", "Ingresá tu nombre completo.");
-      return;
-    }
-
-    if (!cleanEmail) {
-      Alert.alert("Falta el correo", "Ingresá tu correo electrónico.");
-      return;
-    }
-
-    if (!cleanEmail.includes("@") || !cleanEmail.includes(".")) {
-      Alert.alert("Correo inválido", "Ingresá un correo electrónico válido.");
-      return;
-    }
-
-    if (!guidePassword) {
-      Alert.alert("Falta la contraseña", "Ingresá una contraseña.");
-      return;
-    }
-
-    if (guidePassword.length < 6) {
-      Alert.alert("Contraseña débil", "La contraseña debe tener al menos 6 caracteres.");
-      return;
-    }
-
-    if (!guideConfirmPassword) {
-      Alert.alert("Falta confirmar", "Confirmá tu contraseña.");
-      return;
-    }
-
-    if (guidePassword !== guideConfirmPassword) {
-      Alert.alert("Contraseñas distintas", "La contraseña y su confirmación no coinciden.");
-      return;
-    }
-
-    if (!guideAccepted) {
-      Alert.alert(
-        "Falta aceptación",
-        "Debés aceptar los Términos y Condiciones y la Política de Privacidad."
-      );
-      return;
-    }
-
-    Alert.alert("OK", "Validación guía completa. El próximo paso es agregar los campos profesionales.");
   };
 
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: "#A9C9F5",
-        justifyContent: "center",
-        alignItems: "center",
-        paddingHorizontal: 24,
-      }}
-    >
-      <Text
-        style={{
-          color: "#FFFFFF",
-          fontSize: 42,
-          fontWeight: "800",
-          marginBottom: 24,
-          textAlign: "center",
-        }}
-      >
+    <View style={{ flex: 1, backgroundColor: "#A9C9F5", justifyContent: "center", padding: 24 }}>
+      <Text style={{ fontSize: 36, color: "#fff", fontWeight: "800", textAlign: "center", marginBottom: 20 }}>
         I GUIDE U
       </Text>
 
-      <Text
-        style={{
-          color: "#FFFFFF",
-          fontSize: 28,
-          fontWeight: "800",
-          marginBottom: 16,
-          textAlign: "center",
-        }}
-      >
-        {isGuide ? "Registro de Guía" : "Registro de Viajero"}
+      <Text style={{ fontSize: 24, color: "#fff", textAlign: "center", marginBottom: 20 }}>
+        Crear cuenta
       </Text>
 
-      <Text
-        style={{
-          color: "#FFFFFF",
-          fontSize: 18,
-          fontWeight: "600",
-          marginBottom: 24,
-          textAlign: "center",
-        }}
+      <TextInput
+        placeholder="Nombre"
+        value={name}
+        onChangeText={setName}
+        style={{ backgroundColor: "#fff", padding: 14, borderRadius: 12, marginBottom: 10 }}
+      />
+
+      <TextInput
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+        style={{ backgroundColor: "#fff", padding: 14, borderRadius: 12, marginBottom: 10 }}
+      />
+
+      <TextInput
+        placeholder="Contraseña"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+        style={{ backgroundColor: "#fff", padding: 14, borderRadius: 12, marginBottom: 10 }}
+      />
+
+      <TextInput
+        placeholder="Confirmar contraseña"
+        secureTextEntry
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+        style={{ backgroundColor: "#fff", padding: 14, borderRadius: 12, marginBottom: 10 }}
+      />
+
+      <Pressable onPress={() => setAccepted(!accepted)}>
+        <Text style={{ color: "#fff", marginBottom: 12 }}>
+          {accepted ? "☑" : "☐"} Acepto términos
+        </Text>
+      </Pressable>
+
+      <Pressable
+        onPress={handleRegister}
+        style={{ backgroundColor: "#fff", padding: 16, borderRadius: 14 }}
       >
-        {isGuide
-          ? "Completá tu alta como guía"
-          : "Completá tu alta como viajero"}
-      </Text>
+        <Text style={{ textAlign: "center", fontWeight: "800" }}>
+          {loading ? "Creando..." : "Crear cuenta"}
+        </Text>
+      </Pressable>
 
-      {isTraveler ? (
-        <View style={{ width: "100%" }}>
-          <TextInput
-            value={travelerName}
-            onChangeText={setTravelerName}
-            placeholder="Nombre"
-            placeholderTextColor="#EAF4FF"
-            autoCapitalize="words"
-            style={{
-              width: "100%",
-              backgroundColor: "rgba(255,255,255,0.22)",
-              color: "#FFFFFF",
-              borderRadius: 18,
-              paddingHorizontal: 18,
-              paddingVertical: 18,
-              fontSize: 18,
-              marginBottom: 14,
-            }}
-          />
-
-          <TextInput
-            value={travelerEmail}
-            onChangeText={setTravelerEmail}
-            placeholder="Correo electrónico"
-            placeholderTextColor="#EAF4FF"
-            autoCapitalize="none"
-            keyboardType="email-address"
-            style={{
-              width: "100%",
-              backgroundColor: "rgba(255,255,255,0.22)",
-              color: "#FFFFFF",
-              borderRadius: 18,
-              paddingHorizontal: 18,
-              paddingVertical: 18,
-              fontSize: 18,
-              marginBottom: 14,
-            }}
-          />
-
-          <View
-            style={{
-              width: "100%",
-              backgroundColor: "rgba(255,255,255,0.22)",
-              borderRadius: 18,
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: 14,
-            }}
-          >
-            <TextInput
-              value={travelerPassword}
-              onChangeText={setTravelerPassword}
-              placeholder="Contraseña"
-              placeholderTextColor="#EAF4FF"
-              secureTextEntry={!travelerShowPassword}
-              style={{
-                flex: 1,
-                color: "#FFFFFF",
-                paddingHorizontal: 18,
-                paddingVertical: 18,
-                fontSize: 18,
-              }}
-            />
-            <Pressable
-              onPress={() => setTravelerShowPassword((prev) => !prev)}
-              style={{ paddingHorizontal: 14, paddingVertical: 12 }}
-            >
-              <Text style={{ color: "#FFFFFF", fontSize: 15, fontWeight: "700" }}>
-                {travelerShowPassword ? "Ocultar" : "Ver"}
-              </Text>
-            </Pressable>
-          </View>
-
-          <View
-            style={{
-              width: "100%",
-              backgroundColor: "rgba(255,255,255,0.22)",
-              borderRadius: 18,
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: 14,
-            }}
-          >
-            <TextInput
-              value={travelerConfirmPassword}
-              onChangeText={setTravelerConfirmPassword}
-              placeholder="Confirmar contraseña"
-              placeholderTextColor="#EAF4FF"
-              secureTextEntry={!travelerShowConfirmPassword}
-              style={{
-                flex: 1,
-                color: "#FFFFFF",
-                paddingHorizontal: 18,
-                paddingVertical: 18,
-                fontSize: 18,
-              }}
-            />
-            <Pressable
-              onPress={() => setTravelerShowConfirmPassword((prev) => !prev)}
-              style={{ paddingHorizontal: 14, paddingVertical: 12 }}
-            >
-              <Text style={{ color: "#FFFFFF", fontSize: 15, fontWeight: "700" }}>
-                {travelerShowConfirmPassword ? "Ocultar" : "Ver"}
-              </Text>
-            </Pressable>
-          </View>
-
-          <Pressable
-            onPress={() => setTravelerAccepted((prev) => !prev)}
-            style={{
-              flexDirection: "row",
-              alignItems: "flex-start",
-              marginBottom: 18,
-            }}
-          >
-            <View
-              style={{
-                width: 22,
-                height: 22,
-                borderRadius: 6,
-                borderWidth: 2,
-                borderColor: "#FFFFFF",
-                backgroundColor: travelerAccepted ? "#FFFFFF" : "transparent",
-                marginRight: 12,
-                marginTop: 2,
-              }}
-            />
-            <Text
-              style={{
-                color: "#FFFFFF",
-                fontSize: 14,
-                flex: 1,
-                lineHeight: 20,
-              }}
-            >
-              Acepto los Términos y Condiciones y la Política de Privacidad
-            </Text>
-          </Pressable>
-
-          <Pressable
-            onPress={handleTravelerContinue}
-            style={{
-              width: "100%",
-              backgroundColor: "#FFFFFF",
-              borderRadius: 22,
-              paddingVertical: 18,
-              alignItems: "center",
-              justifyContent: "center",
-              marginTop: 4,
-            }}
-          >
-            <Text style={{ color: "#0B66B3", fontSize: 22, fontWeight: "800" }}>
-              CONTINUAR
-            </Text>
-          </Pressable>
-
-          <Pressable onPress={() => router.replace("/login")} style={{ marginTop: 14 }}>
-            <Text
-              style={{
-                color: "#FFFFFF",
-                fontSize: 16,
-                textAlign: "center",
-                textDecorationLine: "underline",
-              }}
-            >
-              Volver al login
-            </Text>
-          </Pressable>
-        </View>
-      ) : (
-        <View style={{ width: "100%" }}>
-          <TextInput
-            value={guideName}
-            onChangeText={setGuideName}
-            placeholder="Nombre completo"
-            placeholderTextColor="#EAF4FF"
-            autoCapitalize="words"
-            style={{
-              width: "100%",
-              backgroundColor: "rgba(255,255,255,0.22)",
-              color: "#FFFFFF",
-              borderRadius: 18,
-              paddingHorizontal: 18,
-              paddingVertical: 18,
-              fontSize: 18,
-              marginBottom: 14,
-            }}
-          />
-
-          <TextInput
-            value={guideEmail}
-            onChangeText={setGuideEmail}
-            placeholder="Correo electrónico"
-            placeholderTextColor="#EAF4FF"
-            autoCapitalize="none"
-            keyboardType="email-address"
-            style={{
-              width: "100%",
-              backgroundColor: "rgba(255,255,255,0.22)",
-              color: "#FFFFFF",
-              borderRadius: 18,
-              paddingHorizontal: 18,
-              paddingVertical: 18,
-              fontSize: 18,
-              marginBottom: 14,
-            }}
-          />
-
-          <View
-            style={{
-              width: "100%",
-              backgroundColor: "rgba(255,255,255,0.22)",
-              borderRadius: 18,
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: 14,
-            }}
-          >
-            <TextInput
-              value={guidePassword}
-              onChangeText={setGuidePassword}
-              placeholder="Contraseña"
-              placeholderTextColor="#EAF4FF"
-              secureTextEntry={!guideShowPassword}
-              style={{
-                flex: 1,
-                color: "#FFFFFF",
-                paddingHorizontal: 18,
-                paddingVertical: 18,
-                fontSize: 18,
-              }}
-            />
-            <Pressable
-              onPress={() => setGuideShowPassword((prev) => !prev)}
-              style={{ paddingHorizontal: 14, paddingVertical: 12 }}
-            >
-              <Text style={{ color: "#FFFFFF", fontSize: 15, fontWeight: "700" }}>
-                {guideShowPassword ? "Ocultar" : "Ver"}
-              </Text>
-            </Pressable>
-          </View>
-
-          <View
-            style={{
-              width: "100%",
-              backgroundColor: "rgba(255,255,255,0.22)",
-              borderRadius: 18,
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: 14,
-            }}
-          >
-            <TextInput
-              value={guideConfirmPassword}
-              onChangeText={setGuideConfirmPassword}
-              placeholder="Confirmar contraseña"
-              placeholderTextColor="#EAF4FF"
-              secureTextEntry={!guideShowConfirmPassword}
-              style={{
-                flex: 1,
-                color: "#FFFFFF",
-                paddingHorizontal: 18,
-                paddingVertical: 18,
-                fontSize: 18,
-              }}
-            />
-            <Pressable
-              onPress={() => setGuideShowConfirmPassword((prev) => !prev)}
-              style={{ paddingHorizontal: 14, paddingVertical: 12 }}
-            >
-              <Text style={{ color: "#FFFFFF", fontSize: 15, fontWeight: "700" }}>
-                {guideShowConfirmPassword ? "Ocultar" : "Ver"}
-              </Text>
-            </Pressable>
-          </View>
-
-          <Pressable
-            onPress={() => setGuideAccepted((prev) => !prev)}
-            style={{
-              flexDirection: "row",
-              alignItems: "flex-start",
-              marginBottom: 18,
-            }}
-          >
-            <View
-              style={{
-                width: 22,
-                height: 22,
-                borderRadius: 6,
-                borderWidth: 2,
-                borderColor: "#FFFFFF",
-                backgroundColor: guideAccepted ? "#FFFFFF" : "transparent",
-                marginRight: 12,
-                marginTop: 2,
-              }}
-            />
-            <Text
-              style={{
-                color: "#FFFFFF",
-                fontSize: 14,
-                flex: 1,
-                lineHeight: 20,
-              }}
-            >
-              Acepto los Términos y Condiciones y la Política de Privacidad
-            </Text>
-          </Pressable>
-
-          <Pressable
-            onPress={handleGuideContinue}
-            style={{
-              width: "100%",
-              backgroundColor: "#FFFFFF",
-              borderRadius: 22,
-              paddingVertical: 18,
-              alignItems: "center",
-              justifyContent: "center",
-              marginTop: 4,
-            }}
-          >
-            <Text style={{ color: "#0B66B3", fontSize: 22, fontWeight: "800" }}>
-              CONTINUAR
-            </Text>
-          </Pressable>
-
-          <Pressable onPress={() => router.replace("/login")} style={{ marginTop: 14 }}>
-            <Text
-              style={{
-                color: "#FFFFFF",
-                fontSize: 16,
-                textAlign: "center",
-                textDecorationLine: "underline",
-              }}
-            >
-              Volver al login
-            </Text>
-          </Pressable>
-        </View>
-      )}
+      <Pressable onPress={() => router.replace("/login")} style={{ marginTop: 16 }}>
+        <Text style={{ color: "#fff", textAlign: "center", textDecorationLine: "underline" }}>
+          Volver al login
+        </Text>
+      </Pressable>
     </View>
   );
 }
