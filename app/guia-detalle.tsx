@@ -29,8 +29,8 @@ export default function GuiaDetalleScreen() {
     typeof params.guideId === "string" && params.guideId.trim()
       ? params.guideId.trim()
       : typeof params.id === "string" && params.id.trim()
-      ? params.id.trim()
-      : "";
+        ? params.id.trim()
+        : "";
 
   const [loading, setLoading] = useState(true);
   const [guide, setGuide] = useState<Guide | null>(null);
@@ -45,10 +45,10 @@ export default function GuiaDetalleScreen() {
         const list = Array.isArray(data)
           ? data
           : Array.isArray((data as any)?.items)
-          ? (data as any).items
-          : Array.isArray((data as any)?.value)
-          ? (data as any).value
-          : [];
+            ? (data as any).items
+            : Array.isArray((data as any)?.value)
+              ? (data as any).value
+              : [];
 
         const found =
           list.find((g: any) => String(g?._id || "") === guideId) ||
@@ -78,8 +78,9 @@ export default function GuiaDetalleScreen() {
   }, [guide]);
 
   const priceHour = guide?.priceHour ?? guide?.pricePerHour ?? 0;
-  const priceDay = guide?.priceDay ?? 0;
+  const price8Hours = guide?.priceDay ?? 0;
   const price24h = guide?.price24h ?? guide?.priceFullDay24h ?? 0;
+  const selectedGuideId = String(guide?._id || guide?.id || "");
 
   if (loading) {
     return (
@@ -116,31 +117,19 @@ export default function GuiaDetalleScreen() {
           gap: 18
         }}
       >
-        <Text
-          style={{
-            color: "#ffffff",
-            fontSize: 22,
-            fontWeight: "700",
-            textAlign: "center",
-            marginTop: 4
-          }}
-        >
-          Perfil del guía
-        </Text>
-
         <View
           style={{
             backgroundColor: "rgba(255,255,255,0.10)",
             borderRadius: 28,
             padding: 22,
-            gap: 12
+            gap: 14
           }}
         >
           <View
             style={{
-              width: 108,
-              height: 108,
-              borderRadius: 54,
+              width: 136,
+              height: 136,
+              borderRadius: 68,
               backgroundColor: "#ffffff",
               alignSelf: "center",
               marginTop: 4
@@ -175,37 +164,26 @@ export default function GuiaDetalleScreen() {
           <Text
             style={{
               color: "#ffffff",
-              fontSize: 18,
-              textAlign: "center",
-              marginTop: 2
-            }}
-          >
-            {[guide.city, guide.country].filter(Boolean).join(", ") || "-"}
-          </Text>
-
-          <Text
-            style={{
-              color: "#ffffff",
-              fontSize: 18,
+              fontSize: 20,
               textAlign: "center"
             }}
           >
-            ★ {guide.rating ?? "-"}
+            {[guide.city, guide.country].filter(Boolean).join(", ") || "-"}
           </Text>
 
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{
-              paddingTop: 8,
+              paddingTop: 10,
               paddingBottom: 4,
               gap: 10
             }}
           >
-            <View
+            <Pressable
               style={{
-                width: 78,
-                height: 78,
+                width: 88,
+                height: 88,
                 borderRadius: 14,
                 backgroundColor: "#dbeafe",
                 justifyContent: "center",
@@ -213,12 +191,12 @@ export default function GuiaDetalleScreen() {
               }}
             >
               <Text style={{ color: "#0d4d92", fontWeight: "800" }}>Foto 1</Text>
-            </View>
+            </Pressable>
 
-            <View
+            <Pressable
               style={{
-                width: 78,
-                height: 78,
+                width: 88,
+                height: 88,
                 borderRadius: 14,
                 backgroundColor: "#bfdbfe",
                 justifyContent: "center",
@@ -226,12 +204,12 @@ export default function GuiaDetalleScreen() {
               }}
             >
               <Text style={{ color: "#0d4d92", fontWeight: "800" }}>Foto 2</Text>
-            </View>
+            </Pressable>
 
-            <View
+            <Pressable
               style={{
-                width: 78,
-                height: 78,
+                width: 88,
+                height: 88,
                 borderRadius: 14,
                 backgroundColor: "#93c5fd",
                 justifyContent: "center",
@@ -239,12 +217,12 @@ export default function GuiaDetalleScreen() {
               }}
             >
               <Text style={{ color: "#0d4d92", fontWeight: "800" }}>Foto 3</Text>
-            </View>
+            </Pressable>
 
-            <View
+            <Pressable
               style={{
-                width: 78,
-                height: 78,
+                width: 88,
+                height: 88,
                 borderRadius: 14,
                 backgroundColor: "#60a5fa",
                 justifyContent: "center",
@@ -252,12 +230,12 @@ export default function GuiaDetalleScreen() {
               }}
             >
               <Text style={{ color: "#ffffff", fontWeight: "800" }}>Foto 4</Text>
-            </View>
+            </Pressable>
 
-            <View
+            <Pressable
               style={{
-                width: 96,
-                height: 78,
+                width: 110,
+                height: 88,
                 borderRadius: 14,
                 backgroundColor: "#111827",
                 justifyContent: "center",
@@ -268,8 +246,53 @@ export default function GuiaDetalleScreen() {
             >
               <Text style={{ color: "#ffffff", fontSize: 20, fontWeight: "800" }}>▶</Text>
               <Text style={{ color: "#dbeafe", fontSize: 12, marginTop: 4 }}>Video 0:45</Text>
-            </View>
+            </Pressable>
           </ScrollView>
+
+          <View style={{ marginTop: 6, gap: 10 }}>
+            <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
+              Type of day
+            </Text>
+
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center"
+              }}
+            >
+              <Text style={{ color: "#ffffff", fontSize: 18 }}>Hourly</Text>
+              <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
+                ${priceHour || 0}
+              </Text>
+            </View>
+
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center"
+              }}
+            >
+              <Text style={{ color: "#ffffff", fontSize: 18 }}>8 hours</Text>
+              <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
+                ${price8Hours || 0}
+              </Text>
+            </View>
+
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center"
+              }}
+            >
+              <Text style={{ color: "#ffffff", fontSize: 18 }}>24 hours</Text>
+              <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
+                ${price24h || 0}
+              </Text>
+            </View>
+          </View>
 
           <Text
             style={{
@@ -304,16 +327,6 @@ export default function GuiaDetalleScreen() {
                 ? guide.languages.join(", ")
                 : "-"}
             </Text>
-
-            <Text style={{ color: "#ffffff", fontSize: 18, marginTop: 10 }}>Tipo de jornada</Text>
-            <Text style={{ color: "#dbeafe", fontSize: 18 }}>
-              Por hora, 8 horas, 24 horas
-            </Text>
-
-            <Text style={{ color: "#ffffff", fontSize: 18, marginTop: 10 }}>Tarifas</Text>
-            <Text style={{ color: "#dbeafe", fontSize: 18 }}>Por hora: USD {priceHour || "-"}</Text>
-            <Text style={{ color: "#dbeafe", fontSize: 18 }}>Jornada de 8h: USD {priceDay || "-"}</Text>
-            <Text style={{ color: "#dbeafe", fontSize: 18 }}>24 horas: USD {price24h || "-"}</Text>
           </View>
         </View>
 
@@ -356,7 +369,7 @@ export default function GuiaDetalleScreen() {
             router.push({
               pathname: "/(tabs)/reservas",
               params: {
-                guideId: guide._id
+                guideId: selectedGuideId
               }
             })
           }
