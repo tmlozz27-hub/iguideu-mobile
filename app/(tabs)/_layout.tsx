@@ -39,7 +39,7 @@ export default function TabsLayout() {
       pathname === "/perfil" || pathname === "/(tabs)/perfil";
 
     if (!allowed) {
-      router.replace("/perfil");
+      router.replace("/(tabs)/perfil");
     }
   }, [pathname, role, router]);
 

@@ -83,7 +83,8 @@ export default function RegisterScreen() {
       const data = await apiPost("/api/auth/register", {
         name: cleanName,
         email: cleanEmail,
-        password
+        password,
+        role: isGuide ? "guide" : "traveler"
       });
 
       if (!data?.ok || !data?.token) {

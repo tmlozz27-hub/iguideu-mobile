@@ -13,12 +13,8 @@ export default function RootLayout() {
     publishableKey ? publishableKey.slice(0, 12) : "VACIA"
   );
 
-  if (!publishableKey) {
-    console.warn("Stripe Publishable Key no configurada");
-  }
-
   return (
-    <StripeProvider publishableKey={publishableKey || "pk_test_placeholder"}>
+    <StripeProvider publishableKey={publishableKey}>
       <Stack screenOptions={{ headerShown: false }} />
     </StripeProvider>
   );

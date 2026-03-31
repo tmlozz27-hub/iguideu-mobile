@@ -48,19 +48,24 @@ export default function ResetPasswordScreen() {
       });
 
       if (!data?.ok) {
-        Alert.alert("Error", data?.message || "No se pudo cambiar la contraseña.");
+        const rawMessage = String(data?.message || data?.error || "").toUpperCase();
+
+        if (rawMessage.includes("INVALID") || rawMessage.includes("TOKEN")) {
+          Alert.alert("Error", "El token no es válido o venció.");
+        } else {
+          Alert.alert("Error", "No se pudo cambiar la contraseña.");
+        }
         return;
       }
 
-      Alert.alert("OK", "Contraseña actualizada correctamente.", [
+      Alert.alert("Listo", "Contraseña actualizada correctamente.", [
         {
           text: "Ir al login",
           onPress: () => router.replace("/login"),
         },
       ]);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "No se pudo conectar al backend.";
-      Alert.alert("Error", message);
+    } catch {
+      Alert.alert("Error", "No se pudo conectar con el servidor.");
     } finally {
       setLoading(false);
     }
@@ -233,6 +238,19 @@ export default function ResetPasswordScreen() {
               >
                 <Text style={{ color: "#ffffff", fontSize: 22, fontWeight: "800" }}>
                   {loading ? "Guardando..." : "Actualizar contraseña"}
+                </Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => router.replace("/login")}
+                style={{
+                  alignItems: "center",
+                  justifyContent: "center",
+                  paddingVertical: 10,
+                }}
+              >
+                <Text style={{ color: "#1f3b63", fontSize: 16, fontWeight: "700" }}>
+                  Volver al login
                 </Text>
               </Pressable>
             </View>

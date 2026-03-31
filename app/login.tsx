@@ -63,7 +63,7 @@ export default function LoginScreen() {
         if (rawMessage.includes("INVALID_CREDENTIALS")) {
           Alert.alert("Error", "Email o contraseña incorrectos.");
         } else {
-          Alert.alert("Error", data?.message || "No se pudo iniciar sesión.");
+          Alert.alert("Error", "No se pudo iniciar sesión.");
         }
         return;
       }
@@ -72,9 +72,8 @@ export default function LoginScreen() {
       await AsyncStorage.setItem(USER_EMAIL_KEY, emailClean);
 
       router.replace("/(tabs)");
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "No se pudo conectar al backend.";
-      Alert.alert("Error", message);
+    } catch {
+      Alert.alert("Error", "No se pudo conectar con el servidor.");
     } finally {
       setLoading(false);
     }
@@ -96,10 +95,7 @@ export default function LoginScreen() {
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
-          keyboardShouldPersistTaps="handled"
-        >
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
           <View
             style={{
               flex: 1,
@@ -119,14 +115,7 @@ export default function LoginScreen() {
                 position: "relative",
               }}
             >
-              <Text
-                style={{
-                  position: "absolute",
-                  left: 40,
-                  top: 6,
-                  fontSize: 28,
-                }}
-              >
+              <Text style={{ position: "absolute", left: 40, top: 6, fontSize: 28 }}>
                 📍
               </Text>
 
@@ -153,14 +142,7 @@ export default function LoginScreen() {
                 paddingBottom: 24,
               }}
             >
-              <Text
-                style={{
-                  fontSize: 28,
-                  fontWeight: "800",
-                  color: "#162033",
-                  marginBottom: 20,
-                }}
-              >
+              <Text style={{ fontSize: 28, fontWeight: "800", color: "#162033", marginBottom: 20 }}>
                 Iniciar sesión
               </Text>
 
@@ -168,7 +150,6 @@ export default function LoginScreen() {
                 value={email}
                 onChangeText={setEmail}
                 placeholder="Correo electrónico"
-                placeholderTextColor="#9ca3af"
                 autoCapitalize="none"
                 keyboardType="email-address"
                 editable={!loading}
@@ -179,57 +160,33 @@ export default function LoginScreen() {
                   paddingHorizontal: 16,
                   paddingVertical: 18,
                   fontSize: 18,
-                  color: "#111827",
-                  backgroundColor: "#ffffff",
                   marginBottom: 14,
                 }}
               />
 
-              <View
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#d1d5db",
-                  borderRadius: 14,
-                  backgroundColor: "#ffffff",
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
+              <View style={{ borderWidth: 1, borderColor: "#d1d5db", borderRadius: 14, flexDirection: "row" }}>
                 <TextInput
                   value={password}
                   onChangeText={setPassword}
                   placeholder="Contraseña"
-                  placeholderTextColor="#9ca3af"
                   secureTextEntry={!showPassword}
                   editable={!loading}
-                  style={{
-                    flex: 1,
-                    paddingHorizontal: 16,
-                    paddingVertical: 18,
-                    fontSize: 18,
-                    color: "#111827",
-                  }}
+                  style={{ flex: 1, paddingHorizontal: 16, paddingVertical: 18, fontSize: 18 }}
                 />
 
                 <Pressable
                   onPress={() => setShowPassword((prev) => !prev)}
                   disabled={loading}
-                  style={{
-                    minWidth: 82,
-                    paddingHorizontal: 12,
-                    paddingVertical: 12,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
+                  style={{ paddingHorizontal: 12, justifyContent: "center" }}
                 >
-                  <Text style={{ color: "#1f3b63", fontSize: 15, fontWeight: "700" }}>
+                  <Text style={{ fontWeight: "700" }}>
                     {showPassword ? "Ocultar" : "Ver"}
                   </Text>
                 </Pressable>
               </View>
 
               <Pressable onPress={() => router.push("/forgot-password")} style={{ marginTop: 14 }}>
-                <Text style={{ textAlign: "right", color: "#183B63", fontSize: 16 }}>
+                <Text style={{ textAlign: "right" }}>
                   ¿Olvidaste tu contraseña?
                 </Text>
               </Pressable>
@@ -242,37 +199,33 @@ export default function LoginScreen() {
                   borderRadius: 14,
                   paddingVertical: 20,
                   alignItems: "center",
-                  justifyContent: "center",
-                  opacity: loading ? 0.7 : 1,
                   marginTop: 18,
                 }}
               >
-                <Text style={{ color: "#ffffff", fontSize: 24, fontWeight: "800" }}>
+                <Text style={{ color: "#fff", fontSize: 24, fontWeight: "800" }}>
                   {loading ? "Ingresando..." : "Acceder"}
                 </Text>
               </Pressable>
 
               <View style={{ alignItems: "center", marginTop: 26 }}>
-                <Text style={{ color: "#183B63", fontSize: 18 }}>
-                  ¿No tienes cuenta?
-                </Text>
+                <Text>¿No tienes cuenta?</Text>
 
                 <Pressable onPress={() => router.push("/select-role")} style={{ marginTop: 8 }}>
-                  <Text style={{ color: "#0F3F78", fontWeight: "800", fontSize: 20 }}>
+                  <Text style={{ fontWeight: "800" }}>
                     Registrarse
                   </Text>
                 </Pressable>
               </View>
 
-              <View style={{ alignItems: "center", marginTop: 20, gap: 10 }}>
+              <View style={{ alignItems: "center", marginTop: 20 }}>
                 <Pressable onPress={() => router.push("/legal/terms")}>
-                  <Text style={{ color: "#1f3b63", fontSize: 14, textDecorationLine: "underline" }}>
+                  <Text style={{ textDecorationLine: "underline" }}>
                     Términos y condiciones
                   </Text>
                 </Pressable>
 
                 <Pressable onPress={() => router.push("/legal/privacy")}>
-                  <Text style={{ color: "#1f3b63", fontSize: 14, textDecorationLine: "underline" }}>
+                  <Text style={{ textDecorationLine: "underline", marginTop: 8 }}>
                     Política de privacidad
                   </Text>
                 </Pressable>
