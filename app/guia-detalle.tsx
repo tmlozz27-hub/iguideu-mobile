@@ -5,12 +5,12 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { apiGet } from "../config/api";
 
 type Guide = {
-  _id: string;
+  _id?: string;
   id?: string;
   name?: string;
   country?: string;
   city?: string;
-  languages?: string[];
+  languages?: string[] | string;
   rating?: number;
   pricePerHour?: number;
   priceHour?: number;
@@ -22,9 +22,25 @@ type Guide = {
   guideType?: string;
 };
 
+function toArray(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item || "").trim()).filter(Boolean);
+  }
+
+  if (typeof value === "string") {
+    return value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
 export default function GuiaDetalleScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ guideId?: string; id?: string }>();
+  const params = useLocalSearchParams<{ guideId?: string; id?: string; guideData?: string }>();
+
   const guideId =
     typeof params.guideId === "string" && params.guideId.trim()
       ? params.guideId.trim()
@@ -32,8 +48,17 @@ export default function GuiaDetalleScreen() {
         ? params.id.trim()
         : "";
 
+  const initialGuide = useMemo(() => {
+    try {
+      if (typeof params.guideData === "string" && params.guideData.trim()) {
+        return JSON.parse(params.guideData) as Guide;
+      }
+    } catch {}
+    return null;
+  }, [params.guideData]);
+
   const [loading, setLoading] = useState(true);
-  const [guide, setGuide] = useState<Guide | null>(null);
+  const [guide, setGuide] = useState<Guide | null>(initialGuide);
 
   useEffect(() => {
     let active = true;
@@ -41,24 +66,36 @@ export default function GuiaDetalleScreen() {
     async function run() {
       try {
         setLoading(true);
+
         const data = await apiGet("/api/guides");
         const list = Array.isArray(data)
           ? data
           : Array.isArray((data as any)?.items)
             ? (data as any).items
-            : Array.isArray((data as any)?.value)
-              ? (data as any).value
-              : [];
+            : Array.isArray((data as any)?.guides)
+              ? (data as any).guides
+              : Array.isArray((data as any)?.value)
+                ? (data as any).value
+                : [];
 
         const found =
           list.find((g: any) => String(g?._id || "") === guideId) ||
           list.find((g: any) => String(g?.id || "") === guideId) ||
           null;
 
-        if (active) setGuide(found);
+        if (!active) return;
+
+        if (found) {
+          setGuide(found);
+        } else if (initialGuide) {
+          setGuide(initialGuide);
+        } else {
+          setGuide(null);
+        }
       } catch (error) {
         console.log("ERROR loading guide detail", error);
-        if (active) setGuide(null);
+        if (!active) return;
+        setGuide(initialGuide || null);
       } finally {
         if (active) setLoading(false);
       }
@@ -69,7 +106,7 @@ export default function GuiaDetalleScreen() {
     return () => {
       active = false;
     };
-  }, [guideId]);
+  }, [guideId, initialGuide]);
 
   const badgeText = useMemo(() => {
     if (!guide) return "";
@@ -77,10 +114,18 @@ export default function GuiaDetalleScreen() {
     return "CERTIFIED";
   }, [guide]);
 
-  const priceHour = guide?.priceHour ?? guide?.pricePerHour ?? 0;
-  const price8Hours = guide?.priceDay ?? 0;
-  const price24h = guide?.price24h ?? guide?.priceFullDay24h ?? 0;
-  const selectedGuideId = String(guide?._id || guide?.id || "");
+  const guideName = String(guide?.name || "Guía").trim();
+  const guideLocation = [guide?.city, guide?.country].filter(Boolean).join(", ") || "-";
+  const guideBio =
+    String(guide?.bio || "").trim() ||
+    "Guía local con experiencia acompañando viajeros y creando experiencias personalizadas.";
+  const guideLanguages = toArray(guide?.languages);
+  const guideLanguagesText = guideLanguages.length > 0 ? guideLanguages.join(", ") : "-";
+
+  const priceHour = Number(guide?.priceHour ?? guide?.pricePerHour ?? 0);
+  const price8Hours = Number(guide?.priceDay ?? 0);
+  const price24h = Number(guide?.price24h ?? guide?.priceFullDay24h ?? 0);
+  const selectedGuideId = String(guide?._id || guide?.id || guideId || "");
 
   if (loading) {
     return (
@@ -111,9 +156,8 @@ export default function GuiaDetalleScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: "#0d4d92" }}>
       <ScrollView
         contentContainerStyle={{
-          flexGrow: 1,
-          backgroundColor: "#0d4d92",
           padding: 24,
+          paddingBottom: 34,
           gap: 18
         }}
       >
@@ -121,8 +165,7 @@ export default function GuiaDetalleScreen() {
           style={{
             backgroundColor: "rgba(255,255,255,0.10)",
             borderRadius: 28,
-            padding: 22,
-            gap: 14
+            padding: 22
           }}
         >
           <View
@@ -141,10 +184,11 @@ export default function GuiaDetalleScreen() {
               color: "#ffffff",
               fontSize: 34,
               fontWeight: "800",
-              textAlign: "center"
+              textAlign: "center",
+              marginTop: 16
             }}
           >
-            {guide.name || "Guía"}
+            {guideName}
           </Text>
 
           <View
@@ -153,7 +197,8 @@ export default function GuiaDetalleScreen() {
               backgroundColor: "#22c1a1",
               paddingHorizontal: 18,
               paddingVertical: 8,
-              borderRadius: 999
+              borderRadius: 999,
+              marginTop: 14
             }}
           >
             <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
@@ -165,22 +210,23 @@ export default function GuiaDetalleScreen() {
             style={{
               color: "#ffffff",
               fontSize: 20,
-              textAlign: "center"
+              textAlign: "center",
+              marginTop: 18
             }}
           >
-            {[guide.city, guide.country].filter(Boolean).join(", ") || "-"}
+            {guideLocation}
           </Text>
 
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{
-              paddingTop: 10,
+              paddingTop: 24,
               paddingBottom: 4,
               gap: 10
             }}
           >
-            <Pressable
+            <View
               style={{
                 width: 88,
                 height: 88,
@@ -191,9 +237,9 @@ export default function GuiaDetalleScreen() {
               }}
             >
               <Text style={{ color: "#0d4d92", fontWeight: "800" }}>Foto 1</Text>
-            </Pressable>
+            </View>
 
-            <Pressable
+            <View
               style={{
                 width: 88,
                 height: 88,
@@ -204,9 +250,9 @@ export default function GuiaDetalleScreen() {
               }}
             >
               <Text style={{ color: "#0d4d92", fontWeight: "800" }}>Foto 2</Text>
-            </Pressable>
+            </View>
 
-            <Pressable
+            <View
               style={{
                 width: 88,
                 height: 88,
@@ -217,9 +263,9 @@ export default function GuiaDetalleScreen() {
               }}
             >
               <Text style={{ color: "#0d4d92", fontWeight: "800" }}>Foto 3</Text>
-            </Pressable>
+            </View>
 
-            <Pressable
+            <View
               style={{
                 width: 88,
                 height: 88,
@@ -230,103 +276,102 @@ export default function GuiaDetalleScreen() {
               }}
             >
               <Text style={{ color: "#ffffff", fontWeight: "800" }}>Foto 4</Text>
-            </Pressable>
-
-            <Pressable
-              style={{
-                width: 110,
-                height: 88,
-                borderRadius: 14,
-                backgroundColor: "#111827",
-                justifyContent: "center",
-                alignItems: "center",
-                borderWidth: 2,
-                borderColor: "#22c1a1"
-              }}
-            >
-              <Text style={{ color: "#ffffff", fontSize: 20, fontWeight: "800" }}>▶</Text>
-              <Text style={{ color: "#dbeafe", fontSize: 12, marginTop: 4 }}>Video 0:45</Text>
-            </Pressable>
+            </View>
           </ScrollView>
-
-          <View style={{ marginTop: 6, gap: 10 }}>
-            <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
-              Type of day
-            </Text>
-
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center"
-              }}
-            >
-              <Text style={{ color: "#ffffff", fontSize: 18 }}>Hourly</Text>
-              <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
-                ${priceHour || 0}
-              </Text>
-            </View>
-
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center"
-              }}
-            >
-              <Text style={{ color: "#ffffff", fontSize: 18 }}>8 hours</Text>
-              <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
-                ${price8Hours || 0}
-              </Text>
-            </View>
-
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center"
-              }}
-            >
-              <Text style={{ color: "#ffffff", fontSize: 18 }}>24 hours</Text>
-              <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
-                ${price24h || 0}
-              </Text>
-            </View>
-          </View>
 
           <Text
             style={{
               color: "#ffffff",
               fontSize: 28,
               fontWeight: "700",
-              marginTop: 8
+              marginTop: 24
             }}
           >
-            About me
+            Bio
           </Text>
 
           <Text
             style={{
               color: "#e5eefb",
               fontSize: 20,
-              lineHeight: 30
+              lineHeight: 30,
+              marginTop: 12
             }}
           >
-            {guide.bio || "Guía local con experiencia acompañando viajeros y creando experiencias personalizadas."}
+            {guideBio}
           </Text>
 
-          <View style={{ marginTop: 12, gap: 10 }}>
-            <Text style={{ color: "#ffffff", fontSize: 18 }}>Ubicación</Text>
-            <Text style={{ color: "#dbeafe", fontSize: 18 }}>
-              {[guide.city, guide.country].filter(Boolean).join(", ") || "-"}
-            </Text>
+          <Text
+            style={{
+              color: "#ffffff",
+              fontSize: 22,
+              fontWeight: "700",
+              marginTop: 24
+            }}
+          >
+            Idiomas
+          </Text>
 
-            <Text style={{ color: "#ffffff", fontSize: 18, marginTop: 10 }}>Idiomas</Text>
-            <Text style={{ color: "#dbeafe", fontSize: 18 }}>
-              {Array.isArray(guide.languages) && guide.languages.length > 0
-                ? guide.languages.join(", ")
-                : "-"}
-            </Text>
+          <Text
+            style={{
+              color: "#dbeafe",
+              fontSize: 18,
+              marginTop: 10
+            }}
+          >
+            {guideLanguagesText}
+          </Text>
+
+          <Text
+            style={{
+              color: "#ffffff",
+              fontSize: 22,
+              fontWeight: "700",
+              marginTop: 24
+            }}
+          >
+            Tarifas
+          </Text>
+
+          <View style={{ marginTop: 12, gap: 12 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center"
+              }}
+            >
+              <Text style={{ color: "#ffffff", fontSize: 18 }}>Por hora</Text>
+              <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
+                USD {priceHour || 0}
+              </Text>
+            </View>
+
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center"
+              }}
+            >
+              <Text style={{ color: "#ffffff", fontSize: 18 }}>Jornada 8h</Text>
+              <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
+                USD {price8Hours || 0}
+              </Text>
+            </View>
+
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center"
+              }}
+            >
+              <Text style={{ color: "#ffffff", fontSize: 18 }}>24 horas</Text>
+              <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
+                USD {price24h || 0}
+              </Text>
+            </View>
           </View>
         </View>
 
