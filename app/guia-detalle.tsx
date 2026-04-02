@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { apiGet } from "../config/api";
@@ -20,6 +20,14 @@ type Guide = {
   bio?: string;
   avatarUrl?: string;
   guideType?: string;
+};
+
+type GalleryItem = {
+  key: string;
+  label: string;
+  backgroundColor: string;
+  textColor: string;
+  isVideo?: boolean;
 };
 
 function toArray(value: unknown): string[] {
@@ -59,6 +67,7 @@ export default function GuiaDetalleScreen() {
 
   const [loading, setLoading] = useState(true);
   const [guide, setGuide] = useState<Guide | null>(initialGuide);
+  const [selectedMedia, setSelectedMedia] = useState<GalleryItem | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -113,6 +122,43 @@ export default function GuiaDetalleScreen() {
     if (guide.guideType === "freelance") return "FREELANCE";
     return "CERTIFIED";
   }, [guide]);
+
+  const galleryItems = useMemo<GalleryItem[]>(
+    () => [
+      {
+        key: "photo-1",
+        label: "Foto 1",
+        backgroundColor: "#dbeafe",
+        textColor: "#0d4d92",
+      },
+      {
+        key: "photo-2",
+        label: "Foto 2",
+        backgroundColor: "#bfdbfe",
+        textColor: "#0d4d92",
+      },
+      {
+        key: "photo-3",
+        label: "Foto 3",
+        backgroundColor: "#93c5fd",
+        textColor: "#0d4d92",
+      },
+      {
+        key: "photo-4",
+        label: "Foto 4",
+        backgroundColor: "#60a5fa",
+        textColor: "#ffffff",
+      },
+      {
+        key: "video-45s",
+        label: "Video 45s",
+        backgroundColor: "#1d4ed8",
+        textColor: "#ffffff",
+        isVideo: true,
+      },
+    ],
+    []
+  );
 
   const guideName = String(guide?.name || "Guía").trim();
   const guideLocation = [guide?.city, guide?.country].filter(Boolean).join(", ") || "-";
@@ -226,57 +272,31 @@ export default function GuiaDetalleScreen() {
               gap: 10
             }}
           >
-            <View
-              style={{
-                width: 88,
-                height: 88,
-                borderRadius: 14,
-                backgroundColor: "#dbeafe",
-                justifyContent: "center",
-                alignItems: "center"
-              }}
-            >
-              <Text style={{ color: "#0d4d92", fontWeight: "800" }}>Foto 1</Text>
-            </View>
-
-            <View
-              style={{
-                width: 88,
-                height: 88,
-                borderRadius: 14,
-                backgroundColor: "#bfdbfe",
-                justifyContent: "center",
-                alignItems: "center"
-              }}
-            >
-              <Text style={{ color: "#0d4d92", fontWeight: "800" }}>Foto 2</Text>
-            </View>
-
-            <View
-              style={{
-                width: 88,
-                height: 88,
-                borderRadius: 14,
-                backgroundColor: "#93c5fd",
-                justifyContent: "center",
-                alignItems: "center"
-              }}
-            >
-              <Text style={{ color: "#0d4d92", fontWeight: "800" }}>Foto 3</Text>
-            </View>
-
-            <View
-              style={{
-                width: 88,
-                height: 88,
-                borderRadius: 14,
-                backgroundColor: "#60a5fa",
-                justifyContent: "center",
-                alignItems: "center"
-              }}
-            >
-              <Text style={{ color: "#ffffff", fontWeight: "800" }}>Foto 4</Text>
-            </View>
+            {galleryItems.map((item) => (
+              <Pressable
+                key={item.key}
+                onPress={() => setSelectedMedia(item)}
+                style={{
+                  width: 88,
+                  height: 88,
+                  borderRadius: 14,
+                  backgroundColor: item.backgroundColor,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  paddingHorizontal: 8
+                }}
+              >
+                <Text
+                  style={{
+                    color: item.textColor,
+                    fontWeight: "800",
+                    textAlign: "center"
+                  }}
+                >
+                  {item.label}
+                </Text>
+              </Pressable>
+            ))}
           </ScrollView>
 
           <Text
@@ -441,6 +461,78 @@ export default function GuiaDetalleScreen() {
           El chat con el guía se habilita únicamente después del pago.
         </Text>
       </ScrollView>
+
+      <Modal
+        visible={!!selectedMedia}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSelectedMedia(null)}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.88)",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 24
+          }}
+        >
+          <Pressable
+            onPress={() => setSelectedMedia(null)}
+            style={{
+              position: "absolute",
+              top: 56,
+              right: 24,
+              zIndex: 2,
+              backgroundColor: "rgba(255,255,255,0.15)",
+              paddingHorizontal: 16,
+              paddingVertical: 10,
+              borderRadius: 999
+            }}
+          >
+            <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "800" }}>
+              Cerrar
+            </Text>
+          </Pressable>
+
+          <View
+            style={{
+              width: "100%",
+              maxWidth: 380,
+              aspectRatio: 1,
+              borderRadius: 24,
+              backgroundColor: selectedMedia?.backgroundColor || "#1d4ed8",
+              justifyContent: "center",
+              alignItems: "center",
+              padding: 20
+            }}
+          >
+            <Text
+              style={{
+                color: selectedMedia?.textColor || "#ffffff",
+                fontSize: 30,
+                fontWeight: "800",
+                textAlign: "center"
+              }}
+            >
+              {selectedMedia?.label || ""}
+            </Text>
+
+            {!!selectedMedia?.isVideo && (
+              <Text
+                style={{
+                  color: "#dbeafe",
+                  fontSize: 16,
+                  textAlign: "center",
+                  marginTop: 14
+                }}
+              >
+                Vista ampliada del video de 45 segundos
+              </Text>
+            )}
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
