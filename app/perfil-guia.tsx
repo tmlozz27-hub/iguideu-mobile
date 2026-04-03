@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { API_BASE } from "@/config/api";
 
 export default function PerfilGuia() {
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
   const [bio, setBio] = useState("");
@@ -10,9 +13,59 @@ export default function PerfilGuia() {
   const [priceHour, setPriceHour] = useState("");
   const [priceDay, setPriceDay] = useState("");
   const [price24h, setPrice24h] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSave = () => {
-    Alert.alert("Perfil creado", "Tu perfil de guía ya está activo");
+  const handleSave = async () => {
+    if (!name.trim() || !email.trim() || !phone.trim() || !city.trim() || !country.trim()) {
+      Alert.alert("Faltan datos", "Completá nombre, email, teléfono, ciudad y país.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const res = await fetch(`${API_BASE}/api/guides`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          phone: phone.trim(),
+          city: city.trim(),
+          country: country.trim(),
+          bio: bio.trim(),
+          languages: languages.trim(),
+          priceHour: Number(priceHour) || 0,
+          priceDay: Number(priceDay) || 0,
+          price24h: Number(price24h) || 0,
+          active: true
+        })
+      });
+
+      const text = await res.text();
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        console.log("RESPONSE NO JSON:", text);
+        Alert.alert("Error servidor", "El backend no respondió JSON. Revisar endpoint.");
+        return;
+      }
+
+      if (!res.ok || !data?.ok) {
+        Alert.alert("Error", data?.error || "No se pudo guardar el perfil.");
+        return;
+      }
+
+      Alert.alert("Perfil creado", "Tu perfil de guía ya está activo");
+    } catch (error: any) {
+      Alert.alert("Error", error?.message || "No se pudo conectar con el servidor.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -21,28 +74,23 @@ export default function PerfilGuia() {
         Completar perfil de guía
       </Text>
 
-      <TextInput placeholder="Nombre completo" value={name} onChangeText={setName} style={input} />
-      <TextInput placeholder="Ciudad" value={city} onChangeText={setCity} style={input} />
-      <TextInput placeholder="País" value={country} onChangeText={setCountry} style={input} />
-      <TextInput placeholder="Idiomas (ej: Español, Inglés)" value={languages} onChangeText={setLanguages} style={input} />
-      <TextInput placeholder="Bio" value={bio} onChangeText={setBio} style={[input, { height: 100 }]} multiline />
+      <TextInput placeholder="Nombre completo" value={name} onChangeText={setName} style={input} editable={!loading} />
+      <TextInput placeholder="Email" value={email} onChangeText={setEmail} style={input} editable={!loading} />
+      <TextInput placeholder="Teléfono" value={phone} onChangeText={setPhone} style={input} editable={!loading} />
+      <TextInput placeholder="Ciudad" value={city} onChangeText={setCity} style={input} editable={!loading} />
+      <TextInput placeholder="País" value={country} onChangeText={setCountry} style={input} editable={!loading} />
+      <TextInput placeholder="Idiomas" value={languages} onChangeText={setLanguages} style={input} editable={!loading} />
+      <TextInput placeholder="Bio" value={bio} onChangeText={setBio} style={[input, { height: 100 }]} multiline editable={!loading} />
 
       <Text style={label}>Tarifas</Text>
-      <TextInput placeholder="Precio por hora USD" value={priceHour} onChangeText={setPriceHour} style={input} />
-      <TextInput placeholder="Precio jornada 8h USD" value={priceDay} onChangeText={setPriceDay} style={input} />
-      <TextInput placeholder="Precio 24h USD" value={price24h} onChangeText={setPrice24h} style={input} />
+      <TextInput placeholder="Precio hora" value={priceHour} onChangeText={setPriceHour} style={input} editable={!loading} />
+      <TextInput placeholder="Precio día" value={priceDay} onChangeText={setPriceDay} style={input} editable={!loading} />
+      <TextInput placeholder="Precio 24h" value={price24h} onChangeText={setPrice24h} style={input} editable={!loading} />
 
-      <Text style={label}>Fotos (4) + Video 45s</Text>
-      <View style={{ flexDirection: "row", gap: 10, marginBottom: 20 }}>
-        <View style={media}><Text>Foto</Text></View>
-        <View style={media}><Text>Foto</Text></View>
-        <View style={media}><Text>Foto</Text></View>
-        <View style={media}><Text>Foto</Text></View>
-        <View style={[media, { backgroundColor: "#1d4ed8" }]}><Text style={{ color: "#fff" }}>Video</Text></View>
-      </View>
-
-      <Pressable onPress={handleSave} style={button}>
-        <Text style={{ color: "#fff", fontWeight: "800", fontSize: 18 }}>Aceptar</Text>
+      <Pressable onPress={handleSave} style={button} disabled={loading}>
+        <Text style={{ color: "#fff", fontWeight: "800" }}>
+          {loading ? "Guardando..." : "Aceptar"}
+        </Text>
       </Pressable>
     </ScrollView>
   );
@@ -68,13 +116,4 @@ const button = {
   borderRadius: 14,
   alignItems: "center",
   marginTop: 20
-} as const;
-
-const media = {
-  width: 60,
-  height: 60,
-  borderRadius: 10,
-  backgroundColor: "#93c5fd",
-  justifyContent: "center",
-  alignItems: "center"
 } as const;
