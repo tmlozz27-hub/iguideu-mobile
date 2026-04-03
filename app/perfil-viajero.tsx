@@ -1,13 +1,19 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Pressable, Alert } from "react-native";
+import { useRouter } from "expo-router";
 
 export default function PerfilViajero() {
+  const router = useRouter();
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [country, setCountry] = useState("");
 
   const handleSave = () => {
     Alert.alert("Perfil creado", "Tu perfil de viajero está listo");
+
+    // 👉 VA A LA HOME (pantalla final que mostraste)
+    router.replace("/(tabs)");
   };
 
   return (
@@ -21,7 +27,7 @@ export default function PerfilViajero() {
       <TextInput placeholder="País" value={country} onChangeText={setCountry} style={input} />
 
       <Pressable onPress={handleSave} style={button}>
-        <Text style={{ color: "#fff", fontWeight: "800" }}>Guardar</Text>
+        <Text style={{ color: "#fff", fontWeight: "800" }}>Confirmar</Text>
       </Pressable>
     </View>
   );
