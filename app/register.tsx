@@ -97,13 +97,17 @@ export default function RegisterScreen() {
 
       Alert.alert(
         isGuide ? "Cuenta de guía creada" : "Cuenta creada",
-        isGuide
-          ? "Tu cuenta de guía fue creada correctamente. Ya ingresaste a la app."
-          : "Tu cuenta fue creada correctamente. Ya ingresaste a la app.",
+        "Continuá completando tu perfil",
         [
           {
             text: "OK",
-            onPress: () => router.replace("/(tabs)")
+            onPress: () => {
+              if (isGuide) {
+                router.replace("/perfil-guia");
+              } else {
+                router.replace("/perfil-viajero");
+              }
+            }
           }
         ]
       );

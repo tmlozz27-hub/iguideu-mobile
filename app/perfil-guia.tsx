@@ -1,6 +1,19 @@
-import React, { useState } from "react";
-import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import React, { useMemo, useState } from "react";
+import {
+  Alert,
+  Image,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View
+} from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { API_BASE } from "@/config/api";
+
+type PickedMedia = {
+  uri: string;
+};
 
 export default function PerfilGuia() {
   const [name, setName] = useState("");
@@ -8,112 +21,244 @@ export default function PerfilGuia() {
   const [phone, setPhone] = useState("");
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
-  const [bio, setBio] = useState("");
-  const [languages, setLanguages] = useState("");
-  const [priceHour, setPriceHour] = useState("");
-  const [priceDay, setPriceDay] = useState("");
-  const [price24h, setPrice24h] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [galleryPhotos, setGalleryPhotos] = useState<PickedMedia[]>([]);
+  const [video, setVideo] = useState<PickedMedia | null>(null);
+  const [mainPhoto, setMainPhoto] = useState<PickedMedia | null>(null);
+
+  const gallerySlots = useMemo(() => {
+    return [0, 1, 2, 3].map((i) => galleryPhotos[i] || null);
+  }, [galleryPhotos]);
+
+  const pickImage = async () => {
+    const r = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"]
+    });
+    if (!r.canceled) return { uri: r.assets[0].uri };
+    return null;
+  };
+
+  const pickVideo = async () => {
+    const r = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["videos"],
+      videoMaxDuration: 45
+    });
+    if (!r.canceled) setVideo({ uri: r.assets[0].uri });
+  };
 
   const handleSave = async () => {
-    if (!name.trim() || !email.trim() || !phone.trim() || !city.trim() || !country.trim()) {
-      Alert.alert("Faltan datos", "Completá nombre, email, teléfono, ciudad y país.");
-      return;
-    }
-
     try {
-      setLoading(true);
-
       const res = await fetch(`${API_BASE}/api/guides`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: name.trim(),
-          email: email.trim().toLowerCase(),
-          phone: phone.trim(),
-          city: city.trim(),
-          country: country.trim(),
-          bio: bio.trim(),
-          languages: languages.trim(),
-          priceHour: Number(priceHour) || 0,
-          priceDay: Number(priceDay) || 0,
-          price24h: Number(price24h) || 0,
-          active: true
+          name,
+          email,
+          phone,
+          city,
+          country,
+          mediaDraft: {
+            mainPhoto: mainPhoto ? { uri: mainPhoto.uri } : null,
+            galleryPhotos: galleryPhotos.map((item) => ({ uri: item.uri })),
+            video: video ? { uri: video.uri } : null
+          }
         })
       });
 
-      const text = await res.text();
-
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        console.log("RESPONSE NO JSON:", text);
-        Alert.alert("Error servidor", "El backend no respondió JSON. Revisar endpoint.");
-        return;
+      if (res.ok) {
+        Alert.alert("Perfil creado", "Tu perfil de guía ya está activo");
+      } else {
+        Alert.alert("Error", "No se pudo guardar el perfil");
       }
-
-      if (!res.ok || !data?.ok) {
-        Alert.alert("Error", data?.error || "No se pudo guardar el perfil.");
-        return;
-      }
-
-      Alert.alert("Perfil creado", "Tu perfil de guía ya está activo");
-    } catch (error: any) {
-      Alert.alert("Error", error?.message || "No se pudo conectar con el servidor.");
-    } finally {
-      setLoading(false);
+    } catch {
+      Alert.alert("Error", "No se pudo conectar con el servidor");
     }
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: "#0d4d92" }} contentContainerStyle={{ padding: 20 }}>
-      <Text style={{ color: "#fff", fontSize: 32, fontWeight: "800", textAlign: "center", marginBottom: 20 }}>
-        Completar perfil de guía
-      </Text>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: "#0d4d92" }}
+      contentContainerStyle={{ padding: 20 }}
+    >
+      <Text style={title}>Completar perfil de guía</Text>
 
-      <TextInput placeholder="Nombre completo" value={name} onChangeText={setName} style={input} editable={!loading} />
-      <TextInput placeholder="Email" value={email} onChangeText={setEmail} style={input} editable={!loading} />
-      <TextInput placeholder="Teléfono" value={phone} onChangeText={setPhone} style={input} editable={!loading} />
-      <TextInput placeholder="Ciudad" value={city} onChangeText={setCity} style={input} editable={!loading} />
-      <TextInput placeholder="País" value={country} onChangeText={setCountry} style={input} editable={!loading} />
-      <TextInput placeholder="Idiomas" value={languages} onChangeText={setLanguages} style={input} editable={!loading} />
-      <TextInput placeholder="Bio" value={bio} onChangeText={setBio} style={[input, { height: 100 }]} multiline editable={!loading} />
+      <Pressable
+        style={mainBox}
+        onPress={async () => {
+          const img = await pickImage();
+          if (img) setMainPhoto(img);
+        }}
+      >
+        {mainPhoto ? (
+          <Image source={{ uri: mainPhoto.uri }} style={mainImg} />
+        ) : (
+          <View style={mainPlaceholder}>
+            <Text style={mainPlaceholderText}>Foto principal</Text>
+          </View>
+        )}
+      </Pressable>
 
-      <Text style={label}>Tarifas</Text>
-      <TextInput placeholder="Precio hora" value={priceHour} onChangeText={setPriceHour} style={input} editable={!loading} />
-      <TextInput placeholder="Precio día" value={priceDay} onChangeText={setPriceDay} style={input} editable={!loading} />
-      <TextInput placeholder="Precio 24h" value={price24h} onChangeText={setPrice24h} style={input} editable={!loading} />
+      <TextInput placeholder="Nombre" value={name} onChangeText={setName} style={input} />
+      <TextInput placeholder="Email" value={email} onChangeText={setEmail} style={input} />
+      <TextInput placeholder="Teléfono" value={phone} onChangeText={setPhone} style={input} />
+      <TextInput placeholder="Ciudad" value={city} onChangeText={setCity} style={input} />
+      <TextInput placeholder="País" value={country} onChangeText={setCountry} style={input} />
 
-      <Pressable onPress={handleSave} style={button} disabled={loading}>
-        <Text style={{ color: "#fff", fontWeight: "800" }}>
-          {loading ? "Guardando..." : "Aceptar"}
-        </Text>
+      <Text style={section}>Fotos + Video</Text>
+
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={row}>
+        {gallerySlots.map((item, i) => (
+          <View key={i} style={card}>
+            {item ? (
+              <Image source={{ uri: item.uri }} style={img} />
+            ) : (
+              <Pressable
+                onPress={async () => {
+                  const picked = await pickImage();
+                  if (picked) {
+                    const copy = [...galleryPhotos];
+                    copy[i] = picked;
+                    setGalleryPhotos(copy);
+                  }
+                }}
+                style={cardInner}
+              >
+                <Text style={cardText}>Foto {i + 1}</Text>
+              </Pressable>
+            )}
+          </View>
+        ))}
+
+        <View style={card}>
+          {video ? (
+            <View style={cardInner}>
+              <Text style={videoEmoji}>🎬</Text>
+              <Text style={videoText}>Video</Text>
+              <Pressable onPress={() => setVideo(null)} style={removeBtn}>
+                <Text style={removeBtnText}>Quitar</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <Pressable onPress={pickVideo} style={cardInner}>
+              <Text style={cardText}>Video</Text>
+            </Pressable>
+          )}
+        </View>
+      </ScrollView>
+
+      <Pressable onPress={handleSave} style={btn}>
+        <Text style={btnText}>Aceptar</Text>
       </Pressable>
     </ScrollView>
   );
 }
 
+const title = {
+  color: "#fff",
+  fontSize: 30,
+  textAlign: "center" as const,
+  marginBottom: 20
+};
+
 const input = {
   backgroundColor: "#fff",
-  borderRadius: 12,
-  padding: 14,
-  marginBottom: 12
-} as const;
+  padding: 12,
+  borderRadius: 10,
+  marginBottom: 10
+};
 
-const label = {
+const section = {
   color: "#fff",
-  fontSize: 18,
   marginTop: 10,
   marginBottom: 10
-} as const;
+};
 
-const button = {
+const btn = {
   backgroundColor: "#12b8a6",
-  padding: 18,
-  borderRadius: 14,
-  alignItems: "center",
-  marginTop: 20
-} as const;
+  padding: 16,
+  borderRadius: 12,
+  marginTop: 20,
+  alignItems: "center" as const
+};
+
+const btnText = {
+  color: "#fff",
+  fontWeight: "800" as const
+};
+
+const row = {
+  paddingRight: 10
+};
+
+const card = {
+  width: 100,
+  height: 100,
+  backgroundColor: "#1e3a8a",
+  marginRight: 10,
+  borderRadius: 10,
+  overflow: "hidden" as const
+};
+
+const cardInner = {
+  flex: 1,
+  justifyContent: "center" as const,
+  alignItems: "center" as const
+};
+
+const cardText = {
+  color: "#fff"
+};
+
+const img = {
+  width: 100,
+  height: 100,
+  borderRadius: 10
+};
+
+const mainBox = {
+  height: 200,
+  backgroundColor: "#93c5fd",
+  borderRadius: 16,
+  marginBottom: 12,
+  overflow: "hidden" as const
+};
+
+const mainImg = {
+  width: 400,
+  height: 200,
+  borderRadius: 16
+};
+
+const mainPlaceholder = {
+  flex: 1,
+  justifyContent: "center" as const,
+  alignItems: "center" as const
+};
+
+const mainPlaceholderText = {
+  color: "#083b74",
+  fontWeight: "700" as const,
+  fontSize: 16
+};
+
+const videoEmoji = {
+  fontSize: 24,
+  marginBottom: 4
+};
+
+const videoText = {
+  color: "#fff",
+  marginBottom: 8
+};
+
+const removeBtn = {
+  backgroundColor: "#dc2626",
+  paddingVertical: 6,
+  paddingHorizontal: 10,
+  borderRadius: 8
+};
+
+const removeBtnText = {
+  color: "#fff",
+  fontSize: 12,
+  fontWeight: "700" as const
+};

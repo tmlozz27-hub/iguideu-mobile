@@ -228,6 +228,7 @@ export default function ReservasScreen() {
           youth: youthCount,
           children: childrenCount,
           travelersCount,
+          price: totalAmount,
           amount: totalAmount,
           totalAmount,
           amountCents: totalAmountCents

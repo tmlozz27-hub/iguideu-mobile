@@ -6,11 +6,11 @@ export default function SelectRoleScreen() {
   const router = useRouter();
 
   const goTraveler = () => {
-    router.push("/register?role=traveler");
+    router.push("/perfil-viajero");
   };
 
   const goGuide = () => {
-    router.push("/register?role=guide");
+    router.push("/perfil-guia");
   };
 
   return (
