@@ -1,0 +1,19 @@
+﻿# expo / react native
+.expo/
+.expo-shared/
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# backups / tmp
+*.bak
+*.bak_*
+*.tmp
+*.swp
+.DS_Store
+
+# env
+.env
+.env.*
