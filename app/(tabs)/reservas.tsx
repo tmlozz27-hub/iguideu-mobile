@@ -364,7 +364,7 @@ export default function ReservasScreen() {
           style={{
             fontSize: 28,
             fontWeight: "800",
-            color: "#ffffff",
+            color: "#15539A",
             textAlign: "center",
             marginBottom: 2,
             textShadowColor: "rgba(0,0,0,0.12)",
@@ -386,10 +386,10 @@ export default function ReservasScreen() {
               gap: 10
             }}
           >
-            <Text style={{ fontSize: 18, fontWeight: "800", color: "#ffffff" }}>
+            <Text style={{ fontSize: 18, fontWeight: "800", color: "#15539A" }}>
               Todavía no elegiste un guía
             </Text>
-            <Text style={{ fontSize: 16, color: "#f2f7ff", lineHeight: 24 }}>
+            <Text style={{ fontSize: 16, color: "#173B6B", lineHeight: 24 }}>
               Primero elegí un guía desde Buscar guías por país o Guías cercanos.
             </Text>
 
@@ -415,7 +415,7 @@ export default function ReservasScreen() {
 
         {showReservationForm ? (
           <>
-            <Text style={{ fontSize: 16, color: "#ffffff", fontWeight: "700" }}>Traveler Email</Text>
+            <Text style={{ fontSize: 16, color: "#15539A", fontWeight: "700" }}>Traveler Email</Text>
             <TextInput
               value={travelerEmail}
               onChangeText={setTravelerEmail}
@@ -434,7 +434,7 @@ export default function ReservasScreen() {
               }}
             />
 
-            <Text style={{ fontSize: 16, color: "#ffffff", fontWeight: "700" }}>Fecha</Text>
+            <Text style={{ fontSize: 16, color: "#15539A", fontWeight: "700" }}>Fecha</Text>
             <TextInput
               value={date}
               onChangeText={setDate}
@@ -452,7 +452,7 @@ export default function ReservasScreen() {
               }}
             />
 
-            <Text style={{ fontSize: 16, color: "#ffffff", fontWeight: "700" }}>Guía</Text>
+            <Text style={{ fontSize: 16, color: "#15539A", fontWeight: "700" }}>Guía</Text>
 
             <View
               style={{
@@ -464,15 +464,15 @@ export default function ReservasScreen() {
                 backgroundColor: "rgba(77,118,181,0.34)"
               }}
             >
-              <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "800" }}>
+              <Text style={{ color: "#15539A", fontSize: 18, fontWeight: "800" }}>
                 {selectedGuide.name} — {[selectedGuide.city, selectedGuide.country].filter(Boolean).join(", ")}
               </Text>
-              <Text style={{ color: "#eff6ff", marginTop: 8, fontSize: 15 }}>
+              <Text style={{ color: "#173B6B", marginTop: 8, fontSize: 15 }}>
                 Guía seleccionada desde el perfil
               </Text>
             </View>
 
-            <Text style={{ fontSize: 16, color: "#ffffff", fontWeight: "700" }}>Horas</Text>
+            <Text style={{ fontSize: 16, color: "#15539A", fontWeight: "700" }}>Horas</Text>
             <TextInput
               value={hours}
               onChangeText={setHours}
@@ -490,7 +490,7 @@ export default function ReservasScreen() {
               }}
             />
 
-            <Text style={{ fontSize: 16, color: "#ffffff", fontWeight: "700" }}>Adultos (18+)</Text>
+            <Text style={{ fontSize: 16, color: "#15539A", fontWeight: "700" }}>Adultos (18+)</Text>
             <TextInput
               value={adults}
               onChangeText={setAdults}
@@ -508,7 +508,7 @@ export default function ReservasScreen() {
               }}
             />
 
-            <Text style={{ fontSize: 16, color: "#ffffff", fontWeight: "700" }}>Jóvenes (13 a 17)</Text>
+            <Text style={{ fontSize: 16, color: "#15539A", fontWeight: "700" }}>Jóvenes (13 a 17)</Text>
             <TextInput
               value={youth}
               onChangeText={setYouth}
@@ -526,7 +526,7 @@ export default function ReservasScreen() {
               }}
             />
 
-            <Text style={{ fontSize: 16, color: "#ffffff", fontWeight: "700" }}>Niños (0 a 12)</Text>
+            <Text style={{ fontSize: 16, color: "#15539A", fontWeight: "700" }}>Niños (0 a 12)</Text>
             <TextInput
               value={children}
               onChangeText={setChildren}
@@ -554,18 +554,18 @@ export default function ReservasScreen() {
                 gap: 7
               }}
             >
-              <Text style={{ fontWeight: "800", fontSize: 18, color: "#ffffff" }}>Resumen</Text>
-              <Text style={{ color: "#f3f8ff" }}>Guía: {selectedGuide?.name || "-"}</Text>
-              <Text style={{ color: "#f3f8ff" }}>Fecha: {date}</Text>
-              <Text style={{ color: "#f3f8ff" }}>Horas: {hours}</Text>
-              <Text style={{ color: "#f3f8ff" }}>Adultos (18+): {adultsCount}</Text>
-              <Text style={{ color: "#f3f8ff" }}>Jóvenes (13 a 17): {youthCount}</Text>
-              <Text style={{ color: "#f3f8ff" }}>Niños (0 a 12): {childrenCount}</Text>
-              <Text style={{ color: "#f3f8ff" }}>Total viajeros: {travelersCount}</Text>
-              <Text style={{ color: "#f3f8ff" }}>Precio adulto/hora: USD {selectedPriceHour || 0}</Text>
-              <Text style={{ color: "#f3f8ff" }}>Precio joven/hora: USD {youthPriceHour.toFixed(2)}</Text>
-              <Text style={{ color: "#f3f8ff" }}>Niños (0 a 12): sin cargo</Text>
-              <Text style={{ color: "#ffffff", fontWeight: "800", marginTop: 4 }}>
+              <Text style={{ fontWeight: "800", fontSize: 18, color: "#15539A" }}>Resumen</Text>
+              <Text style={{ color: "#173B6B" }}>Guía: {selectedGuide?.name || "-"}</Text>
+              <Text style={{ color: "#173B6B" }}>Fecha: {date}</Text>
+              <Text style={{ color: "#173B6B" }}>Horas: {hours}</Text>
+              <Text style={{ color: "#173B6B" }}>Adultos (18+): {adultsCount}</Text>
+              <Text style={{ color: "#173B6B" }}>Jóvenes (13 a 17): {youthCount}</Text>
+              <Text style={{ color: "#173B6B" }}>Niños (0 a 12): {childrenCount}</Text>
+              <Text style={{ color: "#173B6B" }}>Total viajeros: {travelersCount}</Text>
+              <Text style={{ color: "#173B6B" }}>Precio adulto/hora: USD {selectedPriceHour || 0}</Text>
+              <Text style={{ color: "#173B6B" }}>Precio joven/hora: USD {youthPriceHour.toFixed(2)}</Text>
+              <Text style={{ color: "#173B6B" }}>Niños (0 a 12): sin cargo</Text>
+              <Text style={{ color: "#15539A", fontWeight: "800", marginTop: 4 }}>
                 Total: USD {totalAmount.toFixed(2)}
               </Text>
             </View>
@@ -580,26 +580,26 @@ export default function ReservasScreen() {
                 gap: 8
               }}
             >
-              <Text style={{ fontSize: 18, fontWeight: "800", color: "#ffffff" }}>
+              <Text style={{ fontSize: 18, fontWeight: "800", color: "#15539A" }}>
                 Antes de confirmar tu reserva
               </Text>
 
-              <Text style={{ color: "#f3f8ff", lineHeight: 23 }}>
+              <Text style={{ color: "#173B6B", lineHeight: 23 }}>
                 • La tarifa corresponde únicamente al servicio del guía según la modalidad indicada y se calcula por viajero según edad
               </Text>
-              <Text style={{ color: "#f3f8ff", lineHeight: 23 }}>
+              <Text style={{ color: "#173B6B", lineHeight: 23 }}>
                 • Gastos como comidas, transporte o entradas no están incluidos salvo que se indique expresamente
               </Text>
-              <Text style={{ color: "#f3f8ff", lineHeight: 23 }}>
+              <Text style={{ color: "#173B6B", lineHeight: 23 }}>
                 • En actividades compartidas, el viajero cubre también los gastos del guía
               </Text>
-              <Text style={{ color: "#f3f8ff", lineHeight: 23 }}>
+              <Text style={{ color: "#173B6B", lineHeight: 23 }}>
                 • Podés cancelar sin costo con más de 24 horas de anticipación
               </Text>
-              <Text style={{ color: "#f3f8ff", lineHeight: 23 }}>
+              <Text style={{ color: "#173B6B", lineHeight: 23 }}>
                 • Si surge un imprevisto, podés coordinar directamente con tu guía un cambio de horario o fecha
               </Text>
-              <Text style={{ color: "#f3f8ff", lineHeight: 23 }}>
+              <Text style={{ color: "#173B6B", lineHeight: 23 }}>
                 • Las horas adicionales se acuerdan con el guía y se cobran según la tarifa publicada
               </Text>
             </View>
@@ -614,21 +614,21 @@ export default function ReservasScreen() {
                 gap: 8
               }}
             >
-              <Text style={{ fontSize: 18, fontWeight: "800", color: "#ffffff" }}>
+              <Text style={{ fontSize: 18, fontWeight: "800", color: "#15539A" }}>
                 Confirmación
               </Text>
 
-              <Text style={{ color: "#f3f8ff", lineHeight: 23 }}>
+              <Text style={{ color: "#173B6B", lineHeight: 23 }}>
                 • Confirmo que revisé la tarifa, duración y condiciones de esta reserva
               </Text>
-              <Text style={{ color: "#f3f8ff", lineHeight: 23 }}>
+              <Text style={{ color: "#173B6B", lineHeight: 23 }}>
                 • Confirmo que los gastos adicionales no están incluidos salvo que se indique expresamente
               </Text>
-              <Text style={{ color: "#f3f8ff", lineHeight: 23 }}>
+              <Text style={{ color: "#173B6B", lineHeight: 23 }}>
                 • Confirmo que leí las condiciones de cancelación, cambios e imprevistos
               </Text>
 
-              <Text style={{ marginTop: 6, fontSize: 14, color: "#eef6ff" }}>
+              <Text style={{ marginTop: 6, fontSize: 14, color: "#173B6B" }}>
                 Pago seguro · Reserva registrada · Mayor transparencia para ambas partes
               </Text>
             </View>
@@ -667,7 +667,7 @@ export default function ReservasScreen() {
               </Pressable>
             ) : null}
 
-            <Text style={{ fontSize: 15, textAlign: "center", color: "#eef6ff", lineHeight: 22 }}>
+            <Text style={{ fontSize: 15, textAlign: "center", color: "#173B6B", lineHeight: 22 }}>
               Tu información de contacto se compartirá solo después del pago
             </Text>
           </>
@@ -678,7 +678,7 @@ export default function ReservasScreen() {
             fontSize: 28,
             fontWeight: "800",
             marginTop: 12,
-            color: "#ffffff",
+            color: "#15539A",
             textAlign: "center",
             textShadowColor: "rgba(0,0,0,0.12)",
             textShadowOffset: { width: 0, height: 2 },
@@ -698,7 +698,7 @@ export default function ReservasScreen() {
               backgroundColor: "rgba(255,255,255,0.16)"
             }}
           >
-            <Text style={{ fontSize: 16, color: "#f2f7ff", lineHeight: 24 }}>
+            <Text style={{ fontSize: 16, color: "#173B6B", lineHeight: 24 }}>
               Todavía no hay reservas pagadas.
             </Text>
           </View>
@@ -719,14 +719,14 @@ export default function ReservasScreen() {
                 gap: 6
               }}
             >
-              <Text style={{ fontSize: 18, fontWeight: "800", color: "#ffffff" }}>
+              <Text style={{ fontSize: 18, fontWeight: "800", color: "#15539A" }}>
                 {booking.guideName || "Guía"}
               </Text>
-              <Text style={{ color: "#f3f8ff" }}>Email: {booking.travelerEmail || booking.email || "-"}</Text>
-              <Text style={{ color: "#f3f8ff" }}>Fecha: {booking.date || "-"}</Text>
-              <Text style={{ color: "#f3f8ff" }}>Horas: {booking.hours ?? "-"}</Text>
-              <Text style={{ color: "#f3f8ff" }}>Monto: USD {Number(amount || 0).toFixed(2)}</Text>
-              <Text style={{ color: "#ffffff", fontWeight: "800" }}>Estado: {booking.status || "-"}</Text>
+              <Text style={{ color: "#173B6B" }}>Email: {booking.travelerEmail || booking.email || "-"}</Text>
+              <Text style={{ color: "#173B6B" }}>Fecha: {booking.date || "-"}</Text>
+              <Text style={{ color: "#173B6B" }}>Horas: {booking.hours ?? "-"}</Text>
+              <Text style={{ color: "#173B6B" }}>Monto: USD {Number(amount || 0).toFixed(2)}</Text>
+              <Text style={{ color: "#15539A", fontWeight: "800" }}>Estado: {booking.status || "-"}</Text>
             </View>
           );
         })}
