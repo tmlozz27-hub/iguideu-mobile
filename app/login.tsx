@@ -5,10 +5,10 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   View,
+  ImageBackground,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -66,32 +66,90 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+    <SafeAreaView style={{ flex: 1 }} edges={["left", "right"]}>
+      <ImageBackground
+        source={{
+          uri: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1600&q=80",
+        }}
+        style={{ flex: 1 }}
+        resizeMode="cover"
       >
-        <View style={styles.screen}>
-          <View pointerEvents="none" style={styles.bgBase} />
-          <View pointerEvents="none" style={styles.bgOverlay} />
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(183,209,245,0.55)",
+          }}
+        />
 
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
           <ScrollView
+            contentContainerStyle={{
+              flexGrow: 1,
+              justifyContent: "center",
+              paddingHorizontal: 20,
+              paddingTop: 40,
+              paddingBottom: 40,
+            }}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}
           >
-            <View style={styles.brandBlock}>
-              <Text style={styles.brand}>I GUIDE U</Text>
-              <Text style={styles.brandSubtitle}>
+            <View style={{ alignItems: "center", marginBottom: 20 }}>
+              <Text
+                style={{
+                  fontSize: 40,
+                  fontWeight: "900",
+                  color: "#173B6B",
+                }}
+              >
+                I GUIDE U
+              </Text>
+
+              <Text
+                style={{
+                  marginTop: 8,
+                  color: "#ffffff",
+                  fontWeight: "600",
+                }}
+              >
                 Tu guía personal de turismo
               </Text>
             </View>
 
-            <View style={styles.card}>
-              <View style={styles.cardTopBar} />
+            <View
+              style={{
+                backgroundColor: "rgba(255,255,255,0.10)",
+                borderRadius: 30,
+                padding: 24,
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.15)",
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 26,
+                  fontWeight: "900",
+                  textAlign: "center",
+                  color: "#173B6B",
+                }}
+              >
+                Iniciar sesión
+              </Text>
 
-              <Text style={styles.title}>Iniciar sesión</Text>
-              <Text style={styles.subtitle}>
+              <Text
+                style={{
+                  textAlign: "center",
+                  marginTop: 8,
+                  marginBottom: 16,
+                  color: "rgba(23,59,107,0.8)",
+                }}
+              >
                 Accedé a tu cuenta para continuar
               </Text>
 
@@ -100,267 +158,106 @@ export default function LoginScreen() {
                 placeholderTextColor="#7B879B"
                 value={email}
                 onChangeText={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                editable={!loading}
-                style={styles.input}
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.6)",
+                  borderRadius: 18,
+                  padding: 14,
+                  marginBottom: 12,
+                }}
               />
 
-              <View style={styles.passwordWrap}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  backgroundColor: "rgba(255,255,255,0.6)",
+                  borderRadius: 18,
+                  alignItems: "center",
+                }}
+              >
                 <TextInput
                   placeholder="Contraseña"
                   placeholderTextColor="#7B879B"
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry={!showPassword}
-                  editable={!loading}
-                  style={styles.passwordInput}
+                  style={{ flex: 1, padding: 14 }}
                 />
 
-                <Pressable onPress={() => setShowPassword((prev) => !prev)}>
-                  <Text style={styles.toggleText}>
+                <Pressable onPress={() => setShowPassword(!showPassword)}>
+                  <Text style={{ paddingHorizontal: 16, color: "#173B6B" }}>
                     {showPassword ? "Ocultar" : "Ver"}
                   </Text>
                 </Pressable>
               </View>
 
               <Pressable onPress={() => router.push("/forgot-password")}>
-                <Text style={styles.forgotText}>¿Olvidaste tu contraseña?</Text>
+                <Text
+                  style={{
+                    textAlign: "right",
+                    marginTop: 10,
+                    color: "#173B6B",
+                    fontWeight: "600",
+                  }}
+                >
+                  ¿Olvidaste tu contraseña?
+                </Text>
               </Pressable>
 
               <Pressable
                 onPress={handleLogin}
-                disabled={loading}
-                style={styles.primaryButton}
+                style={{
+                  marginTop: 16,
+                  backgroundColor: "#173B6B",
+                  padding: 16,
+                  borderRadius: 20,
+                  alignItems: "center",
+                }}
               >
-                <Text style={styles.primaryButtonText}>
+                <Text style={{ color: "#fff", fontWeight: "800", fontSize: 18 }}>
                   {loading ? "Ingresando..." : "Acceder"}
                 </Text>
               </Pressable>
 
               <Pressable
-                onPress={() => Alert.alert("Google", "Próximamente")}
-                style={styles.googleButton}
+                style={{
+                  marginTop: 10,
+                  backgroundColor: "#ffffff",
+                  padding: 14,
+                  borderRadius: 20,
+                  alignItems: "center",
+                }}
               >
-                <Text style={styles.googleButtonText}>
+                <Text style={{ fontWeight: "700" }}>
                   Continuar con Google
                 </Text>
               </Pressable>
 
               <Pressable
-                onPress={() => Alert.alert("Facebook", "Próximamente")}
-                style={styles.facebookButton}
+                style={{
+                  marginTop: 10,
+                  backgroundColor: "#1877F2",
+                  padding: 14,
+                  borderRadius: 20,
+                  alignItems: "center",
+                }}
               >
-                <Text style={styles.facebookButtonText}>
+                <Text style={{ color: "#fff", fontWeight: "700" }}>
                   Continuar con Facebook
                 </Text>
               </Pressable>
 
-              <View style={styles.registerBlock}>
-                <Text style={styles.registerHint}>¿No tienes cuenta?</Text>
-
+              <View style={{ alignItems: "center", marginTop: 16 }}>
+                <Text>¿No tienes cuenta?</Text>
                 <Pressable onPress={() => router.push("/select-role")}>
-                  <Text style={styles.registerLink}>Registrarse</Text>
-                </Pressable>
-              </View>
-
-              <View style={styles.legalRow}>
-                <Pressable onPress={() => router.push("/legal/terms")}>
-                  <Text style={styles.legalLink}>Términos</Text>
-                </Pressable>
-
-                <Text style={styles.legalDot}>•</Text>
-
-                <Pressable onPress={() => router.push("/legal/privacy")}>
-                  <Text style={styles.legalLink}>Privacidad</Text>
+                  <Text style={{ fontWeight: "800", color: "#173B6B" }}>
+                    Registrarse
+                  </Text>
                 </Pressable>
               </View>
             </View>
           </ScrollView>
-        </View>
-      </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      </ImageBackground>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  flex: {
-    flex: 1,
-  },
-  safe: {
-    flex: 1,
-    backgroundColor: "#0B3E91",
-  },
-  screen: {
-    flex: 1,
-    backgroundColor: "#0B3E91",
-  },
-  bgBase: {
-    position: "absolute",
-    inset: 0,
-    backgroundColor: "#0B3E91",
-  },
-  bgOverlay: {
-    position: "absolute",
-    inset: 0,
-    backgroundColor: "rgba(165,205,255,0.08)",
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: "center",
-    paddingHorizontal: 14,
-    paddingTop: 34,
-    paddingBottom: 30,
-  },
-  brandBlock: {
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  brand: {
-    fontSize: 36,
-    fontWeight: "800",
-    color: "#FFFFFF",
-    letterSpacing: 3,
-    textAlign: "center",
-  },
-  brandSubtitle: {
-    color: "#F3F8FF",
-    marginTop: 8,
-    fontSize: 15,
-    fontWeight: "600",
-    textAlign: "center",
-  },
-  card: {
-    backgroundColor: "#F0F8FF",
-    borderRadius: 32,
-    paddingHorizontal: 30,
-    paddingTop: 34,
-    paddingBottom: 32,
-  },
-  cardTopBar: {
-    alignSelf: "center",
-    width: 112,
-    height: 6,
-    borderRadius: 999,
-    backgroundColor: "#7DD3FC",
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: "800",
-    textAlign: "center",
-    color: "#1A2A44",
-  },
-  subtitle: {
-    textAlign: "center",
-    color: "#6B7A90",
-    marginTop: 8,
-    marginBottom: 18,
-    fontSize: 15,
-  },
-  input: {
-    backgroundColor: "#F6F8FB",
-    borderRadius: 18,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#DFE6F0",
-    fontSize: 16,
-    color: "#1A2A44",
-  },
-  passwordWrap: {
-    flexDirection: "row",
-    backgroundColor: "#F6F8FB",
-    borderRadius: 18,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#DFE6F0",
-  },
-  passwordInput: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    fontSize: 16,
-    color: "#1A2A44",
-  },
-  toggleText: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    color: "#2A5DB8",
-    fontWeight: "700",
-  },
-  forgotText: {
-    textAlign: "right",
-    marginTop: 10,
-    color: "#2A5DB8",
-    fontWeight: "600",
-    fontSize: 15,
-  },
-  primaryButton: {
-    backgroundColor: "#0E5BD7",
-    borderRadius: 20,
-    paddingVertical: 16,
-    alignItems: "center",
-    marginTop: 16,
-  },
-  primaryButtonText: {
-    fontWeight: "800",
-    fontSize: 20,
-    color: "#FFFFFF",
-  },
-  googleButton: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    paddingVertical: 15,
-    alignItems: "center",
-    marginTop: 12,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-  },
-  googleButtonText: {
-    fontWeight: "700",
-    color: "#172033",
-    fontSize: 17,
-  },
-  facebookButton: {
-    backgroundColor: "#1877F2",
-    borderRadius: 20,
-    paddingVertical: 15,
-    alignItems: "center",
-    marginTop: 10,
-  },
-  facebookButtonText: {
-    color: "#FFFFFF",
-    fontWeight: "700",
-    fontSize: 17,
-  },
-  registerBlock: {
-    alignItems: "center",
-    marginTop: 16,
-  },
-  registerHint: {
-    color: "#6B7A90",
-    fontSize: 15,
-  },
-  registerLink: {
-    fontWeight: "800",
-    color: "#2A5DB8",
-    marginTop: 6,
-    fontSize: 17,
-  },
-  legalRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 14,
-  },
-  legalLink: {
-    color: "#6B7A90",
-    textDecorationLine: "underline",
-  },
-  legalDot: {
-    marginHorizontal: 8,
-    color: "#6B7A90",
-  },
-});
