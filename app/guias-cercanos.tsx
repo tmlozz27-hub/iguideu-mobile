@@ -96,7 +96,7 @@ export default function GuiasCercanosScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "transparent" }}>
+      <SafeAreaView style={{ flex: 1 }} edges={[]}>
         <ImageBackground
           source={{
             uri: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80"
@@ -126,7 +126,7 @@ export default function GuiasCercanosScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "transparent" }}>
+    <SafeAreaView style={{ flex: 1 }} edges={[]}>
       <ImageBackground
         source={{
           uri: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80"
@@ -178,26 +178,11 @@ export default function GuiasCercanosScreen() {
               borderColor: "rgba(255,255,255,0.18)"
             }}
           >
-            <Text
-              style={{
-                fontSize: 28,
-                fontWeight: "800",
-                color: "#15539A",
-                textAlign: "center"
-              }}
-            >
+            <Text style={{ fontSize: 28, fontWeight: "800", color: "#15539A", textAlign: "center" }}>
               Guías cercanos
             </Text>
 
-            <Text
-              style={{
-                marginTop: 8,
-                textAlign: "center",
-                color: "#173B6B",
-                fontSize: 15,
-                lineHeight: 22
-              }}
-            >
+            <Text style={{ marginTop: 8, textAlign: "center", color: "#173B6B", fontSize: 15 }}>
               Explorá guías ubicados cerca de tu zona y abrí su perfil para reservar.
             </Text>
           </View>
@@ -258,15 +243,11 @@ export default function GuiasCercanosScreen() {
               borderColor: "rgba(255,255,255,0.18)"
             }}
           >
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView>
               {guides.length === 0 ? (
                 <View style={{ padding: 18 }}>
-                  <Text style={{ fontWeight: "800", marginBottom: 6, color: "#15539A", fontSize: 18 }}>
-                    No hay guías disponibles
-                  </Text>
-                  <Text style={{ color: "#173B6B", lineHeight: 22 }}>
-                    Probá nuevamente en unos minutos o revisá otra zona.
-                  </Text>
+                  <Text style={{ fontWeight: "800", color: "#15539A" }}>No hay guías disponibles</Text>
+                  <Text style={{ color: "#173B6B" }}>Probá nuevamente en unos minutos.</Text>
                 </View>
               ) : (
                 guides.map((g, i) => {
@@ -278,24 +259,18 @@ export default function GuiasCercanosScreen() {
                       onPress={() =>
                         router.push({
                           pathname: "/guia-detalle",
-                          params: {
-                            guideId: id,
-                            guideData: JSON.stringify(g)
-                          }
+                          params: { guideId: id, guideData: JSON.stringify(g) }
                         })
                       }
                       style={{
                         padding: 14,
                         borderBottomWidth: 1,
-                        borderColor: "rgba(21,83,154,0.12)",
-                        backgroundColor: "rgba(255,255,255,0.08)"
+                        borderColor: "rgba(21,83,154,0.12)"
                       }}
                     >
-                      <Text style={{ fontWeight: "800", color: "#15539A", fontSize: 17 }}>
-                        {g.name || "Guía"}
-                      </Text>
-                      <Text style={{ color: "#173B6B", marginTop: 4 }}>
-                        {[g.city, g.country].filter(Boolean).join(", ") || "-"}
+                      <Text style={{ fontWeight: "800", color: "#15539A" }}>{g.name}</Text>
+                      <Text style={{ color: "#173B6B" }}>
+                        {[g.city, g.country].filter(Boolean).join(", ")}
                       </Text>
                     </Pressable>
                   );
