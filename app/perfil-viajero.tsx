@@ -6,10 +6,12 @@ import {
   ScrollView,
   Text,
   TextInput,
-  View
+  View,
+  ImageBackground
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type PickedMedia = {
   uri: string;
@@ -44,185 +46,140 @@ export default function PerfilViajero() {
   };
 
   const handleSave = () => {
-    if (!name.trim()) {
-      Alert.alert("Error", "Ingresá tu nombre");
-      return;
-    }
+    if (!name.trim()) return Alert.alert("Error", "Ingresá tu nombre");
+    if (!email.trim()) return Alert.alert("Error", "Ingresá tu email");
+    if (!phone.trim()) return Alert.alert("Error", "Ingresá tu teléfono");
+    if (!acceptTerms) return Alert.alert("Error", "Debes aceptar los términos");
 
-    if (!email.trim()) {
-      Alert.alert("Error", "Ingresá tu email");
-      return;
-    }
-
-    if (!phone.trim()) {
-      Alert.alert("Error", "Ingresá tu teléfono");
-      return;
-    }
-
-    if (!acceptTerms) {
-      Alert.alert("Error", "Debes aceptar los términos y condiciones");
-      return;
-    }
-
-    Alert.alert(
-      "Perfil listo",
-      "Tu perfil de viajero fue guardado correctamente",
-      [
-        {
-          text: "OK",
-          onPress: () => router.replace("/(tabs)")
-        }
-      ]
-    );
+    Alert.alert("Perfil listo", "Guardado correctamente", [
+      { text: "OK", onPress: () => router.replace("/(tabs)") }
+    ]);
   };
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: "#A9C9F5" }}
-      contentContainerStyle={{ paddingBottom: 40 }}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={{ paddingTop: 48, paddingHorizontal: 24, paddingBottom: 34 }}>
-        <Text
-          style={{
-            color: "#FFFFFF",
-            fontSize: 34,
-            fontWeight: "800",
-            textAlign: "center",
-            marginBottom: 10
-          }}
+    <SafeAreaView style={{ flex: 1 }} edges={["left","right"]}>
+      <ImageBackground
+        source={{
+          uri: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80"
+        }}
+        style={{ flex: 1 }}
+        resizeMode="cover"
+      >
+        <View style={{
+          position: "absolute",
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(183,209,245,0.55)"
+        }} />
+
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 40 }}
+          showsVerticalScrollIndicator={false}
         >
-          I GUIDE U
-        </Text>
+          <View style={{ paddingTop: 48, paddingHorizontal: 24, paddingBottom: 34 }}>
+            <Text style={titleMain}>I GUIDE U</Text>
+            <Text style={titleSub}>Perfil de viajero</Text>
 
-        <Text
-          style={{
-            color: "#FFFFFF",
-            fontSize: 28,
-            fontWeight: "800",
-            textAlign: "center",
-            marginBottom: 24
-          }}
-        >
-          Perfil de viajero
-        </Text>
-
-        <Pressable
-          onPress={pickImage}
-          style={{
-            alignSelf: "center",
-            width: 180,
-            height: 180,
-            borderRadius: 90,
-            overflow: "hidden",
-            backgroundColor: "#DCEBFF",
-            borderWidth: 4,
-            borderColor: "#FFFFFF",
-            justifyContent: "center",
-            alignItems: "center",
-            marginBottom: 18
-          }}
-        >
-          {mainPhoto ? (
-            <Image source={{ uri: mainPhoto.uri }} style={{ width: "100%", height: "100%" }} />
-          ) : (
-            <Text style={{ color: "#3B6EA8", fontWeight: "800" }}>
-              Agregar foto
-            </Text>
-          )}
-        </Pressable>
-      </View>
-
-      <View style={{ backgroundColor: "#FFFFFF", borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 22 }}>
-        <Text style={{ fontSize: 22, fontWeight: "800", marginBottom: 20 }}>
-          Información personal
-        </Text>
-
-        <TextInput value={name} onChangeText={setName} placeholder="Nombre" style={input} />
-        <TextInput
-          value={email}
-          onChangeText={setEmail}
-          placeholder="Email"
-          autoCapitalize="none"
-          keyboardType="email-address"
-          style={input}
-        />
-        <TextInput
-          value={phone}
-          onChangeText={setPhone}
-          placeholder="Teléfono"
-          keyboardType="phone-pad"
-          style={input}
-        />
-        <TextInput value={country} onChangeText={setCountry} placeholder="País" style={input} />
-        <TextInput value={city} onChangeText={setCity} placeholder="Ciudad" style={input} />
-        <TextInput value={language} onChangeText={setLanguage} placeholder="Idioma" style={input} />
-        <TextInput value={travelStyle} onChangeText={setTravelStyle} placeholder="Tipo de viaje" style={input} />
-        <TextInput value={interests} onChangeText={setInterests} placeholder="Intereses" style={input} />
-
-        <TextInput
-          value={about}
-          onChangeText={setAbout}
-          placeholder="Sobre vos"
-          multiline
-          style={[input, { minHeight: 100 }]}
-        />
-
-        <Pressable
-          onPress={() => setAcceptTerms((prev) => !prev)}
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginTop: 8,
-            marginBottom: 8
-          }}
-        >
-          <View
-            style={{
-              width: 22,
-              height: 22,
-              borderRadius: 6,
-              borderWidth: 1,
-              borderColor: "#4A8FDF",
-              backgroundColor: acceptTerms ? "#4A8FDF" : "#FFFFFF",
-              alignItems: "center",
-              justifyContent: "center",
-              marginRight: 10
-            }}
-          >
-            {acceptTerms ? (
-              <Text style={{ color: "#FFFFFF", fontSize: 14, fontWeight: "800" }}>✓</Text>
-            ) : null}
+            <Pressable onPress={pickImage} style={photoBox}>
+              {mainPhoto ? (
+                <Image source={{ uri: mainPhoto.uri }} style={{ width: "100%", height: "100%" }} />
+              ) : (
+                <Text style={{ color: "#173B6B", fontWeight: "800" }}>Agregar foto</Text>
+              )}
+            </Pressable>
           </View>
 
-          <Text style={{ color: "#162033", flex: 1 }}>
-            Acepto los términos y condiciones
-          </Text>
-        </Pressable>
+          <View style={card}>
+            <Text style={section}>Información personal</Text>
 
-        <Pressable onPress={handleSave} style={button}>
-          <Text style={{ color: "#fff", fontWeight: "800" }}>
-            GUARDAR PERFIL
-          </Text>
-        </Pressable>
-      </View>
-    </ScrollView>
+            <TextInput value={name} onChangeText={setName} placeholder="Nombre" style={input} />
+            <TextInput value={email} onChangeText={setEmail} placeholder="Email" style={input} />
+            <TextInput value={phone} onChangeText={setPhone} placeholder="Teléfono" style={input} />
+            <TextInput value={country} onChangeText={setCountry} placeholder="País" style={input} />
+            <TextInput value={city} onChangeText={setCity} placeholder="Ciudad" style={input} />
+            <TextInput value={language} onChangeText={setLanguage} placeholder="Idioma" style={input} />
+            <TextInput value={travelStyle} onChangeText={setTravelStyle} placeholder="Tipo de viaje" style={input} />
+            <TextInput value={interests} onChangeText={setInterests} placeholder="Intereses" style={input} />
+            <TextInput value={about} onChangeText={setAbout} placeholder="Sobre vos" multiline style={[input,{minHeight:100}]} />
+
+            <Pressable onPress={()=>setAcceptTerms(!acceptTerms)} style={{flexDirection:"row",alignItems:"center",marginTop:8}}>
+              <View style={{
+                width:22,height:22,borderRadius:6,borderWidth:1,
+                borderColor:"#4A8FDF",
+                backgroundColor: acceptTerms ? "#4A8FDF":"transparent",
+                marginRight:10,justifyContent:"center",alignItems:"center"
+              }}>
+                {acceptTerms && <Text style={{color:"#fff"}}>✓</Text>}
+              </View>
+              <Text>Acepto términos</Text>
+            </Pressable>
+
+            <Pressable onPress={handleSave} style={button}>
+              <Text style={{color:"#fff",fontWeight:"800"}}>GUARDAR PERFIL</Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      </ImageBackground>
+    </SafeAreaView>
   );
 }
 
+const titleMain = {
+  color:"#173B6B",
+  fontSize:36,
+  fontWeight:"900",
+  textAlign:"center"
+};
+
+const titleSub = {
+  color:"#fff",
+  fontSize:26,
+  fontWeight:"800",
+  textAlign:"center",
+  marginTop:10,
+  marginBottom:20
+};
+
+const photoBox = {
+  alignSelf:"center",
+  width:180,
+  height:180,
+  borderRadius:90,
+  overflow:"hidden",
+  backgroundColor:"rgba(255,255,255,0.25)",
+  borderWidth:3,
+  borderColor:"#fff",
+  justifyContent:"center",
+  alignItems:"center"
+};
+
+const card = {
+  backgroundColor:"rgba(255,255,255,0.20)",
+  borderTopLeftRadius:30,
+  borderTopRightRadius:30,
+  padding:22,
+  borderWidth:1,
+  borderColor:"rgba(255,255,255,0.25)"
+};
+
+const section = {
+  fontSize:22,
+  fontWeight:"800",
+  marginBottom:20,
+  color:"#173B6B"
+};
+
 const input = {
-  backgroundColor: "#F8FAFC",
-  borderRadius: 16,
-  padding: 14,
-  marginBottom: 12,
-  borderWidth: 1,
-  borderColor: "#D8E2EE"
+  backgroundColor:"rgba(255,255,255,0.6)",
+  borderRadius:16,
+  padding:14,
+  marginBottom:12
 };
 
 const button = {
-  backgroundColor: "#4A8FDF",
-  padding: 16,
-  borderRadius: 16,
-  alignItems: "center" as const,
-  marginTop: 10
+  backgroundColor:"#173B6B",
+  padding:16,
+  borderRadius:16,
+  alignItems:"center",
+  marginTop:12
 };
