@@ -65,75 +65,27 @@ export default function GuiasScreen() {
       style={{ flex: 1, backgroundColor: "#76A9E8" }}
       resizeMode="cover"
     >
-      <View
-        style={{
-          position: "absolute",
-          top: 0,
-          right: 0,
-          bottom: 0,
-          left: 0,
-          backgroundColor: "rgba(90,136,204,0.42)"
-        }}
-      />
-      <View
-        style={{
-          position: "absolute",
-          top: -30,
-          right: -20,
-          width: 230,
-          height: 230,
-          borderRadius: 115,
-          backgroundColor: "rgba(255,255,255,0.10)"
-        }}
-      />
-      <View
-        style={{
-          position: "absolute",
-          bottom: 160,
-          left: -30,
-          width: 170,
-          height: 170,
-          borderRadius: 85,
-          backgroundColor: "rgba(168,240,233,0.14)"
-        }}
-      />
+      <View style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, backgroundColor: "rgba(90,136,204,0.35)" }} />
 
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
       >
+        {/* HEADER */}
         <View
           style={{
-            backgroundColor: "rgba(21,83,154,0.30)",
+            backgroundColor: "rgba(255,255,255,0.45)",
             borderRadius: 28,
-            padding: 20,
-            borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.18)"
+            padding: 20
           }}
         >
-          <Text
-            style={{
-              fontSize: 30,
-              fontWeight: "800",
-              color: "#ffffff",
-              textShadowColor: "rgba(0,0,0,0.12)",
-              textShadowOffset: { width: 0, height: 2 },
-              textShadowRadius: 6
-            }}
-          >
-            {"Guías"}
+          <Text style={{ fontSize: 30, fontWeight: "800", color: "#15539A" }}>
+            Guías
           </Text>
 
-          <Text
-            style={{
-              marginTop: 8,
-              fontSize: 15,
-              color: "#eef6ff",
-              lineHeight: 22
-            }}
-          >
-            {"Abrí perfiles reales, revisá tarifas y seguí directo a reserva."}
+          <Text style={{ marginTop: 8, fontSize: 15, color: "#173B6B", lineHeight: 22 }}>
+            Abrí perfiles reales, revisá tarifas y seguí directo a reserva.
           </Text>
 
           <View style={{ flexDirection: "row", gap: 10, marginTop: 16 }}>
@@ -144,12 +96,11 @@ export default function GuiasScreen() {
                 backgroundColor: "#1CC9B7",
                 paddingVertical: 15,
                 borderRadius: 18,
-                alignItems: "center",
-                justifyContent: "center"
+                alignItems: "center"
               }}
             >
-              <Text style={{ color: "#ffffff", fontWeight: "800", fontSize: 15 }}>
-                {"Guías cercanos"}
+              <Text style={{ color: "#ffffff", fontWeight: "800" }}>
+                Guías cercanos
               </Text>
             </Pressable>
 
@@ -157,14 +108,13 @@ export default function GuiasScreen() {
               onPress={loadGuides}
               style={{
                 flex: 1,
-                backgroundColor: "rgba(255,255,255,0.90)",
+                backgroundColor: "#ffffff",
                 paddingVertical: 15,
                 borderRadius: 18,
-                alignItems: "center",
-                justifyContent: "center"
+                alignItems: "center"
               }}
             >
-              <Text style={{ color: "#15539A", fontWeight: "800", fontSize: 15 }}>
+              <Text style={{ color: "#15539A", fontWeight: "800" }}>
                 Recargar
               </Text>
             </Pressable>
@@ -174,44 +124,42 @@ export default function GuiasScreen() {
             onPress={() => router.push("/guides-by-country")}
             style={{
               marginTop: 10,
-              backgroundColor: "rgba(255,255,255,0.16)",
+              backgroundColor: "rgba(255,255,255,0.35)",
               paddingVertical: 15,
               borderRadius: 18,
-              alignItems: "center",
-              justifyContent: "center",
-              borderWidth: 1,
-              borderColor: "rgba(255,255,255,0.18)"
+              alignItems: "center"
             }}
           >
-            <Text style={{ color: "#ffffff", fontWeight: "800", fontSize: 15 }}>
+            <Text style={{ color: "#15539A", fontWeight: "800" }}>
               Buscar por país
             </Text>
           </Pressable>
         </View>
 
+        {/* LOADING */}
         {loading && (
           <View style={{ paddingTop: 32 }}>
-            <ActivityIndicator size="large" color="#ffffff" />
+            <ActivityIndicator size="large" color="#15539A" />
           </View>
         )}
 
+        {/* EMPTY */}
         {!loading && guides.length === 0 && (
           <View
             style={{
               marginTop: 16,
               borderRadius: 22,
               padding: 18,
-              backgroundColor: "rgba(255,255,255,0.16)",
-              borderWidth: 1,
-              borderColor: "rgba(255,255,255,0.18)"
+              backgroundColor: "rgba(255,255,255,0.35)"
             }}
           >
-            <Text style={{ color: "#f3f8ff", fontSize: 16 }}>
+            <Text style={{ color: "#173B6B" }}>
               No hay guías para mostrar.
             </Text>
           </View>
         )}
 
+        {/* CARDS */}
         {guides.map((guide, index) => {
           const guideId = guide._id || guide.id || String(index);
           const location = [guide.city, guide.country].filter(Boolean).join(", ");
@@ -227,88 +175,59 @@ export default function GuiasScreen() {
                 marginTop: 16,
                 borderRadius: 24,
                 padding: 18,
-                backgroundColor: "rgba(255,255,255,0.16)",
-                borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.18)"
+                backgroundColor: "rgba(255,255,255,0.38)"
               }}
             >
-              <Text
-                style={{
-                  fontSize: 24,
-                  fontWeight: "800",
-                  color: "#ffffff"
-                }}
-              >
+              <Text style={{ fontSize: 24, fontWeight: "800", color: "#15539A" }}>
                 {guide.name || "Guía"}
               </Text>
 
-              <Text style={{ marginTop: 8, color: "#eef6ff", fontSize: 15 }}>
+              <Text style={{ marginTop: 8, color: "#173B6B" }}>
                 {location || "Ubicación a confirmar"}
               </Text>
 
-              <Text style={{ marginTop: 4, color: "#eef6ff", fontSize: 15 }}>
+              <Text style={{ marginTop: 4, color: "#173B6B" }}>
                 Idiomas: {languages}
               </Text>
 
-              <Text style={{ marginTop: 4, color: "#eef6ff", fontSize: 15 }}>
+              <Text style={{ marginTop: 4, color: "#173B6B" }}>
                 Rating: {guide.rating ?? "-"}
               </Text>
 
               <View style={{ flexDirection: "row", gap: 10, marginTop: 12 }}>
-                <View
-                  style={{
-                    flex: 1,
-                    backgroundColor: "rgba(255,255,255,0.14)",
-                    borderRadius: 16,
-                    padding: 12
-                  }}
-                >
-                  <Text style={{ color: "#dff4ff", fontSize: 13, marginBottom: 4 }}>
+                <View style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.25)", borderRadius: 16, padding: 12 }}>
+                  <Text style={{ color: "#173B6B", fontSize: 13 }}>
                     Jornada 8h
                   </Text>
-                  <Text style={{ color: "#ffffff", fontWeight: "800", fontSize: 16 }}>
+                  <Text style={{ color: "#15539A", fontWeight: "800", fontSize: 16 }}>
                     {money(guide.priceDay)}
                   </Text>
                 </View>
 
-                <View
-                  style={{
-                    flex: 1,
-                    backgroundColor: "rgba(255,255,255,0.14)",
-                    borderRadius: 16,
-                    padding: 12
-                  }}
-                >
-                  <Text style={{ color: "#dff4ff", fontSize: 13, marginBottom: 4 }}>
+                <View style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.25)", borderRadius: 16, padding: 12 }}>
+                  <Text style={{ color: "#173B6B", fontSize: 13 }}>
                     24 horas
                   </Text>
-                  <Text style={{ color: "#ffffff", fontWeight: "800", fontSize: 16 }}>
+                  <Text style={{ color: "#15539A", fontWeight: "800", fontSize: 16 }}>
                     {money(guide.price24h)}
                   </Text>
                 </View>
               </View>
 
-              <Text
-                style={{
-                  marginTop: 14,
-                  color: "#f3f8ff",
-                  lineHeight: 22,
-                  fontSize: 15
-                }}
-              >
+              <Text style={{ marginTop: 14, color: "#173B6B", lineHeight: 22 }}>
                 {guide.bio || "Guía local disponible para experiencias personalizadas."}
               </Text>
 
               <View
                 style={{
                   marginTop: 14,
-                  backgroundColor: "rgba(28,201,183,0.96)",
+                  backgroundColor: "#1CC9B7",
                   paddingVertical: 13,
                   borderRadius: 16,
                   alignItems: "center"
                 }}
               >
-                <Text style={{ color: "#ffffff", fontWeight: "800", fontSize: 15 }}>
+                <Text style={{ color: "#ffffff", fontWeight: "800" }}>
                   Ver perfil
                 </Text>
               </View>
