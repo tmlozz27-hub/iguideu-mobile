@@ -14,12 +14,6 @@ function Card({
   emoji,
   onPress,
   wide = false,
-}: {
-  title: string;
-  subtitle: string;
-  emoji: string;
-  onPress: () => void;
-  wide?: boolean;
 }) {
   return (
     <Pressable
@@ -34,11 +28,6 @@ function Card({
         paddingHorizontal: 16,
         paddingVertical: 16,
         justifyContent: "space-between",
-        shadowColor: "#2A5C95",
-        shadowOpacity: 0.12,
-        shadowRadius: 14,
-        shadowOffset: { width: 0, height: 8 },
-        elevation: 4,
       }}
     >
       <Text style={{ fontSize: 24 }}>{emoji}</Text>
@@ -49,7 +38,6 @@ function Card({
             color: "#173B6B",
             fontSize: wide ? 22 : 18,
             fontWeight: "800",
-            lineHeight: wide ? 28 : 24,
           }}
         >
           {title}
@@ -59,7 +47,6 @@ function Card({
           style={{
             color: "rgba(23,59,107,0.78)",
             fontSize: 13,
-            lineHeight: 18,
             marginTop: 4,
           }}
         >
@@ -107,11 +94,7 @@ export default function HomeTabScreen() {
               color: "#173B6B",
               fontSize: 42,
               fontWeight: "900",
-              letterSpacing: 2,
               textAlign: "center",
-              textShadowColor: "rgba(255,255,255,0.18)",
-              textShadowOffset: { width: 0, height: 2 },
-              textShadowRadius: 8,
             }}
           >
             I GUIDE U
@@ -121,12 +104,8 @@ export default function HomeTabScreen() {
             style={{
               color: "rgba(255,255,255,0.92)",
               fontSize: 16,
-              fontWeight: "500",
               textAlign: "center",
               marginTop: 10,
-              textShadowColor: "rgba(39,74,116,0.10)",
-              textShadowOffset: { width: 0, height: 1 },
-              textShadowRadius: 6,
             }}
           >
             Tu experiencia comienza acá
@@ -142,11 +121,6 @@ export default function HomeTabScreen() {
             borderColor: "rgba(255,255,255,0.48)",
             paddingHorizontal: 18,
             paddingVertical: 22,
-            shadowColor: "#3367A2",
-            shadowOpacity: 0.12,
-            shadowRadius: 18,
-            shadowOffset: { width: 0, height: 10 },
-            elevation: 4,
           }}
         >
           <Text
@@ -154,7 +128,6 @@ export default function HomeTabScreen() {
               color: "#173B6B",
               fontSize: 28,
               fontWeight: "900",
-              lineHeight: 34,
               textAlign: "center",
             }}
           >
@@ -165,7 +138,6 @@ export default function HomeTabScreen() {
             style={{
               color: "rgba(23,59,107,0.82)",
               fontSize: 16,
-              lineHeight: 24,
               textAlign: "center",
               marginTop: 12,
             }}
