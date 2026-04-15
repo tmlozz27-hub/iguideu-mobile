@@ -1,88 +1,124 @@
 import React from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import {
+  ImageBackground,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SelectRoleScreen() {
   const router = useRouter();
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: "#A9C9F5" }}
-      contentContainerStyle={{
-        paddingHorizontal: 24,
-        paddingTop: 80,
-        paddingBottom: 40,
-        flexGrow: 1
-      }}
-    >
-      <View style={{ flex: 1, justifyContent: "center" }}>
-        <Text
+    <SafeAreaView style={{ flex: 1 }} edges={["left", "right"]}>
+      <ImageBackground
+        source={{
+          uri: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1600&q=80",
+        }}
+        style={{ flex: 1 }}
+        resizeMode="cover"
+      >
+        <View
           style={{
-            color: "#FFFFFF",
-            fontSize: 34,
-            fontWeight: "800",
-            textAlign: "center",
-            marginBottom: 40,
-            letterSpacing: 1
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(183,209,245,0.55)",
           }}
-        >
-          I GUIDE U
-        </Text>
+        />
 
-        <Text
-          style={{
-            color: "#FFFFFF",
-            fontSize: 36,
-            fontWeight: "800",
-            textAlign: "center",
-            marginBottom: 60
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{
+            paddingHorizontal: 24,
+            paddingTop: 80,
+            paddingBottom: 40,
+            flexGrow: 1,
           }}
+          showsVerticalScrollIndicator={false}
         >
-          Elegí tu perfil
-        </Text>
+          <View style={{ flex: 1, justifyContent: "center" }}>
+            <View style={{ alignItems: "center", marginBottom: 60 }}>
+              <Text
+                style={{
+                  color: "#173B6B",
+                  fontSize: 40,
+                  fontWeight: "900",
+                  textAlign: "center",
+                  letterSpacing: 1.5,
+                }}
+              >
+                I GUIDE U
+              </Text>
 
-        <View style={{ gap: 20 }}>
-          <Pressable
-            onPress={() => router.push("/perfil-viajero")}
-            style={{
-              backgroundColor: "#4A8FDF",
-              paddingVertical: 24,
-              borderRadius: 24
-            }}
-          >
-            <Text
-              style={{
-                color: "#FFFFFF",
-                fontSize: 24,
-                fontWeight: "700",
-                textAlign: "center"
-              }}
-            >
-              Viajero
-            </Text>
-          </Pressable>
+              <Text
+                style={{
+                  color: "#FFFFFF",
+                  fontSize: 34,
+                  fontWeight: "800",
+                  textAlign: "center",
+                  marginTop: 26,
+                }}
+              >
+                Elegí tu perfil
+              </Text>
+            </View>
 
-          <Pressable
-            onPress={() => router.push("/perfil-guia")}
-            style={{
-              backgroundColor: "rgba(74,143,223,0.65)",
-              paddingVertical: 24,
-              borderRadius: 24
-            }}
-          >
-            <Text
-              style={{
-                color: "#FFFFFF",
-                fontSize: 24,
-                fontWeight: "700",
-                textAlign: "center"
-              }}
-            >
-              Guía
-            </Text>
-          </Pressable>
-        </View>
-      </View>
-    </ScrollView>
+            <View style={{ gap: 20 }}>
+              <Pressable
+                onPress={() => router.push("/perfil-viajero")}
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.18)",
+                  paddingVertical: 24,
+                  borderRadius: 28,
+                  alignItems: "center",
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.28)",
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#173B6B",
+                    fontSize: 24,
+                    fontWeight: "800",
+                    textAlign: "center",
+                  }}
+                >
+                  Viajero
+                </Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => router.push("/perfil-guia")}
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.18)",
+                  paddingVertical: 24,
+                  borderRadius: 28,
+                  alignItems: "center",
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.28)",
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#173B6B",
+                    fontSize: 24,
+                    fontWeight: "800",
+                    textAlign: "center",
+                  }}
+                >
+                  Guía
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </ScrollView>
+      </ImageBackground>
+    </SafeAreaView>
   );
 }
