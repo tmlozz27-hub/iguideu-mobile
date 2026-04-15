@@ -1,5 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import {
+  Alert,
+  ImageBackground,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View
+} from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useStripe } from "@stripe/stripe-react-native";
@@ -307,318 +315,424 @@ export default function ReservasScreen() {
   const showReservationForm = !!selectedGuide;
 
   return (
-    <ScrollView
-      keyboardShouldPersistTaps="handled"
-      contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: 40 }}
+    <ImageBackground
+      source={{
+        uri: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80"
+      }}
+      style={{ flex: 1, backgroundColor: "#76A9E8" }}
+      resizeMode="cover"
     >
-      <Text style={{ fontSize: 24, fontWeight: "700" }}>Reservas</Text>
+      <View
+        style={{
+          position: "absolute",
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 0,
+          backgroundColor: "rgba(90,136,204,0.44)"
+        }}
+      />
+      <View
+        style={{
+          position: "absolute",
+          top: -20,
+          right: -10,
+          width: 240,
+          height: 240,
+          borderRadius: 120,
+          backgroundColor: "rgba(255,255,255,0.10)"
+        }}
+      />
+      <View
+        style={{
+          position: "absolute",
+          bottom: 120,
+          left: -30,
+          width: 170,
+          height: 170,
+          borderRadius: 85,
+          backgroundColor: "rgba(168,240,233,0.14)"
+        }}
+      />
 
-      {!showReservationForm ? (
-        <View
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: 120 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text
           style={{
-            borderWidth: 1,
-            borderColor: "#d1d5db",
-            borderRadius: 16,
-            padding: 16,
-            backgroundColor: "#ffffff",
-            gap: 10
+            fontSize: 28,
+            fontWeight: "800",
+            color: "#ffffff",
+            textAlign: "center",
+            marginBottom: 2,
+            textShadowColor: "rgba(0,0,0,0.12)",
+            textShadowOffset: { width: 0, height: 2 },
+            textShadowRadius: 6
           }}
         >
-          <Text style={{ fontSize: 18, fontWeight: "700" }}>Todavía no elegiste un guía</Text>
-          <Text style={{ fontSize: 16, color: "#4b5563" }}>
-            Primero elegí un guía desde Buscar guías por país o Guías cercanos.
-          </Text>
+          Reservas
+        </Text>
 
-          <Pressable
-            onPress={() => router.push("/buscar-pais")}
-            style={{
-              borderWidth: 1,
-              borderColor: "#000000",
-              borderRadius: 16,
-              paddingVertical: 16,
-              alignItems: "center",
-              justifyContent: "center",
-              marginTop: 4
-            }}
-          >
-            <Text style={{ fontSize: 18, fontWeight: "700" }}>IR A BUSCAR GUÍAS</Text>
-          </Pressable>
-        </View>
-      ) : null}
-
-      {showReservationForm ? (
-        <>
-          <Text style={{ fontSize: 16 }}>Traveler Email</Text>
-          <TextInput
-            value={travelerEmail}
-            onChangeText={setTravelerEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            editable={false}
-            style={{
-              borderWidth: 1,
-              borderColor: "#d1d5db",
-              borderRadius: 16,
-              paddingHorizontal: 16,
-              paddingVertical: 18,
-              fontSize: 16,
-              backgroundColor: "#f3f4f6",
-              color: "#111827"
-            }}
-          />
-
-          <Text style={{ fontSize: 16 }}>Fecha</Text>
-          <TextInput
-            value={date}
-            onChangeText={setDate}
-            placeholder="YYYY-MM-DD"
-            style={{
-              borderWidth: 1,
-              borderColor: "#000000",
-              borderRadius: 16,
-              paddingHorizontal: 16,
-              paddingVertical: 18,
-              fontSize: 16,
-              backgroundColor: "#ffffff"
-            }}
-          />
-
-          <Text style={{ fontSize: 16 }}>Guía</Text>
-
+        {!showReservationForm ? (
           <View
             style={{
               borderWidth: 1,
-              borderColor: "#000000",
-              borderRadius: 16,
-              paddingHorizontal: 16,
-              paddingVertical: 18,
-              backgroundColor: "#000000"
+              borderColor: "rgba(255,255,255,0.20)",
+              borderRadius: 24,
+              padding: 18,
+              backgroundColor: "rgba(255,255,255,0.16)",
+              gap: 10
             }}
           >
-            <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
-              {selectedGuide.name} — {[selectedGuide.city, selectedGuide.country].filter(Boolean).join(", ")}
+            <Text style={{ fontSize: 18, fontWeight: "800", color: "#ffffff" }}>
+              Todavía no elegiste un guía
             </Text>
-            <Text style={{ color: "#d1d5db", marginTop: 8, fontSize: 16 }}>
-              Guía seleccionada desde el perfil
-            </Text>
-          </View>
-
-          <Text style={{ fontSize: 16 }}>Horas</Text>
-          <TextInput
-            value={hours}
-            onChangeText={setHours}
-            keyboardType="numeric"
-            style={{
-              width: 120,
-              borderWidth: 1,
-              borderColor: "#000000",
-              borderRadius: 16,
-              paddingHorizontal: 16,
-              paddingVertical: 18,
-              fontSize: 16,
-              backgroundColor: "#ffffff"
-            }}
-          />
-
-          <Text style={{ fontSize: 16 }}>Adultos (18+)</Text>
-          <TextInput
-            value={adults}
-            onChangeText={setAdults}
-            keyboardType="numeric"
-            style={{
-              width: 120,
-              borderWidth: 1,
-              borderColor: "#000000",
-              borderRadius: 16,
-              paddingHorizontal: 16,
-              paddingVertical: 18,
-              fontSize: 16,
-              backgroundColor: "#ffffff"
-            }}
-          />
-
-          <Text style={{ fontSize: 16 }}>Jóvenes (13 a 17)</Text>
-          <TextInput
-            value={youth}
-            onChangeText={setYouth}
-            keyboardType="numeric"
-            style={{
-              width: 120,
-              borderWidth: 1,
-              borderColor: "#000000",
-              borderRadius: 16,
-              paddingHorizontal: 16,
-              paddingVertical: 18,
-              fontSize: 16,
-              backgroundColor: "#ffffff"
-            }}
-          />
-
-          <Text style={{ fontSize: 16 }}>Niños (0 a 12)</Text>
-          <TextInput
-            value={children}
-            onChangeText={setChildren}
-            keyboardType="numeric"
-            style={{
-              width: 120,
-              borderWidth: 1,
-              borderColor: "#000000",
-              borderRadius: 16,
-              paddingHorizontal: 16,
-              paddingVertical: 18,
-              fontSize: 16,
-              backgroundColor: "#ffffff"
-            }}
-          />
-
-          <View
-            style={{
-              borderWidth: 1,
-              borderColor: "#d1d5db",
-              borderRadius: 16,
-              padding: 16,
-              backgroundColor: "#ffffff",
-              gap: 6
-            }}
-          >
-            <Text style={{ fontWeight: "700", fontSize: 18 }}>Resumen</Text>
-            <Text>Guía: {selectedGuide?.name || "-"}</Text>
-            <Text>Fecha: {date}</Text>
-            <Text>Horas: {hours}</Text>
-            <Text>Adultos (18+): {adultsCount}</Text>
-            <Text>Jóvenes (13 a 17): {youthCount}</Text>
-            <Text>Niños (0 a 12): {childrenCount}</Text>
-            <Text>Total viajeros: {travelersCount}</Text>
-            <Text>Precio adulto/hora: USD {selectedPriceHour || 0}</Text>
-            <Text>Precio joven/hora: USD {youthPriceHour.toFixed(2)}</Text>
-            <Text>Niños (0 a 12): sin cargo</Text>
-            <Text>Total: USD {totalAmount.toFixed(2)}</Text>
-          </View>
-
-          <View
-            style={{
-              borderWidth: 1,
-              borderColor: "#d1d5db",
-              borderRadius: 16,
-              padding: 16,
-              backgroundColor: "#ffffff",
-              gap: 8
-            }}
-          >
-            <Text style={{ fontSize: 18, fontWeight: "700" }}>
-              Antes de confirmar tu reserva
+            <Text style={{ fontSize: 16, color: "#f2f7ff", lineHeight: 24 }}>
+              Primero elegí un guía desde Buscar guías por país o Guías cercanos.
             </Text>
 
-            <Text>• La tarifa corresponde únicamente al servicio del guía según la modalidad indicada y se calcula por viajero según edad</Text>
-            <Text>• Gastos como comidas, transporte o entradas no están incluidos salvo que se indique expresamente</Text>
-            <Text>• En actividades compartidas, el viajero cubre también los gastos del guía</Text>
-            <Text>• Podés cancelar sin costo con más de 24 horas de anticipación</Text>
-            <Text>• Si surge un imprevisto, podés coordinar directamente con tu guía un cambio de horario o fecha</Text>
-            <Text>• Las horas adicionales se acuerdan con el guía y se cobran según la tarifa publicada</Text>
-          </View>
-
-          <View
-            style={{
-              borderWidth: 1,
-              borderColor: "#000000",
-              borderRadius: 16,
-              padding: 16,
-              backgroundColor: "#f9fafb",
-              gap: 8
-            }}
-          >
-            <Text style={{ fontSize: 18, fontWeight: "700" }}>
-              Confirmación
-            </Text>
-
-            <Text>• Confirmo que revisé la tarifa, duración y condiciones de esta reserva</Text>
-            <Text>• Confirmo que los gastos adicionales no están incluidos salvo que se indique expresamente</Text>
-            <Text>• Confirmo que leí las condiciones de cancelación, cambios e imprevistos</Text>
-
-            <Text style={{ marginTop: 6, fontSize: 14, color: "#4b5563" }}>
-              Pago seguro · Reserva registrada · Mayor transparencia para ambas partes
-            </Text>
-          </View>
-
-          <Pressable
-            onPress={createBooking}
-            disabled={loading}
-            style={{
-              backgroundColor: loading ? "#6b7280" : "#000000",
-              paddingVertical: 18,
-              borderRadius: 16,
-              alignItems: "center",
-              justifyContent: "center"
-            }}
-          >
-            <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
-              {loading ? "Cargando..." : "PAGAR AHORA"}
-            </Text>
-          </Pressable>
-
-          {lastPaidBookingId ? (
             <Pressable
-              onPress={() => router.push({ pathname: "/chat", params: { bookingId: lastPaidBookingId } })}
+              onPress={() => router.push("/buscar-pais")}
               style={{
-                backgroundColor: "#000000",
-                paddingVertical: 18,
-                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.24)",
+                borderRadius: 20,
+                paddingVertical: 16,
                 alignItems: "center",
-                justifyContent: "center"
+                justifyContent: "center",
+                marginTop: 4,
+                backgroundColor: "rgba(255,255,255,0.18)"
               }}
             >
-              <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
-                ABRIR CHAT
+              <Text style={{ fontSize: 18, fontWeight: "800", color: "#ffffff" }}>
+                IR A BUSCAR GUÍAS
               </Text>
             </Pressable>
-          ) : null}
+          </View>
+        ) : null}
 
-          <Text style={{ fontSize: 16, textAlign: "center", color: "#4b5563" }}>
-            Tu información de contacto se compartirá solo después del pago
-          </Text>
-        </>
-      ) : null}
+        {showReservationForm ? (
+          <>
+            <Text style={{ fontSize: 16, color: "#ffffff", fontWeight: "700" }}>Traveler Email</Text>
+            <TextInput
+              value={travelerEmail}
+              onChangeText={setTravelerEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              editable={false}
+              style={{
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.16)",
+                borderRadius: 18,
+                paddingHorizontal: 16,
+                paddingVertical: 18,
+                fontSize: 16,
+                backgroundColor: "rgba(255,255,255,0.92)",
+                color: "#111827"
+              }}
+            />
 
-      <Text style={{ fontSize: 24, fontWeight: "700", marginTop: 12 }}>Mis reservas</Text>
+            <Text style={{ fontSize: 16, color: "#ffffff", fontWeight: "700" }}>Fecha</Text>
+            <TextInput
+              value={date}
+              onChangeText={setDate}
+              placeholder="YYYY-MM-DD"
+              placeholderTextColor="#6b7280"
+              style={{
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.16)",
+                borderRadius: 18,
+                paddingHorizontal: 16,
+                paddingVertical: 18,
+                fontSize: 16,
+                backgroundColor: "rgba(255,255,255,0.96)",
+                color: "#111827"
+              }}
+            />
 
-      {bookings.length === 0 ? (
-        <View
+            <Text style={{ fontSize: 16, color: "#ffffff", fontWeight: "700" }}>Guía</Text>
+
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.18)",
+                borderRadius: 22,
+                paddingHorizontal: 16,
+                paddingVertical: 18,
+                backgroundColor: "rgba(77,118,181,0.34)"
+              }}
+            >
+              <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "800" }}>
+                {selectedGuide.name} — {[selectedGuide.city, selectedGuide.country].filter(Boolean).join(", ")}
+              </Text>
+              <Text style={{ color: "#eff6ff", marginTop: 8, fontSize: 15 }}>
+                Guía seleccionada desde el perfil
+              </Text>
+            </View>
+
+            <Text style={{ fontSize: 16, color: "#ffffff", fontWeight: "700" }}>Horas</Text>
+            <TextInput
+              value={hours}
+              onChangeText={setHours}
+              keyboardType="numeric"
+              style={{
+                width: 120,
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.16)",
+                borderRadius: 18,
+                paddingHorizontal: 16,
+                paddingVertical: 18,
+                fontSize: 16,
+                backgroundColor: "rgba(255,255,255,0.96)",
+                color: "#111827"
+              }}
+            />
+
+            <Text style={{ fontSize: 16, color: "#ffffff", fontWeight: "700" }}>Adultos (18+)</Text>
+            <TextInput
+              value={adults}
+              onChangeText={setAdults}
+              keyboardType="numeric"
+              style={{
+                width: 120,
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.16)",
+                borderRadius: 18,
+                paddingHorizontal: 16,
+                paddingVertical: 18,
+                fontSize: 16,
+                backgroundColor: "rgba(255,255,255,0.96)",
+                color: "#111827"
+              }}
+            />
+
+            <Text style={{ fontSize: 16, color: "#ffffff", fontWeight: "700" }}>Jóvenes (13 a 17)</Text>
+            <TextInput
+              value={youth}
+              onChangeText={setYouth}
+              keyboardType="numeric"
+              style={{
+                width: 120,
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.16)",
+                borderRadius: 18,
+                paddingHorizontal: 16,
+                paddingVertical: 18,
+                fontSize: 16,
+                backgroundColor: "rgba(255,255,255,0.96)",
+                color: "#111827"
+              }}
+            />
+
+            <Text style={{ fontSize: 16, color: "#ffffff", fontWeight: "700" }}>Niños (0 a 12)</Text>
+            <TextInput
+              value={children}
+              onChangeText={setChildren}
+              keyboardType="numeric"
+              style={{
+                width: 120,
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.16)",
+                borderRadius: 18,
+                paddingHorizontal: 16,
+                paddingVertical: 18,
+                fontSize: 16,
+                backgroundColor: "rgba(255,255,255,0.96)",
+                color: "#111827"
+              }}
+            />
+
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.18)",
+                borderRadius: 24,
+                padding: 18,
+                backgroundColor: "rgba(255,255,255,0.16)",
+                gap: 7
+              }}
+            >
+              <Text style={{ fontWeight: "800", fontSize: 18, color: "#ffffff" }}>Resumen</Text>
+              <Text style={{ color: "#f3f8ff" }}>Guía: {selectedGuide?.name || "-"}</Text>
+              <Text style={{ color: "#f3f8ff" }}>Fecha: {date}</Text>
+              <Text style={{ color: "#f3f8ff" }}>Horas: {hours}</Text>
+              <Text style={{ color: "#f3f8ff" }}>Adultos (18+): {adultsCount}</Text>
+              <Text style={{ color: "#f3f8ff" }}>Jóvenes (13 a 17): {youthCount}</Text>
+              <Text style={{ color: "#f3f8ff" }}>Niños (0 a 12): {childrenCount}</Text>
+              <Text style={{ color: "#f3f8ff" }}>Total viajeros: {travelersCount}</Text>
+              <Text style={{ color: "#f3f8ff" }}>Precio adulto/hora: USD {selectedPriceHour || 0}</Text>
+              <Text style={{ color: "#f3f8ff" }}>Precio joven/hora: USD {youthPriceHour.toFixed(2)}</Text>
+              <Text style={{ color: "#f3f8ff" }}>Niños (0 a 12): sin cargo</Text>
+              <Text style={{ color: "#ffffff", fontWeight: "800", marginTop: 4 }}>
+                Total: USD {totalAmount.toFixed(2)}
+              </Text>
+            </View>
+
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.18)",
+                borderRadius: 24,
+                padding: 18,
+                backgroundColor: "rgba(255,255,255,0.16)",
+                gap: 8
+              }}
+            >
+              <Text style={{ fontSize: 18, fontWeight: "800", color: "#ffffff" }}>
+                Antes de confirmar tu reserva
+              </Text>
+
+              <Text style={{ color: "#f3f8ff", lineHeight: 23 }}>
+                • La tarifa corresponde únicamente al servicio del guía según la modalidad indicada y se calcula por viajero según edad
+              </Text>
+              <Text style={{ color: "#f3f8ff", lineHeight: 23 }}>
+                • Gastos como comidas, transporte o entradas no están incluidos salvo que se indique expresamente
+              </Text>
+              <Text style={{ color: "#f3f8ff", lineHeight: 23 }}>
+                • En actividades compartidas, el viajero cubre también los gastos del guía
+              </Text>
+              <Text style={{ color: "#f3f8ff", lineHeight: 23 }}>
+                • Podés cancelar sin costo con más de 24 horas de anticipación
+              </Text>
+              <Text style={{ color: "#f3f8ff", lineHeight: 23 }}>
+                • Si surge un imprevisto, podés coordinar directamente con tu guía un cambio de horario o fecha
+              </Text>
+              <Text style={{ color: "#f3f8ff", lineHeight: 23 }}>
+                • Las horas adicionales se acuerdan con el guía y se cobran según la tarifa publicada
+              </Text>
+            </View>
+
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.18)",
+                borderRadius: 24,
+                padding: 18,
+                backgroundColor: "rgba(255,255,255,0.14)",
+                gap: 8
+              }}
+            >
+              <Text style={{ fontSize: 18, fontWeight: "800", color: "#ffffff" }}>
+                Confirmación
+              </Text>
+
+              <Text style={{ color: "#f3f8ff", lineHeight: 23 }}>
+                • Confirmo que revisé la tarifa, duración y condiciones de esta reserva
+              </Text>
+              <Text style={{ color: "#f3f8ff", lineHeight: 23 }}>
+                • Confirmo que los gastos adicionales no están incluidos salvo que se indique expresamente
+              </Text>
+              <Text style={{ color: "#f3f8ff", lineHeight: 23 }}>
+                • Confirmo que leí las condiciones de cancelación, cambios e imprevistos
+              </Text>
+
+              <Text style={{ marginTop: 6, fontSize: 14, color: "#eef6ff" }}>
+                Pago seguro · Reserva registrada · Mayor transparencia para ambas partes
+              </Text>
+            </View>
+
+            <Pressable
+              onPress={createBooking}
+              disabled={loading}
+              style={{
+                backgroundColor: loading ? "#8c96a7" : "#1cc9b7",
+                paddingVertical: 18,
+                borderRadius: 20,
+                alignItems: "center",
+                justifyContent: "center",
+                marginTop: 2
+              }}
+            >
+              <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "800" }}>
+                {loading ? "Cargando..." : "PAGAR AHORA"}
+              </Text>
+            </Pressable>
+
+            {lastPaidBookingId ? (
+              <Pressable
+                onPress={() => router.push({ pathname: "/chat", params: { bookingId: lastPaidBookingId } })}
+                style={{
+                  backgroundColor: "rgba(106,145,205,0.92)",
+                  paddingVertical: 18,
+                  borderRadius: 20,
+                  alignItems: "center",
+                  justifyContent: "center"
+                }}
+              >
+                <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "800" }}>
+                  ABRIR CHAT
+                </Text>
+              </Pressable>
+            ) : null}
+
+            <Text style={{ fontSize: 15, textAlign: "center", color: "#eef6ff", lineHeight: 22 }}>
+              Tu información de contacto se compartirá solo después del pago
+            </Text>
+          </>
+        ) : null}
+
+        <Text
           style={{
-            borderWidth: 1,
-            borderColor: "#d1d5db",
-            borderRadius: 16,
-            padding: 16,
-            backgroundColor: "#ffffff"
+            fontSize: 28,
+            fontWeight: "800",
+            marginTop: 12,
+            color: "#ffffff",
+            textAlign: "center",
+            textShadowColor: "rgba(0,0,0,0.12)",
+            textShadowOffset: { width: 0, height: 2 },
+            textShadowRadius: 6
           }}
         >
-          <Text style={{ fontSize: 16, color: "#4b5563" }}>Todavía no hay reservas pagadas.</Text>
-        </View>
-      ) : null}
+          Mis reservas
+        </Text>
 
-      {bookings.map((booking) => {
-        const amount = booking.amount ?? booking.amountUsd ?? booking.totalAmount ?? 0;
-
-        return (
+        {bookings.length === 0 ? (
           <View
-            key={booking._id}
             style={{
               borderWidth: 1,
-              borderColor: "#000000",
-              borderRadius: 16,
-              padding: 16,
-              backgroundColor: "#ffffff",
-              gap: 4
+              borderColor: "rgba(255,255,255,0.18)",
+              borderRadius: 24,
+              padding: 18,
+              backgroundColor: "rgba(255,255,255,0.16)"
             }}
           >
-            <Text style={{ fontSize: 18, fontWeight: "700" }}>{booking.guideName || "Guía"}</Text>
-            <Text>Email: {booking.travelerEmail || booking.email || "-"}</Text>
-            <Text>Fecha: {booking.date || "-"}</Text>
-            <Text>Horas: {booking.hours ?? "-"}</Text>
-            <Text>Monto: USD {Number(amount || 0).toFixed(2)}</Text>
-            <Text>Estado: {booking.status || "-"}</Text>
+            <Text style={{ fontSize: 16, color: "#f2f7ff", lineHeight: 24 }}>
+              Todavía no hay reservas pagadas.
+            </Text>
           </View>
-        );
-      })}
-    </ScrollView>
+        ) : null}
+
+        {bookings.map((booking) => {
+          const amount = booking.amount ?? booking.amountUsd ?? booking.totalAmount ?? 0;
+
+          return (
+            <View
+              key={booking._id}
+              style={{
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.18)",
+                borderRadius: 24,
+                padding: 18,
+                backgroundColor: "rgba(255,255,255,0.16)",
+                gap: 6
+              }}
+            >
+              <Text style={{ fontSize: 18, fontWeight: "800", color: "#ffffff" }}>
+                {booking.guideName || "Guía"}
+              </Text>
+              <Text style={{ color: "#f3f8ff" }}>Email: {booking.travelerEmail || booking.email || "-"}</Text>
+              <Text style={{ color: "#f3f8ff" }}>Fecha: {booking.date || "-"}</Text>
+              <Text style={{ color: "#f3f8ff" }}>Horas: {booking.hours ?? "-"}</Text>
+              <Text style={{ color: "#f3f8ff" }}>Monto: USD {Number(amount || 0).toFixed(2)}</Text>
+              <Text style={{ color: "#ffffff", fontWeight: "800" }}>Estado: {booking.status || "-"}</Text>
+            </View>
+          );
+        })}
+
+        <View style={{ height: 36 }} />
+      </ScrollView>
+    </ImageBackground>
   );
 }

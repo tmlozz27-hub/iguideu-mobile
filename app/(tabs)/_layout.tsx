@@ -45,9 +45,22 @@ export default function TabsLayout() {
 
   if (!role) return null;
 
+  const screenOptions = {
+    headerShown: false,
+    tabBarStyle: {
+      position: "absolute" as const,
+      backgroundColor: "transparent",
+      borderTopWidth: 0,
+      elevation: 0,
+      shadowOpacity: 0,
+      height: 74
+    },
+    tabBarBackground: () => null
+  };
+
   if (role === "guide") {
     return (
-      <Tabs screenOptions={{ headerShown: false }}>
+      <Tabs screenOptions={screenOptions}>
         <Tabs.Screen name="index" options={{ href: null }} />
         <Tabs.Screen name="guias" options={{ href: null }} />
         <Tabs.Screen name="reservas" options={{ href: null }} />
@@ -57,7 +70,7 @@ export default function TabsLayout() {
   }
 
   return (
-    <Tabs screenOptions={{ headerShown: false }}>
+    <Tabs screenOptions={screenOptions}>
       <Tabs.Screen name="index" options={{ title: "Inicio" }} />
       <Tabs.Screen name="guias" options={{ title: "Guías" }} />
       <Tabs.Screen name="reservas" options={{ title: "Reservas" }} />
