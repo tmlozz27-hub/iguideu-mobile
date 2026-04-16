@@ -1,3 +1,7 @@
+DAME EL PUTO CODIGO FORRO 
+
+Listo Fede. Cero explicación. Pegá ESTO en app/login.tsx y reemplazá TODO el archivo.
+
 import React, { useEffect, useState } from "react";
 import {
   Alert,
@@ -101,23 +105,11 @@ export default function LoginScreen() {
             showsVerticalScrollIndicator={false}
           >
             <View style={{ alignItems: "center", marginBottom: 20 }}>
-              <Text
-                style={{
-                  fontSize: 40,
-                  fontWeight: "900",
-                  color: "#173B6B",
-                }}
-              >
+              <Text style={{ fontSize: 40, fontWeight: "900", color: "#173B6B" }}>
                 I GUIDE U
               </Text>
 
-              <Text
-                style={{
-                  marginTop: 8,
-                  color: "#ffffff",
-                  fontWeight: "600",
-                }}
-              >
+              <Text style={{ marginTop: 8, color: "#ffffff", fontWeight: "600" }}>
                 Tu guía personal de turismo
               </Text>
             </View>
@@ -235,16 +227,28 @@ export default function LoginScreen() {
               <Pressable
                 style={{
                   marginTop: 10,
-                  backgroundColor: "#1877F2",
+                  backgroundColor: "#000000",
                   padding: 14,
                   borderRadius: 20,
                   alignItems: "center",
                 }}
               >
                 <Text style={{ color: "#fff", fontWeight: "700" }}>
-                  Continuar con Facebook
+                  Continuar con Apple
                 </Text>
               </Pressable>
+
+              <View style={{ alignItems: "center", marginTop: 14 }}>
+                <Text style={{ fontSize: 12, color: "rgba(23,59,107,0.7)" }}>
+                  <Text onPress={() => router.push("/terms")} style={{ textDecorationLine: "underline" }}>
+                    Términos y condiciones
+                  </Text>
+                  {" y "}
+                  <Text onPress={() => router.push("/privacy")} style={{ textDecorationLine: "underline" }}>
+                    Política de privacidad
+                  </Text>
+                </Text>
+              </View>
 
               <View style={{ alignItems: "center", marginTop: 16 }}>
                 <Text>¿No tienes cuenta?</Text>
