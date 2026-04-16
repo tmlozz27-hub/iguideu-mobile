@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Modal, Pressable, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Modal, Pressable, ScrollView, Text, View, ImageBackground } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { apiGet } from "../config/api";
@@ -25,8 +25,7 @@ type Guide = {
 type GalleryItem = {
   key: string;
   label: string;
-  backgroundColor: string;
-  textColor: string;
+  image: string;
   isVideo?: boolean;
 };
 
@@ -127,33 +126,28 @@ export default function GuiaDetalleScreen() {
     () => [
       {
         key: "photo-1",
-        label: "Foto 1",
-        backgroundColor: "#dbeafe",
-        textColor: "#0d4d92",
+        label: "Islas",
+        image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
       },
       {
         key: "photo-2",
-        label: "Foto 2",
-        backgroundColor: "#bfdbfe",
-        textColor: "#0d4d92",
+        label: "Playa",
+        image: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80",
       },
       {
         key: "photo-3",
-        label: "Foto 3",
-        backgroundColor: "#93c5fd",
-        textColor: "#0d4d92",
+        label: "Bosque",
+        image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=80",
       },
       {
         key: "photo-4",
-        label: "Foto 4",
-        backgroundColor: "#60a5fa",
-        textColor: "#ffffff",
+        label: "Montaña",
+        image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80",
       },
       {
         key: "video-45s",
         label: "Video 45s",
-        backgroundColor: "#1d4ed8",
-        textColor: "#ffffff",
+        image: "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=1200&q=80",
         isVideo: true,
       },
     ],
@@ -175,364 +169,566 @@ export default function GuiaDetalleScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#0d4d92" }}>
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-          <ActivityIndicator size="large" color="#ffffff" />
+      <ImageBackground
+        source={{ uri: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1600&q=80" }}
+        style={{ flex: 1 }}
+        resizeMode="cover"
+      >
+        <View style={{ flex: 1, backgroundColor: "rgba(7,28,56,0.72)" }}>
+          <SafeAreaView style={{ flex: 1 }}>
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 24 }}>
+              <View
+                style={{
+                  minWidth: 220,
+                  borderRadius: 28,
+                  paddingHorizontal: 28,
+                  paddingVertical: 24,
+                  backgroundColor: "rgba(255,255,255,0.12)",
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.16)",
+                  alignItems: "center",
+                }}
+              >
+                <ActivityIndicator size="large" color="#ffffff" />
+                <Text style={{ color: "#dbeafe", fontSize: 15, fontWeight: "700", marginTop: 14 }}>
+                  Cargando perfil...
+                </Text>
+              </View>
+            </View>
+          </SafeAreaView>
         </View>
-      </SafeAreaView>
+      </ImageBackground>
     );
   }
 
   if (!guide) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#0d4d92" }}>
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 24 }}>
-          <Text style={{ color: "#ffffff", fontSize: 20, fontWeight: "700", textAlign: "center" }}>
-            No se encontró el guía.
-          </Text>
-          <Text style={{ marginTop: 8, color: "#dbeafe", fontSize: 14, textAlign: "center" }}>
-            guideId: {guideId || "-"}
-          </Text>
+      <ImageBackground
+        source={{ uri: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80" }}
+        style={{ flex: 1 }}
+        resizeMode="cover"
+      >
+        <View style={{ flex: 1, backgroundColor: "rgba(7,28,56,0.76)" }}>
+          <SafeAreaView style={{ flex: 1 }}>
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 24 }}>
+              <View
+                style={{
+                  width: "100%",
+                  borderRadius: 28,
+                  padding: 26,
+                  backgroundColor: "rgba(255,255,255,0.12)",
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.16)",
+                }}
+              >
+                <Text style={{ color: "#ffffff", fontSize: 22, fontWeight: "800", textAlign: "center" }}>
+                  No se encontró el guía
+                </Text>
+                <Text style={{ marginTop: 10, color: "#dbeafe", fontSize: 14, textAlign: "center" }}>
+                  guideId: {guideId || "-"}
+                </Text>
+                <Pressable
+                  onPress={() => router.back()}
+                  style={{
+                    marginTop: 18,
+                    alignSelf: "center",
+                    backgroundColor: "rgba(255,255,255,0.16)",
+                    borderRadius: 999,
+                    paddingHorizontal: 18,
+                    paddingVertical: 10,
+                  }}
+                >
+                  <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>Volver</Text>
+                </Pressable>
+              </View>
+            </View>
+          </SafeAreaView>
         </View>
-      </SafeAreaView>
+      </ImageBackground>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#0d4d92" }}>
-      <ScrollView
-        contentContainerStyle={{
-          padding: 24,
-          paddingBottom: 34,
-          gap: 18
-        }}
-      >
-        <View
-          style={{
-            backgroundColor: "rgba(255,255,255,0.10)",
-            borderRadius: 28,
-            padding: 22
-          }}
-        >
-          <View
-            style={{
-              width: 136,
-              height: 136,
-              borderRadius: 68,
-              backgroundColor: "#ffffff",
-              alignSelf: "center",
-              marginTop: 4
-            }}
-          />
-
-          <Text
-            style={{
-              color: "#ffffff",
-              fontSize: 34,
-              fontWeight: "800",
-              textAlign: "center",
-              marginTop: 16
-            }}
-          >
-            {guideName}
-          </Text>
-
-          <View
-            style={{
-              alignSelf: "center",
-              backgroundColor: "#22c1a1",
-              paddingHorizontal: 18,
-              paddingVertical: 8,
-              borderRadius: 999,
-              marginTop: 14
-            }}
-          >
-            <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
-              {badgeText}
-            </Text>
-          </View>
-
-          <Text
-            style={{
-              color: "#ffffff",
-              fontSize: 20,
-              textAlign: "center",
-              marginTop: 18
-            }}
-          >
-            {guideLocation}
-          </Text>
-
+    <ImageBackground
+      source={{ uri: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80" }}
+      style={{ flex: 1 }}
+      resizeMode="cover"
+    >
+      <View style={{ flex: 1, backgroundColor: "rgba(7,28,56,0.68)" }}>
+        <SafeAreaView style={{ flex: 1 }}>
           <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
             contentContainerStyle={{
-              paddingTop: 24,
-              paddingBottom: 4,
-              gap: 10
+              padding: 20,
+              paddingBottom: 34,
+              gap: 18,
             }}
+            showsVerticalScrollIndicator={false}
           >
-            {galleryItems.map((item) => (
-              <Pressable
-                key={item.key}
-                onPress={() => setSelectedMedia(item)}
-                style={{
-                  width: 88,
-                  height: 88,
-                  borderRadius: 14,
-                  backgroundColor: item.backgroundColor,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  paddingHorizontal: 8
+            <View
+              style={{
+                overflow: "hidden",
+                borderRadius: 32,
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.16)",
+                backgroundColor: "rgba(255,255,255,0.10)",
+              }}
+            >
+              <ImageBackground
+                source={{
+                  uri: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
                 }}
+                style={{ minHeight: 560, justifyContent: "space-between" }}
+                resizeMode="cover"
               >
-                <Text
+                <View
                   style={{
-                    color: item.textColor,
-                    fontWeight: "800",
-                    textAlign: "center"
+                    flex: 1,
+                    backgroundColor: "rgba(4,19,39,0.48)",
+                    padding: 22,
+                    justifyContent: "space-between",
                   }}
                 >
-                  {item.label}
-                </Text>
-              </Pressable>
-            ))}
-          </ScrollView>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                    <Pressable
+                      onPress={() => router.back()}
+                      style={{
+                        backgroundColor: "rgba(255,255,255,0.14)",
+                        borderWidth: 1,
+                        borderColor: "rgba(255,255,255,0.20)",
+                        paddingHorizontal: 16,
+                        paddingVertical: 10,
+                        borderRadius: 999,
+                      }}
+                    >
+                      <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>Volver</Text>
+                    </Pressable>
 
-          <Text
-            style={{
-              color: "#ffffff",
-              fontSize: 28,
-              fontWeight: "700",
-              marginTop: 24
-            }}
-          >
-            Bio
-          </Text>
+                    <View
+                      style={{
+                        backgroundColor: "#0C6CF2",
+                        paddingHorizontal: 16,
+                        paddingVertical: 9,
+                        borderRadius: 999,
+                        borderWidth: 1,
+                        borderColor: "rgba(255,255,255,0.18)",
+                      }}
+                    >
+                      <Text style={{ color: "#ffffff", fontSize: 13, fontWeight: "900", letterSpacing: 0.8 }}>
+                        {badgeText}
+                      </Text>
+                    </View>
+                  </View>
 
-          <Text
-            style={{
-              color: "#e5eefb",
-              fontSize: 20,
-              lineHeight: 30,
-              marginTop: 12
-            }}
-          >
-            {guideBio}
-          </Text>
+                  <View>
+                    <View
+                      style={{
+                        width: 138,
+                        height: 138,
+                        borderRadius: 69,
+                        alignSelf: "center",
+                        marginBottom: 18,
+                        borderWidth: 3,
+                        borderColor: "rgba(255,255,255,0.92)",
+                        backgroundColor: "rgba(255,255,255,0.18)",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <ImageBackground
+                        source={{
+                          uri:
+                            guide.avatarUrl ||
+                            "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1000&q=80",
+                        }}
+                        style={{ flex: 1 }}
+                        resizeMode="cover"
+                      />
+                    </View>
 
-          <Text
-            style={{
-              color: "#ffffff",
-              fontSize: 22,
-              fontWeight: "700",
-              marginTop: 24
-            }}
-          >
-            Idiomas
-          </Text>
+                    <Text
+                      style={{
+                        color: "#ffffff",
+                        fontSize: 32,
+                        fontWeight: "800",
+                        textAlign: "center",
+                      }}
+                    >
+                      {guideName}
+                    </Text>
 
-          <Text
-            style={{
-              color: "#dbeafe",
-              fontSize: 18,
-              marginTop: 10
-            }}
-          >
-            {guideLanguagesText}
-          </Text>
+                    <Text
+                      style={{
+                        color: "#dbeafe",
+                        fontSize: 17,
+                        fontWeight: "600",
+                        textAlign: "center",
+                        marginTop: 10,
+                      }}
+                    >
+                      {guideLocation}
+                    </Text>
 
-          <Text
-            style={{
-              color: "#ffffff",
-              fontSize: 22,
-              fontWeight: "700",
-              marginTop: 24
-            }}
-          >
-            Tarifas
-          </Text>
+                    <View
+                      style={{
+                        alignSelf: "center",
+                        marginTop: 14,
+                        backgroundColor: "rgba(255,255,255,0.14)",
+                        paddingHorizontal: 14,
+                        paddingVertical: 8,
+                        borderRadius: 999,
+                      }}
+                    >
+                      <Text style={{ color: "#dbeafe", fontSize: 14, fontWeight: "800" }}>
+                        {guide.rating ? `⭐ ${guide.rating}` : "Perfil verificado"}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              </ImageBackground>
+            </View>
 
-          <View style={{ marginTop: 12, gap: 12 }}>
             <View
               style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center"
+                borderRadius: 28,
+                padding: 22,
+                backgroundColor: "rgba(255,255,255,0.10)",
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.16)",
               }}
             >
-              <Text style={{ color: "#ffffff", fontSize: 18 }}>Por hora</Text>
-              <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
-                USD {priceHour || 0}
+              <Text style={{ color: "#93c5fd", fontSize: 22, fontWeight: "900" }}>Galería</Text>
+
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{
+                  paddingTop: 18,
+                  paddingBottom: 2,
+                  gap: 12,
+                }}
+              >
+                {galleryItems.map((item) => (
+                  <Pressable
+                    key={item.key}
+                    onPress={() => setSelectedMedia(item)}
+                    style={{
+                      width: 108,
+                      height: 108,
+                      borderRadius: 20,
+                      overflow: "hidden",
+                      borderWidth: 1,
+                      borderColor: "rgba(255,255,255,0.18)",
+                    }}
+                  >
+                    <ImageBackground
+                      source={{ uri: item.image }}
+                      style={{ flex: 1, justifyContent: "flex-end" }}
+                      resizeMode="cover"
+                    >
+                      <View
+                        style={{
+                          backgroundColor: "rgba(4,22,44,0.48)",
+                          paddingHorizontal: 8,
+                          paddingVertical: 8,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            color: "#ffffff",
+                            fontWeight: "800",
+                            textAlign: "center",
+                            fontSize: 13,
+                          }}
+                        >
+                          {item.label}
+                        </Text>
+                      </View>
+                    </ImageBackground>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </View>
+
+            <View
+              style={{
+                borderRadius: 28,
+                padding: 22,
+                backgroundColor: "rgba(255,255,255,0.10)",
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.16)",
+              }}
+            >
+              <Text style={{ color: "#93c5fd", fontSize: 22, fontWeight: "900" }}>Bio</Text>
+
+              <Text
+                style={{
+                  color: "#f8fbff",
+                  fontSize: 17,
+                  lineHeight: 28,
+                  marginTop: 12,
+                }}
+              >
+                {guideBio}
               </Text>
             </View>
 
             <View
               style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center"
+                borderRadius: 28,
+                padding: 22,
+                backgroundColor: "rgba(255,255,255,0.10)",
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.16)",
               }}
             >
-              <Text style={{ color: "#ffffff", fontSize: 18 }}>Jornada 8h</Text>
-              <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
-                USD {price8Hours || 0}
-              </Text>
-            </View>
+              <Text style={{ color: "#93c5fd", fontSize: 22, fontWeight: "900" }}>Idiomas</Text>
 
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center"
-              }}
-            >
-              <Text style={{ color: "#ffffff", fontSize: 18 }}>24 horas</Text>
-              <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
-                USD {price24h || 0}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <View
-          style={{
-            borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.20)",
-            borderRadius: 20,
-            padding: 18,
-            backgroundColor: "rgba(255,255,255,0.08)",
-            gap: 10
-          }}
-        >
-          <Text style={{ color: "#ffffff", fontSize: 20, fontWeight: "800" }}>
-            Antes de reservar
-          </Text>
-
-          <Text style={{ color: "#e5eefb", fontSize: 16 }}>
-            • Cada guía ofrece una experiencia personalizada según tus intereses
-          </Text>
-          <Text style={{ color: "#e5eefb", fontSize: 16 }}>
-            • Podés coordinar directamente los detalles para adaptar el recorrido
-          </Text>
-          <Text style={{ color: "#e5eefb", fontSize: 16 }}>
-            • Las tarifas corresponden al servicio del guía según la modalidad indicada
-          </Text>
-          <Text style={{ color: "#e5eefb", fontSize: 16 }}>
-            • Gastos como comidas, transporte o entradas no están incluidos salvo que se indique expresamente
-          </Text>
-          <Text style={{ color: "#e5eefb", fontSize: 16 }}>
-            • En actividades compartidas, el viajero cubre también los gastos del guía
-          </Text>
-          <Text style={{ color: "#e5eefb", fontSize: 16 }}>
-            • Reservando a través de la plataforma asegurás una experiencia clara, segura y registrada
-          </Text>
-        </View>
-
-        <Pressable
-          onPress={() =>
-            router.push({
-              pathname: "/(tabs)/reservas",
-              params: {
-                guideId: selectedGuideId
-              }
-            })
-          }
-          style={{
-            backgroundColor: "#12b8a6",
-            borderRadius: 22,
-            paddingVertical: 20,
-            alignItems: "center",
-            justifyContent: "center"
-          }}
-        >
-          <Text style={{ color: "#ffffff", fontSize: 22, fontWeight: "800" }}>
-            Solicitar servicio
-          </Text>
-        </Pressable>
-
-        <Text
-          style={{
-            color: "#dbeafe",
-            fontSize: 14,
-            textAlign: "center"
-          }}
-        >
-          El chat con el guía se habilita únicamente después del pago.
-        </Text>
-      </ScrollView>
-
-      <Modal
-        visible={!!selectedMedia}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setSelectedMedia(null)}
-      >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "rgba(0,0,0,0.88)",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 24
-          }}
-        >
-          <Pressable
-            onPress={() => setSelectedMedia(null)}
-            style={{
-              position: "absolute",
-              top: 56,
-              right: 24,
-              zIndex: 2,
-              backgroundColor: "rgba(255,255,255,0.15)",
-              paddingHorizontal: 16,
-              paddingVertical: 10,
-              borderRadius: 999
-            }}
-          >
-            <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "800" }}>
-              Cerrar
-            </Text>
-          </Pressable>
-
-          <View
-            style={{
-              width: "100%",
-              maxWidth: 380,
-              aspectRatio: 1,
-              borderRadius: 24,
-              backgroundColor: selectedMedia?.backgroundColor || "#1d4ed8",
-              justifyContent: "center",
-              alignItems: "center",
-              padding: 20
-            }}
-          >
-            <Text
-              style={{
-                color: selectedMedia?.textColor || "#ffffff",
-                fontSize: 30,
-                fontWeight: "800",
-                textAlign: "center"
-              }}
-            >
-              {selectedMedia?.label || ""}
-            </Text>
-
-            {!!selectedMedia?.isVideo && (
               <Text
                 style={{
                   color: "#dbeafe",
-                  fontSize: 16,
-                  textAlign: "center",
-                  marginTop: 14
+                  fontSize: 17,
+                  marginTop: 12,
+                  lineHeight: 26,
                 }}
               >
-                Vista ampliada del video de 45 segundos
+                {guideLanguagesText}
               </Text>
-            )}
-          </View>
-        </View>
-      </Modal>
-    </SafeAreaView>
+            </View>
+
+            <View
+              style={{
+                borderRadius: 28,
+                padding: 22,
+                backgroundColor: "rgba(255,255,255,0.10)",
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.16)",
+              }}
+            >
+              <Text style={{ color: "#93c5fd", fontSize: 22, fontWeight: "900" }}>Tarifas</Text>
+
+              <View style={{ marginTop: 16, gap: 12 }}>
+                <View
+                  style={{
+                    borderRadius: 18,
+                    paddingVertical: 16,
+                    paddingHorizontal: 16,
+                    backgroundColor: "rgba(255,255,255,0.08)",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text style={{ color: "#eaf4ff", fontSize: 17, fontWeight: "600" }}>Por hora</Text>
+                  <Text style={{ color: "#93c5fd", fontSize: 19, fontWeight: "900" }}>
+                    USD {priceHour || 0}
+                  </Text>
+                </View>
+
+                <View
+                  style={{
+                    borderRadius: 18,
+                    paddingVertical: 16,
+                    paddingHorizontal: 16,
+                    backgroundColor: "rgba(255,255,255,0.08)",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text style={{ color: "#eaf4ff", fontSize: 17, fontWeight: "600" }}>Jornada 8h</Text>
+                  <Text style={{ color: "#93c5fd", fontSize: 19, fontWeight: "900" }}>
+                    USD {price8Hours || 0}
+                  </Text>
+                </View>
+
+                <View
+                  style={{
+                    borderRadius: 18,
+                    paddingVertical: 16,
+                    paddingHorizontal: 16,
+                    backgroundColor: "rgba(255,255,255,0.08)",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text style={{ color: "#eaf4ff", fontSize: 17, fontWeight: "600" }}>24 horas</Text>
+                  <Text style={{ color: "#93c5fd", fontSize: 19, fontWeight: "900" }}>
+                    USD {price24h || 0}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.18)",
+                borderRadius: 28,
+                padding: 20,
+                backgroundColor: "rgba(255,255,255,0.10)",
+                gap: 10,
+              }}
+            >
+              <Text style={{ color: "#93c5fd", fontSize: 21, fontWeight: "900" }}>
+                Antes de reservar
+              </Text>
+
+              <Text style={{ color: "#eef6ff", fontSize: 16, lineHeight: 24 }}>
+                • Cada guía ofrece una experiencia personalizada según tus intereses
+              </Text>
+              <Text style={{ color: "#eef6ff", fontSize: 16, lineHeight: 24 }}>
+                • Podés coordinar directamente los detalles para adaptar el recorrido
+              </Text>
+              <Text style={{ color: "#eef6ff", fontSize: 16, lineHeight: 24 }}>
+                • Las tarifas corresponden al servicio del guía según la modalidad indicada
+              </Text>
+              <Text style={{ color: "#eef6ff", fontSize: 16, lineHeight: 24 }}>
+                • Gastos como comidas, transporte o entradas no están incluidos salvo que se indique expresamente
+              </Text>
+              <Text style={{ color: "#eef6ff", fontSize: 16, lineHeight: 24 }}>
+                • En actividades compartidas, el viajero cubre también los gastos del guía
+              </Text>
+              <Text style={{ color: "#eef6ff", fontSize: 16, lineHeight: 24 }}>
+                • Reservando a través de la plataforma asegurás una experiencia clara, segura y registrada
+              </Text>
+            </View>
+
+            <Pressable
+              onPress={() =>
+                router.push({
+                  pathname: "/(tabs)/reservas",
+                  params: {
+                    guideId: selectedGuideId,
+                  },
+                })
+              }
+              style={{
+                borderRadius: 24,
+                overflow: "hidden",
+              }}
+            >
+              <ImageBackground
+                source={{ uri: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80" }}
+                style={{ minHeight: 78, justifyContent: "center" }}
+                resizeMode="cover"
+              >
+                <View
+                  style={{
+                    backgroundColor: "rgba(12,108,242,0.82)",
+                    minHeight: 78,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    paddingHorizontal: 20,
+                  }}
+                >
+                  <Text style={{ color: "#ffffff", fontSize: 22, fontWeight: "900" }}>
+                    Solicitar servicio
+                  </Text>
+                </View>
+              </ImageBackground>
+            </Pressable>
+
+            <Text
+              style={{
+                color: "#dbeafe",
+                fontSize: 14,
+                textAlign: "center",
+              }}
+            >
+              El chat con el guía se habilita únicamente después del pago.
+            </Text>
+          </ScrollView>
+
+          <Modal
+            visible={!!selectedMedia}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setSelectedMedia(null)}
+          >
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: "rgba(0,0,0,0.88)",
+                justifyContent: "center",
+                alignItems: "center",
+                padding: 24,
+              }}
+            >
+              <Pressable
+                onPress={() => setSelectedMedia(null)}
+                style={{
+                  position: "absolute",
+                  top: 56,
+                  right: 24,
+                  zIndex: 2,
+                  backgroundColor: "rgba(255,255,255,0.15)",
+                  paddingHorizontal: 16,
+                  paddingVertical: 10,
+                  borderRadius: 999,
+                }}
+              >
+                <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "800" }}>
+                  Cerrar
+                </Text>
+              </Pressable>
+
+              <View
+                style={{
+                  width: "100%",
+                  maxWidth: 390,
+                  borderRadius: 28,
+                  overflow: "hidden",
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.18)",
+                }}
+              >
+                <ImageBackground
+                  source={{ uri: selectedMedia?.image }}
+                  style={{
+                    width: "100%",
+                    aspectRatio: 1,
+                    justifyContent: "flex-end",
+                  }}
+                  resizeMode="cover"
+                >
+                  <View
+                    style={{
+                      backgroundColor: "rgba(4,22,44,0.56)",
+                      paddingHorizontal: 20,
+                      paddingVertical: 18,
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: "#ffffff",
+                        fontSize: 28,
+                        fontWeight: "900",
+                        textAlign: "center",
+                      }}
+                    >
+                      {selectedMedia?.label || ""}
+                    </Text>
+
+                    {!!selectedMedia?.isVideo && (
+                      <Text
+                        style={{
+                          color: "#dbeafe",
+                          fontSize: 15,
+                          textAlign: "center",
+                          marginTop: 10,
+                        }}
+                      >
+                        Vista ampliada del video de 45 segundos
+                      </Text>
+                    )}
+                  </View>
+                </ImageBackground>
+              </View>
+            </View>
+          </Modal>
+        </SafeAreaView>
+      </View>
+    </ImageBackground>
   );
 }
