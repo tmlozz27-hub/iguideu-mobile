@@ -1,5 +1,12 @@
 import React, { useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import {
+  ImageBackground,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 
@@ -222,101 +229,150 @@ export default function BuscarPaisScreen() {
   }, [query]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#f8fafc" }}>
-      <View
-        style={{
-          paddingHorizontal: 20,
-          paddingTop: 16,
-          paddingBottom: 12,
-          borderBottomWidth: 1,
-          borderBottomColor: "#e5e7eb",
-          backgroundColor: "#ffffff"
+    <SafeAreaView style={{ flex: 1 }} edges={[]}>
+      <ImageBackground
+        source={{
+          uri: "https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&w=1600&q=80"
         }}
+        style={{ flex: 1, backgroundColor: "#76A9E8" }}
+        resizeMode="cover"
       >
-        <Text style={{ fontSize: 28, fontWeight: "800", color: "#0f172a" }}>
-          Buscar guías por país
-        </Text>
-
-        <Text style={{ marginTop: 8, fontSize: 15, color: "#475569" }}>
-          Elegí un país para ver los guías disponibles.
-        </Text>
-
-        <TextInput
-          value={query}
-          onChangeText={setQuery}
-          placeholder="Buscar país..."
-          placeholderTextColor="#94a3b8"
-          autoCapitalize="words"
+        <View
           style={{
-            marginTop: 14,
-            backgroundColor: "#f1f5f9",
-            borderWidth: 1,
-            borderColor: "#cbd5e1",
-            borderRadius: 14,
-            paddingHorizontal: 14,
-            paddingVertical: 12,
-            fontSize: 16,
-            color: "#0f172a"
+            position: "absolute",
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0,
+            backgroundColor: "rgba(90,136,204,0.30)"
           }}
         />
-      </View>
+        <View
+          style={{
+            position: "absolute",
+            top: -20,
+            right: -10,
+            width: 220,
+            height: 220,
+            borderRadius: 110,
+            backgroundColor: "rgba(255,255,255,0.10)"
+          }}
+        />
+        <View
+          style={{
+            position: "absolute",
+            bottom: 100,
+            left: -30,
+            width: 170,
+            height: 170,
+            borderRadius: 85,
+            backgroundColor: "rgba(168,240,233,0.14)"
+          }}
+        />
 
-      <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          paddingTop: 16,
-          paddingBottom: 28
-        }}
-      >
-        {filteredCountries.length === 0 ? (
+        <View
+          style={{
+            paddingHorizontal: 20,
+            paddingTop: 16,
+            paddingBottom: 12
+          }}
+        >
           <View
             style={{
-              backgroundColor: "#ffffff",
-              borderRadius: 18,
+              backgroundColor: "rgba(255,255,255,0.42)",
+              borderRadius: 24,
               padding: 18,
               borderWidth: 1,
-              borderColor: "#e5e7eb"
+              borderColor: "rgba(255,255,255,0.18)"
             }}
           >
-            <Text style={{ fontSize: 16, fontWeight: "700", color: "#0f172a" }}>
-              No encontramos ese país
+            <Text style={{ fontSize: 28, fontWeight: "800", color: "#15539A" }}>
+              Buscar guías por país
             </Text>
-            <Text style={{ marginTop: 6, fontSize: 14, color: "#64748b" }}>
-              Probá con otro nombre o borrá la búsqueda.
-            </Text>
-          </View>
-        ) : null}
 
-        {filteredCountries.map((item) => (
-          <Pressable
-            key={item.code}
-            onPress={() =>
-              router.push({
-                pathname: "/guides-by-country",
-                params: {
-                  country: item.name,
-                  code: item.code
-                }
-              })
-            }
-            style={{
-              backgroundColor: "#ffffff",
-              borderRadius: 18,
-              padding: 18,
-              marginBottom: 12,
-              borderWidth: 1,
-              borderColor: "#e5e7eb"
-            }}
-          >
-            <Text style={{ fontSize: 18, fontWeight: "800", color: "#0f172a" }}>
-              {item.name}
+            <Text style={{ marginTop: 8, fontSize: 15, color: "#173B6B", lineHeight: 22 }}>
+              Elegí un país para ver los guías disponibles.
             </Text>
-            <Text style={{ marginTop: 4, fontSize: 14, color: "#64748b" }}>
-              Código: {item.code}
-            </Text>
-          </Pressable>
-        ))}
-      </ScrollView>
+
+            <TextInput
+              value={query}
+              onChangeText={setQuery}
+              placeholder="Buscar país..."
+              placeholderTextColor="#94a3b8"
+              autoCapitalize="words"
+              style={{
+                marginTop: 14,
+                backgroundColor: "rgba(255,255,255,0.85)",
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.22)",
+                borderRadius: 16,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                fontSize: 16,
+                color: "#15539A"
+              }}
+            />
+          </View>
+        </View>
+
+        <ScrollView
+          contentContainerStyle={{
+            paddingHorizontal: 20,
+            paddingTop: 4,
+            paddingBottom: 28
+          }}
+          showsVerticalScrollIndicator={false}
+        >
+          {filteredCountries.length === 0 ? (
+            <View
+              style={{
+                backgroundColor: "rgba(255,255,255,0.34)",
+                borderRadius: 22,
+                padding: 18,
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.18)"
+              }}
+            >
+              <Text style={{ fontSize: 16, fontWeight: "700", color: "#15539A" }}>
+                No encontramos ese país
+              </Text>
+              <Text style={{ marginTop: 6, fontSize: 14, color: "#173B6B" }}>
+                Probá con otro nombre o borrá la búsqueda.
+              </Text>
+            </View>
+          ) : null}
+
+          {filteredCountries.map((item) => (
+            <Pressable
+              key={item.code}
+              onPress={() =>
+                router.push({
+                  pathname: "/guides-by-country",
+                  params: {
+                    country: item.name,
+                    code: item.code
+                  }
+                })
+              }
+              style={{
+                backgroundColor: "rgba(255,255,255,0.34)",
+                borderRadius: 22,
+                padding: 18,
+                marginBottom: 12,
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.18)"
+              }}
+            >
+              <Text style={{ fontSize: 18, fontWeight: "800", color: "#15539A" }}>
+                {item.name}
+              </Text>
+              <Text style={{ marginTop: 4, fontSize: 14, color: "#173B6B" }}>
+                Código: {item.code}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      </ImageBackground>
     </SafeAreaView>
   );
 }
