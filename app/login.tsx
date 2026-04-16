@@ -1,10 +1,10 @@
-DAME EL PUTO CODIGO FORRO 
-
-Listo Fede. Cero explicación. Pegá ESTO en app/login.tsx y reemplazá TODO el archivo.
-
+import { apiPost } from "@/config/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
+  ImageBackground,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -12,12 +12,8 @@ import {
   Text,
   TextInput,
   View,
-  ImageBackground,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { apiPost } from "@/config/api";
 
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
@@ -240,11 +236,17 @@ export default function LoginScreen() {
 
               <View style={{ alignItems: "center", marginTop: 14 }}>
                 <Text style={{ fontSize: 12, color: "rgba(23,59,107,0.7)" }}>
-                  <Text onPress={() => router.push("/terms")} style={{ textDecorationLine: "underline" }}>
+                  <Text
+                    onPress={() => router.push("/legal/terms")}
+                    style={{ textDecorationLine: "underline" }}
+                  >
                     Términos y condiciones
                   </Text>
                   {" y "}
-                  <Text onPress={() => router.push("/privacy")} style={{ textDecorationLine: "underline" }}>
+                  <Text
+                    onPress={() => router.push("/legal/privacy")}
+                    style={{ textDecorationLine: "underline" }}
+                  >
                     Política de privacidad
                   </Text>
                 </Text>
