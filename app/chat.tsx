@@ -7,7 +7,8 @@ import {
   Pressable,
   Text,
   TextInput,
-  View
+  View,
+  ImageBackground
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams } from "expo-router";
@@ -46,14 +47,8 @@ export default function ChatScreen() {
 
   async function getAuthHeaders() {
     const token = await AsyncStorage.getItem(TOKEN_KEY);
-
-    if (!token) {
-      throw new Error("No hay sesión activa. Volvé a iniciar sesión.");
-    }
-
-    return {
-      Authorization: `Bearer ${token}`
-    };
+    if (!token) throw new Error("No hay sesión activa.");
+    return { Authorization: `Bearer ${token}` };
   }
 
   async function loadMe() {
@@ -61,14 +56,9 @@ export default function ChatScreen() {
     const me = await apiGet("/api/auth/me", headers);
     const user = (me as any)?.user || me || {};
 
-    const id = String(user?._id || user?.id || user?.userId || "").trim();
-    const name = String(user?.name || user?.fullName || "").trim();
-    const emailFromApi = String(user?.email || "").trim().toLowerCase();
-    const emailFromStorage = String((await AsyncStorage.getItem(USER_EMAIL_KEY)) || "").trim().toLowerCase();
-
-    setSenderId(id);
-    setSenderName(name);
-    setSenderEmail(emailFromApi || emailFromStorage || "");
+    setSenderId(String(user?._id || user?.id || "").trim());
+    setSenderName(String(user?.name || "").trim());
+    setSenderEmail(String(user?.email || "").trim());
     setSenderType("traveler");
   }
 
@@ -76,11 +66,7 @@ export default function ChatScreen() {
     if (!bookingId) return;
 
     const data = await apiGet(`/api/chat/messages?bookingId=${bookingId}`);
-    const list = Array.isArray(data)
-      ? data
-      : Array.isArray((data as any)?.items)
-        ? (data as any).items
-        : [];
+    const list = Array.isArray(data) ? data : (data as any)?.items || [];
 
     setMessages(list);
 
@@ -94,28 +80,18 @@ export default function ChatScreen() {
       setLoading(true);
       await loadMe();
       await loadMessages();
-    } catch (error: any) {
-      console.log("ERROR refreshChat()", error);
-      Alert.alert("Error", error?.message || "No se pudo abrir el chat.");
+    } catch (e: any) {
+      Alert.alert("Error", e?.message || "Error chat");
     } finally {
       setLoading(false);
     }
   }
 
   async function sendMessage() {
+    const clean = text.trim();
+    if (!clean || !bookingId || !senderId) return;
+
     try {
-      const clean = String(text || "").trim();
-
-      if (!clean) return;
-      if (!bookingId) {
-        Alert.alert("Error", "Falta bookingId.");
-        return;
-      }
-      if (!senderId) {
-        Alert.alert("Error", "No se pudo identificar el remitente.");
-        return;
-      }
-
       await apiPost("/api/chat/messages", {
         bookingId,
         senderId,
@@ -131,9 +107,8 @@ export default function ChatScreen() {
       setTimeout(() => {
         listRef.current?.scrollToEnd({ animated: true });
       }, 100);
-    } catch (error: any) {
-      console.log("ERROR sendMessage()", error);
-      Alert.alert("Error", error?.message || "No se pudo enviar el mensaje.");
+    } catch (e: any) {
+      Alert.alert("Error", e?.message || "No se pudo enviar");
     }
   }
 
@@ -142,60 +117,66 @@ export default function ChatScreen() {
   }, [bookingId]);
 
   const bottomGap = useMemo(() => {
-    return Math.max(insets.bottom, 10) + 10;
+    return Math.max(insets.bottom, 10) + 12;
   }, [insets.bottom]);
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: "#ffffff" }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 88 : 20}
+    <ImageBackground
+      source={{
+        uri: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1600&q=80"
+      }}
+      style={{ flex: 1 }}
+      resizeMode="cover"
     >
-      <View style={{ flex: 1 }}>
+      {/* Overlay azul */}
+      <View style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: "rgba(11,62,145,0.70)"
+      }} />
+
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
         <FlatList
           ref={listRef}
           data={messages}
-          keyExtractor={(item, index) => item._id || item.id || String(index)}
+          keyExtractor={(item, i) => item._id || item.id || String(i)}
           contentContainerStyle={{
-            paddingHorizontal: 16,
-            paddingTop: 16,
-            paddingBottom: 12
+            padding: 16,
+            paddingBottom: 20
           }}
-          onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
           renderItem={({ item }) => {
             const body =
-              item.text ||
-              item.message ||
-              item.body ||
-              item.content ||
-              "";
+              item.text || item.message || item.body || item.content || "";
 
-            const mine =
-              !!senderId &&
-              String(item.senderId || "") === String(senderId);
+            const mine = String(item.senderId) === String(senderId);
 
             return (
-              <View
-                style={{
-                  marginBottom: 10,
-                  alignItems: mine ? "flex-end" : "flex-start"
-                }}
-              >
-                <View
-                  style={{
-                    maxWidth: "82%",
-                    borderRadius: 16,
-                    paddingHorizontal: 14,
-                    paddingVertical: 10,
-                    backgroundColor: mine ? "#111827" : "#f3f4f6"
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: mine ? "#ffffff" : "#111827",
-                      fontSize: 16
-                    }}
-                  >
+              <View style={{
+                marginBottom: 10,
+                alignItems: mine ? "flex-end" : "flex-start"
+              }}>
+                <View style={{
+                  maxWidth: "80%",
+                  borderRadius: 18,
+                  padding: 14,
+                  backgroundColor: mine
+                    ? "#12b8a6"
+                    : "rgba(255,255,255,0.15)",
+                  borderWidth: 1,
+                  borderColor: mine
+                    ? "#12b8a6"
+                    : "rgba(255,255,255,0.2)"
+                }}>
+                  <Text style={{
+                    color: "#fff",
+                    fontSize: 16
+                  }}>
                     {body}
                   </Text>
                 </View>
@@ -203,66 +184,58 @@ export default function ChatScreen() {
             );
           }}
           ListEmptyComponent={
-            <View style={{ paddingTop: 24 }}>
-              <Text style={{ fontSize: 16, color: "#6b7280" }}>
-                {loading ? "Cargando mensajes..." : "Todavía no hay mensajes."}
-              </Text>
-            </View>
+            <Text style={{ color: "#fff", textAlign: "center", marginTop: 40 }}>
+              {loading ? "Cargando..." : "No hay mensajes"}
+            </Text>
           }
         />
 
-        <View
-          style={{
-            paddingHorizontal: 16,
-            paddingTop: 8,
-            paddingBottom: bottomGap,
-            borderTopWidth: 1,
-            borderTopColor: "#e5e7eb",
-            backgroundColor: "#ffffff"
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center"
-            }}
-          >
+        <View style={{
+          paddingHorizontal: 14,
+          paddingBottom: bottomGap,
+          paddingTop: 8
+        }}>
+          <View style={{
+            flexDirection: "row",
+            alignItems: "center",
+            backgroundColor: "rgba(255,255,255,0.12)",
+            borderRadius: 24,
+            paddingHorizontal: 10,
+            paddingVertical: 6
+          }}>
             <TextInput
               value={text}
               onChangeText={setText}
               placeholder="Escribir mensaje..."
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor="#d1d5db"
               style={{
                 flex: 1,
-                borderWidth: 1,
-                borderColor: "#d1d5db",
-                borderRadius: 22,
-                paddingHorizontal: 18,
-                paddingVertical: 14,
-                backgroundColor: "#ffffff",
-                fontSize: 16
+                color: "#fff",
+                fontSize: 16,
+                paddingHorizontal: 10,
+                paddingVertical: 10
               }}
             />
 
             <Pressable
               onPress={sendMessage}
               style={{
-                marginLeft: 12,
-                backgroundColor: "#000000",
-                borderRadius: 22,
-                paddingHorizontal: 20,
-                paddingVertical: 14,
-                alignItems: "center",
-                justifyContent: "center"
+                backgroundColor: "#12b8a6",
+                borderRadius: 20,
+                paddingHorizontal: 16,
+                paddingVertical: 10
               }}
             >
-              <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "700" }}>
+              <Text style={{
+                color: "#fff",
+                fontWeight: "800"
+              }}>
                 Enviar
               </Text>
             </Pressable>
           </View>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </ImageBackground>
   );
 }
