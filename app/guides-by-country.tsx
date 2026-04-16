@@ -1,5 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  ImageBackground,
+  Pressable,
+  ScrollView,
+  Text,
+  View
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { apiGet } from "@/config/api";
@@ -87,7 +94,7 @@ export default function GuidesByCountryScreen() {
         country,
         code,
         total: arr.length,
-        filtered: filtered.length,
+        filtered: filtered.length
       });
 
       setGuides(filtered);
@@ -102,102 +109,179 @@ export default function GuidesByCountryScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
+      <SafeAreaView style={{ flex: 1 }} edges={[]}>
+        <ImageBackground
+          source={{
+            uri: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80"
+          }}
+          style={{ flex: 1, backgroundColor: "#76A9E8" }}
+          resizeMode="cover"
+        >
+          <View
+            style={{
+              position: "absolute",
+              top: 0,
+              right: 0,
+              bottom: 0,
+              left: 0,
+              backgroundColor: "rgba(90,136,204,0.34)"
+            }}
+          />
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <ActivityIndicator size="large" color="#15539A" />
+            <Text style={{ marginTop: 12, color: "#15539A", fontWeight: "800", fontSize: 18 }}>
+              Cargando guías
+            </Text>
+          </View>
+        </ImageBackground>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#f8fafc" }}>
-      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 28 }}>
-        <Text style={{ fontSize: 28, fontWeight: "800", color: "#0f172a" }}>
-          Guías en {country || code || "este país"}
-        </Text>
+    <SafeAreaView style={{ flex: 1 }} edges={[]}>
+      <ImageBackground
+        source={{
+          uri: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80"
+        }}
+        style={{ flex: 1, backgroundColor: "#76A9E8" }}
+        resizeMode="cover"
+      >
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0,
+            backgroundColor: "rgba(90,136,204,0.30)"
+          }}
+        />
+        <View
+          style={{
+            position: "absolute",
+            top: -20,
+            right: -10,
+            width: 220,
+            height: 220,
+            borderRadius: 110,
+            backgroundColor: "rgba(255,255,255,0.10)"
+          }}
+        />
+        <View
+          style={{
+            position: "absolute",
+            bottom: 100,
+            left: -30,
+            width: 170,
+            height: 170,
+            borderRadius: 85,
+            backgroundColor: "rgba(168,240,233,0.14)"
+          }}
+        />
 
-        <Text style={{ marginTop: 8, fontSize: 15, color: "#475569" }}>
-          Resultado: {guides.length} guía(s)
-        </Text>
-
-        {guides.length === 0 ? (
+        <ScrollView
+          contentContainerStyle={{ padding: 20, paddingBottom: 28 }}
+          showsVerticalScrollIndicator={false}
+        >
           <View
             style={{
-              marginTop: 18,
-              backgroundColor: "#ffffff",
-              borderRadius: 18,
+              backgroundColor: "rgba(255,255,255,0.48)",
+              borderRadius: 24,
               padding: 18,
               borderWidth: 1,
-              borderColor: "#e5e7eb"
+              borderColor: "rgba(255,255,255,0.18)"
             }}
           >
-            <Text style={{ fontSize: 16, fontWeight: "700", color: "#0f172a" }}>
-              No encontramos guías para {country || code || "este país"}
+            <Text style={{ fontSize: 28, fontWeight: "800", color: "#15539A" }}>
+              Guías en {country || code || "este país"}
             </Text>
 
-            <Text style={{ marginTop: 8, fontSize: 14, color: "#64748b" }}>
-              Total de guías cargados en app: {allGuidesCount}
+            <Text style={{ marginTop: 8, fontSize: 15, color: "#173B6B", lineHeight: 22 }}>
+              Resultado: {guides.length} guía(s)
             </Text>
-
-            <Pressable
-              onPress={() => router.back()}
-              style={{
-                marginTop: 14,
-                backgroundColor: "#111827",
-                paddingVertical: 12,
-                paddingHorizontal: 16,
-                borderRadius: 12,
-                alignSelf: "flex-start"
-              }}
-            >
-              <Text style={{ color: "#ffffff", fontWeight: "700" }}>Volver</Text>
-            </Pressable>
           </View>
-        ) : null}
 
-        {guides.map((g, index) => {
-          const guideId = g._id || g.id || String(index);
-
-          return (
-            <Pressable
-              key={guideId}
-              onPress={() =>
-                router.push({
-                  pathname: "/guia-detalle",
-                  params: { guideId }
-                })
-              }
+          {guides.length === 0 ? (
+            <View
               style={{
-                marginTop: 14,
-                backgroundColor: "#ffffff",
-                borderRadius: 18,
+                marginTop: 18,
+                backgroundColor: "rgba(255,255,255,0.38)",
+                borderRadius: 22,
                 padding: 18,
                 borderWidth: 1,
-                borderColor: "#e5e7eb"
+                borderColor: "rgba(255,255,255,0.18)"
               }}
             >
-              <Text style={{ fontSize: 18, fontWeight: "800", color: "#0f172a" }}>
-                {g.name || "Guía"}
+              <Text style={{ fontSize: 18, fontWeight: "800", color: "#15539A" }}>
+                No encontramos guías para {country || code || "este país"}
               </Text>
 
-              <Text style={{ marginTop: 4, color: "#475569" }}>
-                {[g.city, g.country].filter(Boolean).join(", ") || "-"}
+              <Text style={{ marginTop: 8, fontSize: 14, color: "#173B6B" }}>
+                Total de guías cargados en app: {allGuidesCount}
               </Text>
 
-              <Text style={{ marginTop: 4, color: "#475569" }}>
-                Idiomas: {Array.isArray(g.languages) ? g.languages.join(", ") : "-"}
-              </Text>
+              <Pressable
+                onPress={() => router.back()}
+                style={{
+                  marginTop: 14,
+                  backgroundColor: "#1CC9B7",
+                  paddingVertical: 12,
+                  paddingHorizontal: 16,
+                  borderRadius: 14,
+                  alignSelf: "flex-start"
+                }}
+              >
+                <Text style={{ color: "#ffffff", fontWeight: "700" }}>Volver</Text>
+              </Pressable>
+            </View>
+          ) : null}
 
-              <Text style={{ marginTop: 4, color: "#475569" }}>
-                Precio/hora: USD {g.priceHour ?? g.pricePerHour ?? "-"}
-              </Text>
+          {guides.map((g, index) => {
+            const guideId = g._id || g.id || String(index);
 
-              <Text style={{ marginTop: 10, fontWeight: "700", color: "#0f172a" }}>
-                Ver perfil
-              </Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
+            return (
+              <Pressable
+                key={guideId}
+                onPress={() =>
+                  router.push({
+                    pathname: "/guia-detalle",
+                    params: { guideId }
+                  })
+                }
+                style={{
+                  marginTop: 14,
+                  backgroundColor: "rgba(255,255,255,0.38)",
+                  borderRadius: 22,
+                  padding: 18,
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.18)"
+                }}
+              >
+                <Text style={{ fontSize: 20, fontWeight: "800", color: "#15539A" }}>
+                  {g.name || "Guía"}
+                </Text>
+
+                <Text style={{ marginTop: 4, color: "#173B6B" }}>
+                  {[g.city, g.country].filter(Boolean).join(", ") || "-"}
+                </Text>
+
+                <Text style={{ marginTop: 4, color: "#173B6B" }}>
+                  Idiomas: {Array.isArray(g.languages) ? g.languages.join(", ") : "-"}
+                </Text>
+
+                <Text style={{ marginTop: 4, color: "#173B6B" }}>
+                  Precio/hora: USD {g.priceHour ?? g.pricePerHour ?? "-"}
+                </Text>
+
+                <Text style={{ marginTop: 12, fontWeight: "800", color: "#15539A" }}>
+                  Ver perfil
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </ImageBackground>
     </SafeAreaView>
   );
 }
