@@ -218,9 +218,7 @@ export default function BuscarPaisScreen() {
 
   const filteredCountries = useMemo(() => {
     const normalized = query.trim().toLowerCase();
-
     if (!normalized) return COUNTRIES;
-
     return COUNTRIES.filter(
       (item) =>
         item.name.toLowerCase().includes(normalized) ||
@@ -237,60 +235,15 @@ export default function BuscarPaisScreen() {
         style={{ flex: 1, backgroundColor: "#76A9E8" }}
         resizeMode="cover"
       >
-        <View
-          style={{
-            position: "absolute",
-            top: 0,
-            right: 0,
-            bottom: 0,
-            left: 0,
-            backgroundColor: "rgba(90,136,204,0.30)"
-          }}
-        />
-        <View
-          style={{
-            position: "absolute",
-            top: -20,
-            right: -10,
-            width: 220,
-            height: 220,
-            borderRadius: 110,
-            backgroundColor: "rgba(255,255,255,0.10)"
-          }}
-        />
-        <View
-          style={{
-            position: "absolute",
-            bottom: 100,
-            left: -30,
-            width: 170,
-            height: 170,
-            borderRadius: 85,
-            backgroundColor: "rgba(168,240,233,0.14)"
-          }}
-        />
+        <View style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, backgroundColor: "rgba(90,136,204,0.30)" }} />
 
-        <View
-          style={{
-            paddingHorizontal: 20,
-            paddingTop: 16,
-            paddingBottom: 12
-          }}
-        >
-          <View
-            style={{
-              backgroundColor: "rgba(255,255,255,0.42)",
-              borderRadius: 24,
-              padding: 18,
-              borderWidth: 1,
-              borderColor: "rgba(255,255,255,0.18)"
-            }}
-          >
-            <Text style={{ fontSize: 28, fontWeight: "800", color: "#15539A" }}>
+        <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12 }}>
+          <View style={{ backgroundColor: "rgba(255,255,255,0.60)", borderRadius: 24, padding: 18 }}>
+            <Text style={{ fontSize: 28, fontWeight: "800", color: "#0B3C91" }}>
               Buscar guías por país
             </Text>
 
-            <Text style={{ marginTop: 8, fontSize: 15, color: "#173B6B", lineHeight: 22 }}>
+            <Text style={{ marginTop: 8, fontSize: 15, color: "#173B6B" }}>
               Elegí un país para ver los guías disponibles.
             </Text>
 
@@ -299,74 +252,39 @@ export default function BuscarPaisScreen() {
               onChangeText={setQuery}
               placeholder="Buscar país..."
               placeholderTextColor="#94a3b8"
-              autoCapitalize="words"
               style={{
                 marginTop: 14,
-                backgroundColor: "rgba(255,255,255,0.85)",
-                borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.22)",
+                backgroundColor: "rgba(255,255,255,0.95)",
                 borderRadius: 16,
                 paddingHorizontal: 14,
                 paddingVertical: 12,
-                fontSize: 16,
-                color: "#15539A"
+                color: "#0B3C91"
               }}
             />
           </View>
         </View>
 
-        <ScrollView
-          contentContainerStyle={{
-            paddingHorizontal: 20,
-            paddingTop: 4,
-            paddingBottom: 28
-          }}
-          showsVerticalScrollIndicator={false}
-        >
-          {filteredCountries.length === 0 ? (
-            <View
-              style={{
-                backgroundColor: "rgba(255,255,255,0.34)",
-                borderRadius: 22,
-                padding: 18,
-                borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.18)"
-              }}
-            >
-              <Text style={{ fontSize: 16, fontWeight: "700", color: "#15539A" }}>
-                No encontramos ese país
-              </Text>
-              <Text style={{ marginTop: 6, fontSize: 14, color: "#173B6B" }}>
-                Probá con otro nombre o borrá la búsqueda.
-              </Text>
-            </View>
-          ) : null}
-
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 28 }}>
           {filteredCountries.map((item) => (
             <Pressable
               key={item.code}
               onPress={() =>
                 router.push({
                   pathname: "/guides-by-country",
-                  params: {
-                    country: item.name,
-                    code: item.code
-                  }
+                  params: { country: item.name, code: item.code }
                 })
               }
               style={{
-                backgroundColor: "rgba(255,255,255,0.34)",
+                backgroundColor: "rgba(255,255,255,0.60)",
                 borderRadius: 22,
                 padding: 18,
-                marginBottom: 12,
-                borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.18)"
+                marginBottom: 12
               }}
             >
-              <Text style={{ fontSize: 18, fontWeight: "800", color: "#15539A" }}>
+              <Text style={{ fontSize: 18, fontWeight: "800", color: "#0B3C91" }}>
                 {item.name}
               </Text>
-              <Text style={{ marginTop: 4, fontSize: 14, color: "#173B6B" }}>
+              <Text style={{ marginTop: 4, color: "#173B6B" }}>
                 Código: {item.code}
               </Text>
             </Pressable>
