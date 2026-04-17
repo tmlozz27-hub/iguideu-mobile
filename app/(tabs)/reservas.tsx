@@ -54,6 +54,15 @@ function todayString() {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+function addDaysString(days: number) {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 async function getAuthHeaders() {
   const token = await AsyncStorage.getItem(TOKEN_KEY);
 
@@ -435,22 +444,50 @@ export default function ReservasScreen() {
             />
 
             <Text style={{ fontSize: 16, color: "#15539A", fontWeight: "700" }}>Fecha</Text>
-            <TextInput
-              value={date}
-              onChangeText={setDate}
-              placeholder="YYYY-MM-DD"
-              placeholderTextColor="#6b7280"
+
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              {[
+                { label: "Hoy", value: todayString() },
+                { label: "Mañana", value: addDaysString(1) },
+                { label: "+2 días", value: addDaysString(2) }
+              ].map((opt) => (
+                <Pressable
+                  key={opt.label}
+                  onPress={() => setDate(opt.value)}
+                  style={{
+                    paddingVertical: 10,
+                    paddingHorizontal: 14,
+                    borderRadius: 14,
+                    backgroundColor: date === opt.value ? "#1cc9b7" : "rgba(255,255,255,0.6)"
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: date === opt.value ? "#ffffff" : "#173B6B",
+                      fontWeight: "700"
+                    }}
+                  >
+                    {opt.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+
+            <View
               style={{
+                marginTop: 10,
                 borderWidth: 1,
                 borderColor: "rgba(255,255,255,0.16)",
                 borderRadius: 18,
                 paddingHorizontal: 16,
                 paddingVertical: 18,
-                fontSize: 16,
-                backgroundColor: "rgba(255,255,255,0.96)",
-                color: "#111827"
+                backgroundColor: "rgba(255,255,255,0.96)"
               }}
-            />
+            >
+              <Text style={{ fontSize: 16, color: "#111827" }}>
+                Fecha seleccionada: {date}
+              </Text>
+            </View>
 
             <Text style={{ fontSize: 16, color: "#15539A", fontWeight: "700" }}>Guía</Text>
 
