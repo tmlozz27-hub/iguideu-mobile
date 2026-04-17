@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   Alert,
   Image,
+  ImageBackground,
   Pressable,
   ScrollView,
   Text,
@@ -34,16 +35,35 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  function firstNonEmpty(...values: any[]) {
+    for (const value of values) {
+      const text = String(value ?? "").trim();
+      if (text) return text;
+    }
+    return "";
+  }
+
   const loadUser = async () => {
     try {
       const token = await AsyncStorage.getItem(TOKEN_KEY);
-      const headers = { Authorization: `Bearer ${token}` };
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
       const data = await apiGet("/api/auth/me", headers);
-      const u = data?.user || data;
+      const u = data?.user || data || {};
+      const profile = u?.travelerProfile || u?.profile || {};
 
       setUser(u);
-      setName(u?.name || "");
+
+      setName(firstNonEmpty(u?.name, profile?.name));
+      setLastName(firstNonEmpty(u?.lastName, profile?.lastName, profile?.surname));
+      setCountry(firstNonEmpty(u?.country, profile?.country));
+      setCity(firstNonEmpty(u?.city, profile?.city));
+      setLanguage(firstNonEmpty(u?.language, u?.languages, profile?.language, profile?.languages));
+      setPhone(firstNonEmpty(u?.phone, profile?.phone));
+      setTravelStyle(firstNonEmpty(u?.travelStyle, profile?.travelStyle));
+      setInterests(firstNonEmpty(u?.interests, profile?.interests));
+      setAbout(firstNonEmpty(u?.about, u?.bio, profile?.about, profile?.bio));
+      setPhoto(firstNonEmpty(u?.photo, u?.photoUrl, u?.avatarUrl, profile?.photo, profile?.photoUrl, profile?.avatarUrl) || null);
     } catch {
       setUser(null);
     } finally {
@@ -76,10 +96,22 @@ export default function ProfileScreen() {
 
       await apiPut(
         "/api/auth/me",
-        { name },
+        {
+          name: String(name || "").trim(),
+          lastName: String(lastName || "").trim(),
+          country: String(country || "").trim(),
+          city: String(city || "").trim(),
+          language: String(language || "").trim(),
+          phone: String(phone || "").trim(),
+          travelStyle: String(travelStyle || "").trim(),
+          interests: String(interests || "").trim(),
+          about: String(about || "").trim(),
+          photo: photo || ""
+        },
         { Authorization: `Bearer ${token}` }
       );
 
+      await loadUser();
       Alert.alert("OK", "Perfil actualizado");
     } catch {
       Alert.alert("Error", "No se pudo guardar");
@@ -94,192 +126,197 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#A9C9F5" }}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-        <View style={{ padding: 24, paddingTop: 40 }}>
-          <Text
-            style={{
-              fontSize: 32,
-              fontWeight: "800",
-              color: "#fff",
-              textAlign: "center",
-              marginBottom: 10
-            }}
-          >
-            I GUIDE U
-          </Text>
-
-          <Text
-            style={{
-              fontSize: 26,
-              fontWeight: "800",
-              color: "#fff",
-              textAlign: "center",
-              marginBottom: 20
-            }}
-          >
-            Perfil de viajero
-          </Text>
-
-          <Pressable
-            onPress={pickImage}
-            style={{
-              alignSelf: "center",
-              width: 160,
-              height: 160,
-              borderRadius: 80,
-              backgroundColor: "#dbeafe",
-              justifyContent: "center",
-              alignItems: "center",
-              borderWidth: 3,
-              borderColor: "#fff",
-              overflow: "hidden"
-            }}
-          >
-            {photo ? (
-              <Image
-                source={{ uri: photo }}
-                style={{ width: "100%", height: "100%" }}
-              />
-            ) : (
-              <Text style={{ color: "#2563eb", fontWeight: "700" }}>
-                Agregar foto
-              </Text>
-            )}
-          </Pressable>
-        </View>
-
+    <SafeAreaView style={{ flex: 1 }} edges={["left", "right"]}>
+      <ImageBackground
+        source={{
+          uri: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80"
+        }}
+        style={{ flex: 1 }}
+        resizeMode="cover"
+      >
         <View
           style={{
-            backgroundColor: "#fff",
-            borderTopLeftRadius: 30,
-            borderTopRightRadius: 30,
-            padding: 20
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(183,209,245,0.40)"
           }}
+        />
+
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 40 }}
+          showsVerticalScrollIndicator={false}
         >
-          <Text style={label}>Email</Text>
-          <Text style={{ fontSize: 16, marginBottom: 16 }}>
-            {loading ? "Cargando..." : user?.email || "-"}
-          </Text>
+          <View style={{ paddingTop: 48, paddingHorizontal: 24, paddingBottom: 30 }}>
+            <Text style={titleMain}>I GUIDE U</Text>
+            <Text style={titleSub}>Perfil de viajero</Text>
 
-          <Text style={label}>Nombre</Text>
-          <TextInput
-            value={name}
-            onChangeText={setName}
-            placeholder="Tu nombre"
-            placeholderTextColor="#6b7280"
-            style={input}
-          />
+            <Pressable onPress={pickImage} style={photoBox}>
+              {photo ? (
+                <Image source={{ uri: photo }} style={{ width: "100%", height: "100%" }} />
+              ) : (
+                <Text style={{ color: "#173B6B", fontWeight: "800", fontSize: 15 }}>
+                  Agregar foto
+                </Text>
+              )}
+            </Pressable>
+          </View>
 
-          <Text style={label}>Apellido</Text>
-          <TextInput
-            value={lastName}
-            onChangeText={setLastName}
-            placeholder="Tu apellido"
-            placeholderTextColor="#6b7280"
-            style={input}
-          />
+          <View style={card}>
+            <Text style={section}>Información personal</Text>
 
-          <Text style={label}>País de residencia</Text>
-          <TextInput
-            value={country}
-            onChangeText={setCountry}
-            placeholder="Tu país de residencia"
-            placeholderTextColor="#6b7280"
-            style={input}
-          />
-
-          <Text style={label}>Ciudad</Text>
-          <TextInput
-            value={city}
-            onChangeText={setCity}
-            placeholder="Tu ciudad"
-            placeholderTextColor="#6b7280"
-            style={input}
-          />
-
-          <Text style={label}>Idioma principal</Text>
-          <TextInput
-            value={language}
-            onChangeText={setLanguage}
-            placeholder="Tu idioma principal"
-            placeholderTextColor="#6b7280"
-            style={input}
-          />
-
-          <Text style={label}>Teléfono</Text>
-          <TextInput
-            value={phone}
-            onChangeText={setPhone}
-            placeholder="Tu número de contacto"
-            placeholderTextColor="#6b7280"
-            style={input}
-          />
-
-          <Text style={label}>Tipo de viaje</Text>
-          <TextInput
-            value={travelStyle}
-            onChangeText={setTravelStyle}
-            placeholder="Relax, aventura, cultura, familia"
-            placeholderTextColor="#6b7280"
-            style={input}
-          />
-
-          <Text style={label}>Intereses</Text>
-          <TextInput
-            value={interests}
-            onChangeText={setInterests}
-            placeholder="Historia, gastronomía, naturaleza, arte"
-            placeholderTextColor="#6b7280"
-            style={input}
-          />
-
-          <Text style={label}>Sobre vos</Text>
-          <TextInput
-            value={about}
-            onChangeText={setAbout}
-            placeholder="Contá brevemente qué experiencia te gustaría vivir"
-            placeholderTextColor="#6b7280"
-            multiline
-            numberOfLines={4}
-            textAlignVertical="top"
-            style={[input, { minHeight: 110, paddingTop: 14 }]}
-          />
-
-          <Pressable
-            onPress={handleSave}
-            style={{
-              backgroundColor: "#2563eb",
-              padding: 16,
-              borderRadius: 14,
-              alignItems: "center",
-              marginTop: 10
-            }}
-          >
-            <Text style={{ color: "#fff", fontWeight: "800" }}>
-              {saving ? "Guardando..." : "Guardar"}
+            <Text style={label}>Email</Text>
+            <Text style={emailText}>
+              {loading ? "Cargando..." : user?.email || "-"}
             </Text>
-          </Pressable>
 
-          <Pressable
-            onPress={handleLogout}
-            style={{
-              backgroundColor: "#dc2626",
-              padding: 16,
-              borderRadius: 14,
-              alignItems: "center",
-              marginTop: 10
-            }}
-          >
-            <Text style={{ color: "#fff", fontWeight: "800" }}>
-              Cerrar sesión
-            </Text>
-          </Pressable>
-        </View>
-      </ScrollView>
+            <Text style={label}>Nombre</Text>
+            <TextInput
+              value={name}
+              onChangeText={setName}
+              placeholder="Tu nombre"
+              placeholderTextColor="#6b7280"
+              style={input}
+            />
+
+            <Text style={label}>Apellido</Text>
+            <TextInput
+              value={lastName}
+              onChangeText={setLastName}
+              placeholder="Tu apellido"
+              placeholderTextColor="#6b7280"
+              style={input}
+            />
+
+            <Text style={label}>País de residencia</Text>
+            <TextInput
+              value={country}
+              onChangeText={setCountry}
+              placeholder="Tu país de residencia"
+              placeholderTextColor="#6b7280"
+              style={input}
+            />
+
+            <Text style={label}>Ciudad</Text>
+            <TextInput
+              value={city}
+              onChangeText={setCity}
+              placeholder="Tu ciudad"
+              placeholderTextColor="#6b7280"
+              style={input}
+            />
+
+            <Text style={label}>Idioma principal</Text>
+            <TextInput
+              value={language}
+              onChangeText={setLanguage}
+              placeholder="Tu idioma principal"
+              placeholderTextColor="#6b7280"
+              style={input}
+            />
+
+            <Text style={label}>Teléfono</Text>
+            <TextInput
+              value={phone}
+              onChangeText={setPhone}
+              placeholder="Tu número de contacto"
+              placeholderTextColor="#6b7280"
+              style={input}
+            />
+
+            <Text style={label}>Tipo de viaje</Text>
+            <TextInput
+              value={travelStyle}
+              onChangeText={setTravelStyle}
+              placeholder="Relax, aventura, cultura, familia"
+              placeholderTextColor="#6b7280"
+              style={input}
+            />
+
+            <Text style={label}>Intereses</Text>
+            <TextInput
+              value={interests}
+              onChangeText={setInterests}
+              placeholder="Historia, gastronomía, naturaleza, arte"
+              placeholderTextColor="#6b7280"
+              style={input}
+            />
+
+            <Text style={label}>Sobre vos</Text>
+            <TextInput
+              value={about}
+              onChangeText={setAbout}
+              placeholder="Contá brevemente qué experiencia te gustaría vivir"
+              placeholderTextColor="#6b7280"
+              multiline
+              numberOfLines={4}
+              textAlignVertical="top"
+              style={[input, { minHeight: 120, paddingTop: 14 }]}
+            />
+
+            <Pressable onPress={handleSave} style={buttonPrimary}>
+              <Text style={buttonPrimaryText}>
+                {saving ? "Guardando..." : "Guardar"}
+              </Text>
+            </Pressable>
+
+            <Pressable onPress={handleLogout} style={buttonDanger}>
+              <Text style={buttonDangerText}>Cerrar sesión</Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      </ImageBackground>
     </SafeAreaView>
   );
 }
+
+const titleMain = {
+  color: "#173B6B",
+  fontSize: 36,
+  fontWeight: "900" as const,
+  textAlign: "center" as const
+};
+
+const titleSub = {
+  color: "#173B6B",
+  fontSize: 26,
+  fontWeight: "800" as const,
+  textAlign: "center" as const,
+  marginTop: 10,
+  marginBottom: 20
+};
+
+const photoBox = {
+  alignSelf: "center" as const,
+  width: 180,
+  height: 180,
+  borderRadius: 90,
+  overflow: "hidden" as const,
+  backgroundColor: "rgba(255,255,255,0.25)",
+  borderWidth: 3,
+  borderColor: "#ffffff",
+  justifyContent: "center" as const,
+  alignItems: "center" as const
+};
+
+const card = {
+  backgroundColor: "rgba(255,255,255,0.20)",
+  borderTopLeftRadius: 30,
+  borderTopRightRadius: 30,
+  padding: 22,
+  borderWidth: 1,
+  borderColor: "rgba(255,255,255,0.25)"
+};
+
+const section = {
+  fontSize: 22,
+  fontWeight: "800" as const,
+  marginBottom: 18,
+  color: "#173B6B"
+};
 
 const label = {
   fontSize: 14,
@@ -288,12 +325,44 @@ const label = {
   color: "#374151"
 };
 
-const input = {
-  backgroundColor: "#f9fafb",
-  borderWidth: 1,
-  borderColor: "#e5e7eb",
-  borderRadius: 14,
-  padding: 14,
+const emailText = {
   fontSize: 16,
-  marginBottom: 12
+  marginBottom: 16,
+  color: "#111827"
+};
+
+const input = {
+  backgroundColor: "rgba(255,255,255,0.6)",
+  borderRadius: 16,
+  padding: 14,
+  marginBottom: 12,
+  color: "#173B6B"
+};
+
+const buttonPrimary = {
+  backgroundColor: "#173B6B",
+  padding: 16,
+  borderRadius: 16,
+  alignItems: "center" as const,
+  marginTop: 12
+};
+
+const buttonPrimaryText = {
+  color: "#ffffff",
+  fontWeight: "800" as const,
+  fontSize: 16
+};
+
+const buttonDanger = {
+  backgroundColor: "#dc2626",
+  padding: 16,
+  borderRadius: 16,
+  alignItems: "center" as const,
+  marginTop: 12
+};
+
+const buttonDangerText = {
+  color: "#ffffff",
+  fontWeight: "800" as const,
+  fontSize: 16
 };
