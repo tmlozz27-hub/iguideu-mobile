@@ -1,4 +1,5 @@
 import { apiPost } from "@/config/api";
+import { translations } from "@/utils/i18n";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -14,6 +15,9 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+const lang = "es";
+const t = translations[lang];
 
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
@@ -101,11 +105,23 @@ export default function LoginScreen() {
             showsVerticalScrollIndicator={false}
           >
             <View style={{ alignItems: "center", marginBottom: 20 }}>
-              <Text style={{ fontSize: 40, fontWeight: "900", color: "#173B6B" }}>
+              <Text
+                style={{
+                  fontSize: 40,
+                  fontWeight: "900",
+                  color: "#173B6B",
+                }}
+              >
                 I GUIDE U
               </Text>
 
-              <Text style={{ marginTop: 8, color: "#ffffff", fontWeight: "600" }}>
+              <Text
+                style={{
+                  marginTop: 8,
+                  color: "#ffffff",
+                  fontWeight: "600",
+                }}
+              >
                 Tu guía personal de turismo
               </Text>
             </View>
