@@ -143,7 +143,7 @@ export default function LoginScreen() {
                   color: "#173B6B",
                 }}
               >
-                Iniciar sesión
+                {t.login}
               </Text>
 
               <Text
@@ -158,7 +158,7 @@ export default function LoginScreen() {
               </Text>
 
               <TextInput
-                placeholder="Correo electrónico"
+                placeholder={t.email}
                 placeholderTextColor="#7B879B"
                 value={email}
                 onChangeText={setEmail}
@@ -179,7 +179,7 @@ export default function LoginScreen() {
                 }}
               >
                 <TextInput
-                  placeholder="Contraseña"
+                  placeholder={t.password}
                   placeholderTextColor="#7B879B"
                   value={password}
                   onChangeText={setPassword}
@@ -203,7 +203,7 @@ export default function LoginScreen() {
                     fontWeight: "600",
                   }}
                 >
-                  ¿Olvidaste tu contraseña?
+                 {t.forgot}
                 </Text>
               </Pressable>
 
@@ -218,7 +218,7 @@ export default function LoginScreen() {
                 }}
               >
                 <Text style={{ color: "#fff", fontWeight: "800", fontSize: 18 }}>
-                  {loading ? "Ingresando..." : "Acceder"}
+                  {loading ? "Ingresando..." : t.access}
                 </Text>
               </Pressable>
 
@@ -232,7 +232,7 @@ export default function LoginScreen() {
                 }}
               >
                 <Text style={{ fontWeight: "700" }}>
-                  Continuar con Google
+                  {t.google}
                 </Text>
               </Pressable>
 
@@ -246,7 +246,7 @@ export default function LoginScreen() {
                 }}
               >
                 <Text style={{ color: "#fff", fontWeight: "700" }}>
-                  Continuar con Apple
+                  {t.apple}
                 </Text>
               </Pressable>
 
@@ -256,23 +256,23 @@ export default function LoginScreen() {
                     onPress={() => router.push("/legal/terms")}
                     style={{ textDecorationLine: "underline" }}
                   >
-                    Términos y condiciones
+                    {t.terms}
                   </Text>
                   {" y "}
                   <Text
                     onPress={() => router.push("/legal/privacy")}
                     style={{ textDecorationLine: "underline" }}
                   >
-                    Política de privacidad
+                    {t.privacy}
                   </Text>
                 </Text>
               </View>
 
               <View style={{ alignItems: "center", marginTop: 16 }}>
-                <Text>¿No tienes cuenta?</Text>
+                <Text>{t.noAccount}</Text>
                 <Pressable onPress={() => router.push("/select-role")}>
                   <Text style={{ fontWeight: "800", color: "#173B6B" }}>
-                    Registrarse
+                    {t.register}
                   </Text>
                 </Pressable>
               </View>
