@@ -727,6 +727,22 @@ export default function ReservasScreen() {
               <Text style={{ color: "#173B6B" }}>Horas: {booking.hours ?? "-"}</Text>
               <Text style={{ color: "#173B6B" }}>Monto: USD {Number(amount || 0).toFixed(2)}</Text>
               <Text style={{ color: "#15539A", fontWeight: "800" }}>Estado: {booking.status || "-"}</Text>
+
+              <Pressable
+                onPress={() => router.push({ pathname: "/chat", params: { bookingId: booking._id } })}
+                style={{
+                  marginTop: 10,
+                  backgroundColor: "rgba(106,145,205,0.92)",
+                  paddingVertical: 14,
+                  borderRadius: 18,
+                  alignItems: "center",
+                  justifyContent: "center"
+                }}
+              >
+                <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "800" }}>
+                  ABRIR CHAT
+                </Text>
+              </Pressable>
             </View>
           );
         })}
