@@ -2,12 +2,14 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   ImageBackground,
+  Platform,
   Pressable,
   ScrollView,
   Text,
   TextInput,
   View
 } from "react-native";
+import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useStripe } from "@stripe/stripe-react-native";
@@ -46,21 +48,45 @@ type Booking = {
   guideName?: string;
 };
 
-function todayString() {
-  const d = new Date();
+function formatDateToString(d: Date) {
   const yyyy = d.getFullYear();
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const dd = String(d.getDate()).padStart(2, "0");
   return `${yyyy}-${mm}-${dd}`;
 }
 
+function todayString() {
+  return formatDateToString(new Date());
+}
+
 function addDaysString(days: number) {
   const d = new Date();
   d.setDate(d.getDate() + days);
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
+  return formatDateToString(d);
+}
+
+function parseDateString(value?: string) {
+  const raw = String(value || "").trim();
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+  if (!match) {
+    const now = new Date();
+    now.setHours(12, 0, 0, 0);
+    return now;
+  }
+
+  const year = Number(match[1]);
+  const month = Number(match[2]) - 1;
+  const day = Number(match[3]);
+  const parsed = new Date(year, month, day, 12, 0, 0, 0);
+
+  if (Number.isNaN(parsed.getTime())) {
+    const now = new Date();
+    now.setHours(12, 0, 0, 0);
+    return now;
+  }
+
+  return parsed;
 }
 
 async function getAuthHeaders() {
@@ -83,6 +109,8 @@ export default function ReservasScreen() {
 
   const [travelerEmail, setTravelerEmail] = useState("");
   const [date, setDate] = useState(todayString());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [pickerDate, setPickerDate] = useState(parseDateString(todayString()));
   const [hours, setHours] = useState("1");
   const [adults, setAdults] = useState("1");
   const [youth, setYouth] = useState("0");
@@ -159,6 +187,10 @@ export default function ReservasScreen() {
     }
   }, [lockedGuideId]);
 
+  useEffect(() => {
+    setPickerDate(parseDateString(date));
+  }, [date]);
+
   const selectedGuide = useMemo(() => {
     return guides.find((g) => g._id === selectedGuideId) || null;
   }, [guides, selectedGuideId]);
@@ -204,6 +236,28 @@ export default function ReservasScreen() {
   const totalAmountCents = useMemo(() => {
     return Math.round(totalAmount * 100);
   }, [totalAmount]);
+
+  function openDatePicker() {
+    setPickerDate(parseDateString(date));
+    setShowDatePicker(true);
+  }
+
+  function onChangeDate(event: DateTimePickerEvent, selected?: Date) {
+    if (Platform.OS === "android") {
+      setShowDatePicker(false);
+    }
+
+    if (event.type === "dismissed") {
+      return;
+    }
+
+    if (selected) {
+      const normalized = new Date(selected);
+      normalized.setHours(12, 0, 0, 0);
+      setPickerDate(normalized);
+      setDate(formatDateToString(normalized));
+    }
+  }
 
   async function createBooking() {
     if (loading) return;
@@ -473,7 +527,8 @@ export default function ReservasScreen() {
               ))}
             </View>
 
-            <View
+            <Pressable
+              onPress={openDatePicker}
               style={{
                 marginTop: 10,
                 borderWidth: 1,
@@ -487,7 +542,49 @@ export default function ReservasScreen() {
               <Text style={{ fontSize: 16, color: "#111827" }}>
                 Fecha seleccionada: {date}
               </Text>
-            </View>
+              <Text style={{ marginTop: 8, fontSize: 14, fontWeight: "700", color: "#15539A" }}>
+                TOCAR PARA ELEGIR OTRA FECHA
+              </Text>
+            </Pressable>
+
+            {showDatePicker ? (
+              <View
+                style={{
+                  marginTop: 8,
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.16)",
+                  borderRadius: 18,
+                  padding: 8,
+                  backgroundColor: "rgba(255,255,255,0.96)"
+                }}
+              >
+                <DateTimePicker
+                  value={pickerDate}
+                  mode="date"
+                  display={Platform.OS === "ios" ? "spinner" : "default"}
+                  minimumDate={new Date()}
+                  onChange={onChangeDate}
+                />
+
+                {Platform.OS === "ios" ? (
+                  <Pressable
+                    onPress={() => setShowDatePicker(false)}
+                    style={{
+                      marginTop: 8,
+                      backgroundColor: "#1cc9b7",
+                      paddingVertical: 14,
+                      borderRadius: 16,
+                      alignItems: "center",
+                      justifyContent: "center"
+                    }}
+                  >
+                    <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "800" }}>
+                      CONFIRMAR FECHA
+                    </Text>
+                  </Pressable>
+                ) : null}
+              </View>
+            ) : null}
 
             <Text style={{ fontSize: 16, color: "#15539A", fontWeight: "700" }}>Guía</Text>
 
