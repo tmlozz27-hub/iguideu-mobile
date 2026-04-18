@@ -37,6 +37,9 @@ export default function PerfilGuia() {
   const [loading, setLoading] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
 
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   const gallerySlots = useMemo(() => {
     return [0, 1, 2, 3].map((i) => galleryPhotos[i] || null);
   }, [galleryPhotos]);
@@ -79,6 +82,16 @@ export default function PerfilGuia() {
       return;
     }
 
+    if (!password || password.length < 6) {
+      Alert.alert("Error", "La contraseña debe tener al menos 6 caracteres");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert("Error", "Las contraseñas no coinciden");
+      return;
+    }
+
     if (!acceptTerms) {
       Alert.alert("Error", "Debes aceptar los términos y condiciones");
       return;
@@ -103,6 +116,7 @@ export default function PerfilGuia() {
           price24h: Number(price24h) || 0,
           guideType,
           active: true,
+          password,
           mediaDraft: {
             mainPhoto: mainPhoto ? { uri: mainPhoto.uri } : null,
             galleryPhotos: galleryPhotos.map((item) => ({ uri: item.uri })),
@@ -369,6 +383,26 @@ export default function PerfilGuia() {
             <Text style={ruleLine}>• Mantené tu información, idiomas y precios siempre actualizados.</Text>
             <Text style={ruleLine}>• Al aceptar una solicitud, el servicio queda registrado dentro de la plataforma.</Text>
           </View>
+
+          <TextInput
+            placeholder="Contraseña"
+            placeholderTextColor="#6b7280"
+            value={password}
+            onChangeText={setPassword}
+            style={input}
+            secureTextEntry
+            editable={!loading}
+          />
+
+          <TextInput
+            placeholder="Confirmar contraseña"
+            placeholderTextColor="#6b7280"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            style={input}
+            secureTextEntry
+            editable={!loading}
+          />
 
           <Pressable
             onPress={() => setAcceptTerms((prev) => !prev)}
