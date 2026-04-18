@@ -4,7 +4,7 @@ import {
   Pressable,
   ScrollView,
   Text,
-  View
+  View,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -16,7 +16,7 @@ export default function SelectRoleScreen() {
     <SafeAreaView style={{ flex: 1 }} edges={["left", "right"]}>
       <ImageBackground
         source={{
-          uri: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1600&q=80"
+          uri: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1600&q=80",
         }}
         style={{ flex: 1 }}
         resizeMode="cover"
@@ -28,7 +28,7 @@ export default function SelectRoleScreen() {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(183,209,245,0.55)"
+            backgroundColor: "rgba(183,209,245,0.55)",
           }}
         />
 
@@ -38,7 +38,7 @@ export default function SelectRoleScreen() {
             paddingHorizontal: 24,
             paddingTop: 80,
             paddingBottom: 40,
-            flexGrow: 1
+            flexGrow: 1,
           }}
           showsVerticalScrollIndicator={false}
         >
@@ -50,7 +50,7 @@ export default function SelectRoleScreen() {
                   fontSize: 40,
                   fontWeight: "900",
                   textAlign: "center",
-                  letterSpacing: 1.5
+                  letterSpacing: 1.5,
                 }}
               >
                 I GUIDE U
@@ -62,7 +62,7 @@ export default function SelectRoleScreen() {
                   fontSize: 34,
                   fontWeight: "800",
                   textAlign: "center",
-                  marginTop: 26
+                  marginTop: 26,
                 }}
               >
                 Elegí tu perfil
@@ -71,14 +71,14 @@ export default function SelectRoleScreen() {
 
             <View style={{ gap: 20 }}>
               <Pressable
-                onPress={() => router.push("/register?role=traveler")}
+                onPress={() => router.push("/perfil-viajero")}
                 style={{
                   backgroundColor: "rgba(255,255,255,0.18)",
                   paddingVertical: 24,
                   borderRadius: 28,
                   alignItems: "center",
                   borderWidth: 1,
-                  borderColor: "rgba(255,255,255,0.28)"
+                  borderColor: "rgba(255,255,255,0.28)",
                 }}
               >
                 <Text
@@ -86,7 +86,7 @@ export default function SelectRoleScreen() {
                     color: "#173B6B",
                     fontSize: 24,
                     fontWeight: "800",
-                    textAlign: "center"
+                    textAlign: "center",
                   }}
                 >
                   Viajero
@@ -94,14 +94,14 @@ export default function SelectRoleScreen() {
               </Pressable>
 
               <Pressable
-                onPress={() => router.push("/register?role=guide")}
+                onPress={() => router.push("/perfil-guia")}
                 style={{
                   backgroundColor: "rgba(255,255,255,0.18)",
                   paddingVertical: 24,
                   borderRadius: 28,
                   alignItems: "center",
                   borderWidth: 1,
-                  borderColor: "rgba(255,255,255,0.28)"
+                  borderColor: "rgba(255,255,255,0.28)",
                 }}
               >
                 <Text
@@ -109,7 +109,7 @@ export default function SelectRoleScreen() {
                     color: "#173B6B",
                     fontSize: 24,
                     fontWeight: "800",
-                    textAlign: "center"
+                    textAlign: "center",
                   }}
                 >
                   Guía
