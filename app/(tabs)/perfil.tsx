@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -10,13 +10,14 @@ import {
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import { apiGet, apiPut } from "@/config/api";
 
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
+const PROFILE_CACHE_KEY = "iguideu_profile_cache";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -44,10 +45,13 @@ export default function ProfileScreen() {
     return "";
   }
 
-  const loadUser = async () => {
+  const loadUser = useCallback(async () => {
     try {
       const token = await AsyncStorage.getItem(TOKEN_KEY);
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+      const cachedRaw = await AsyncStorage.getItem(PROFILE_CACHE_KEY);
+      const cached = cachedRaw ? JSON.parse(cachedRaw) : {};
 
       const data = await apiGet("/api/auth/me", headers);
       const u = data?.user || data || {};
@@ -55,15 +59,15 @@ export default function ProfileScreen() {
 
       setUser(u);
 
-      setName(firstNonEmpty(u?.name, profile?.name));
-      setLastName(firstNonEmpty(u?.lastName, profile?.lastName, profile?.surname));
-      setCountry(firstNonEmpty(u?.country, profile?.country));
-      setCity(firstNonEmpty(u?.city, profile?.city));
-      setLanguage(firstNonEmpty(u?.language, u?.languages, profile?.language, profile?.languages));
-      setPhone(firstNonEmpty(u?.phone, profile?.phone));
-      setTravelStyle(firstNonEmpty(u?.travelStyle, profile?.travelStyle));
-      setInterests(firstNonEmpty(u?.interests, profile?.interests));
-      setAbout(firstNonEmpty(u?.about, u?.bio, profile?.about, profile?.bio));
+      setName(firstNonEmpty(u?.name, profile?.name, cached?.name));
+      setLastName(firstNonEmpty(u?.lastName, profile?.lastName, profile?.surname, cached?.lastName));
+      setCountry(firstNonEmpty(u?.country, profile?.country, cached?.country));
+      setCity(firstNonEmpty(u?.city, profile?.city, cached?.city));
+      setLanguage(firstNonEmpty(u?.language, u?.languages, profile?.language, profile?.languages, cached?.language));
+      setPhone(firstNonEmpty(u?.phone, profile?.phone, cached?.phone));
+      setTravelStyle(firstNonEmpty(u?.travelStyle, profile?.travelStyle, cached?.travelStyle));
+      setInterests(firstNonEmpty(u?.interests, profile?.interests, cached?.interests));
+      setAbout(firstNonEmpty(u?.about, u?.bio, profile?.about, profile?.bio, cached?.about));
       setPhoto(
         firstNonEmpty(
           u?.photo,
@@ -71,7 +75,8 @@ export default function ProfileScreen() {
           u?.avatarUrl,
           profile?.photo,
           profile?.photoUrl,
-          profile?.avatarUrl
+          profile?.avatarUrl,
+          cached?.photo
         ) || null
       );
     } catch {
@@ -79,11 +84,17 @@ export default function ProfileScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadUser();
-  }, []);
+  }, [loadUser]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadUser();
+    }, [loadUser])
+  );
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -106,21 +117,29 @@ export default function ProfileScreen() {
 
       const token = await AsyncStorage.getItem(TOKEN_KEY);
 
-      await apiPut(
-        "/api/auth/me",
-        {
-          name: String(name || "").trim(),
-          lastName: String(lastName || "").trim(),
-          country: String(country || "").trim(),
-          city: String(city || "").trim(),
-          language: String(language || "").trim(),
-          phone: String(phone || "").trim(),
-          travelStyle: String(travelStyle || "").trim(),
-          interests: String(interests || "").trim(),
-          about: String(about || "").trim(),
-          photo: photo || ""
-        },
-        { Authorization: `Bearer ${token}` }
+      const payload = {
+        name: String(name || "").trim(),
+        lastName: String(lastName || "").trim(),
+        country: String(country || "").trim(),
+        city: String(city || "").trim(),
+        language: String(language || "").trim(),
+        phone: String(phone || "").trim(),
+        travelStyle: String(travelStyle || "").trim(),
+        interests: String(interests || "").trim(),
+        about: String(about || "").trim(),
+        photo: photo || ""
+      };
+
+      await apiPut("/api/auth/me", payload, {
+        Authorization: `Bearer ${token}`
+      });
+
+      await AsyncStorage.setItem(
+        PROFILE_CACHE_KEY,
+        JSON.stringify({
+          ...payload,
+          email: String(user?.email || "").trim().toLowerCase()
+        })
       );
 
       await loadUser();
@@ -134,7 +153,7 @@ export default function ProfileScreen() {
   };
 
   const handleLogout = async () => {
-    await AsyncStorage.multiRemove([TOKEN_KEY, USER_EMAIL_KEY]);
+    await AsyncStorage.multiRemove([TOKEN_KEY, USER_EMAIL_KEY, PROFILE_CACHE_KEY]);
     router.replace("/login");
   };
 
