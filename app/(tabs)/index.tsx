@@ -108,7 +108,7 @@ export default function HomeTabScreen() {
               marginTop: 10,
             }}
           >
-            Tu experiencia comienza acá
+            Tu experiencia comienza aquí
           </Text>
         </View>
 

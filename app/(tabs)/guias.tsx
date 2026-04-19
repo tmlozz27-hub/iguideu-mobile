@@ -18,6 +18,8 @@ type Guide = {
   city?: string;
   languages?: string[];
   rating?: number;
+  pricePerHour?: number;
+  priceHour?: number;
   priceDay?: number;
   price24h?: number;
   bio?: string;
@@ -72,7 +74,6 @@ export default function GuiasScreen() {
         contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* HEADER */}
         <View
           style={{
             backgroundColor: "rgba(255,255,255,0.45)",
@@ -136,14 +137,12 @@ export default function GuiasScreen() {
           </Pressable>
         </View>
 
-        {/* LOADING */}
         {loading && (
           <View style={{ paddingTop: 32 }}>
             <ActivityIndicator size="large" color="#15539A" />
           </View>
         )}
 
-        {/* EMPTY */}
         {!loading && guides.length === 0 && (
           <View
             style={{
@@ -159,7 +158,6 @@ export default function GuiasScreen() {
           </View>
         )}
 
-        {/* CARDS */}
         {guides.map((guide, index) => {
           const guideId = guide._id || guide.id || String(index);
           const location = [guide.city, guide.country].filter(Boolean).join(", ");
@@ -206,10 +204,10 @@ export default function GuiasScreen() {
 
                 <View style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.25)", borderRadius: 16, padding: 12 }}>
                   <Text style={{ color: "#173B6B", fontSize: 13 }}>
-                    24 horas
+                    Por hora
                   </Text>
                   <Text style={{ color: "#15539A", fontWeight: "800", fontSize: 16 }}>
-                    {money(guide.price24h)}
+                    {money(guide.priceHour ?? guide.pricePerHour)}
                   </Text>
                 </View>
               </View>
