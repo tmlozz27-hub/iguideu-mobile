@@ -105,23 +105,11 @@ export default function LoginScreen() {
             showsVerticalScrollIndicator={false}
           >
             <View style={{ alignItems: "center", marginBottom: 20 }}>
-              <Text
-                style={{
-                  fontSize: 40,
-                  fontWeight: "900",
-                  color: "#173B6B",
-                }}
-              >
+              <Text style={{ fontSize: 40, fontWeight: "900", color: "#173B6B" }}>
                 I GUIDE U
               </Text>
 
-              <Text
-                style={{
-                  marginTop: 8,
-                  color: "#ffffff",
-                  fontWeight: "600",
-                }}
-              >
+              <Text style={{ marginTop: 8, color: "#ffffff", fontWeight: "600" }}>
                 Tu guía personal de turismo
               </Text>
             </View>
@@ -135,25 +123,11 @@ export default function LoginScreen() {
                 borderColor: "rgba(255,255,255,0.15)",
               }}
             >
-              <Text
-                style={{
-                  fontSize: 26,
-                  fontWeight: "900",
-                  textAlign: "center",
-                  color: "#173B6B",
-                }}
-              >
+              <Text style={{ fontSize: 26, fontWeight: "900", textAlign: "center", color: "#173B6B" }}>
                 {t.login}
               </Text>
 
-              <Text
-                style={{
-                  textAlign: "center",
-                  marginTop: 8,
-                  marginBottom: 16,
-                  color: "rgba(23,59,107,0.8)",
-                }}
-              >
+              <Text style={{ textAlign: "center", marginTop: 8, marginBottom: 16, color: "rgba(23,59,107,0.8)" }}>
                 Accedé a tu cuenta para continuar
               </Text>
 
@@ -195,15 +169,8 @@ export default function LoginScreen() {
               </View>
 
               <Pressable onPress={() => router.push("/forgot-password")}>
-                <Text
-                  style={{
-                    textAlign: "right",
-                    marginTop: 10,
-                    color: "#173B6B",
-                    fontWeight: "600",
-                  }}
-                >
-                 {t.forgot}
+                <Text style={{ textAlign: "right", marginTop: 10, color: "#173B6B", fontWeight: "600" }}>
+                  {t.forgot}
                 </Text>
               </Pressable>
 
@@ -222,47 +189,22 @@ export default function LoginScreen() {
                 </Text>
               </Pressable>
 
-              <Pressable
-                style={{
-                  marginTop: 10,
-                  backgroundColor: "#ffffff",
-                  padding: 14,
-                  borderRadius: 20,
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ fontWeight: "700" }}>
-                  {t.google}
-                </Text>
+              {/* BOTONES DESACTIVADOS */}
+              <Pressable style={{ marginTop: 10, backgroundColor: "#ffffff", padding: 14, borderRadius: 20, alignItems: "center" }}>
+                <Text style={{ fontWeight: "700" }}>{t.google}</Text>
               </Pressable>
 
-              <Pressable
-                style={{
-                  marginTop: 10,
-                  backgroundColor: "#000000",
-                  padding: 14,
-                  borderRadius: 20,
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ color: "#fff", fontWeight: "700" }}>
-                  {t.apple}
-                </Text>
+              <Pressable style={{ marginTop: 10, backgroundColor: "#000000", padding: 14, borderRadius: 20, alignItems: "center" }}>
+                <Text style={{ color: "#fff", fontWeight: "700" }}>{t.apple}</Text>
               </Pressable>
 
               <View style={{ alignItems: "center", marginTop: 14 }}>
                 <Text style={{ fontSize: 12, color: "rgba(23,59,107,0.7)" }}>
-                  <Text
-                    onPress={() => router.push("/legal/terms")}
-                    style={{ textDecorationLine: "underline" }}
-                  >
+                  <Text onPress={() => router.push("/legal/terms")} style={{ textDecorationLine: "underline" }}>
                     {t.terms}
                   </Text>
                   {" y "}
-                  <Text
-                    onPress={() => router.push("/legal/privacy")}
-                    style={{ textDecorationLine: "underline" }}
-                  >
+                  <Text onPress={() => router.push("/legal/privacy")} style={{ textDecorationLine: "underline" }}>
                     {t.privacy}
                   </Text>
                 </Text>
@@ -271,9 +213,7 @@ export default function LoginScreen() {
               <View style={{ alignItems: "center", marginTop: 16 }}>
                 <Text>{t.noAccount}</Text>
                 <Pressable onPress={() => router.push("/select-role")}>
-                  <Text style={{ fontWeight: "800", color: "#173B6B" }}>
-                    {t.register}
-                  </Text>
+                  <Text style={{ fontWeight: "800", color: "#173B6B" }}>{t.register}</Text>
                 </Pressable>
               </View>
             </View>
