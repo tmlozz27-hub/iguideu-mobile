@@ -15,12 +15,19 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as WebBrowser from "expo-web-browser";
+import * as Google from "expo-auth-session/providers/google";
+
+WebBrowser.maybeCompleteAuthSession();
 
 const lang = "es";
 const t = translations[lang];
 
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
+
+const GOOGLE_ANDROID_CLIENT_ID =
+  "1029517266976-b0ag2bt7u88hj3sb39ffc67umpa83veb.apps.googleusercontent.com";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -30,11 +37,21 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    androidClientId: GOOGLE_ANDROID_CLIENT_ID,
+  });
+
   useEffect(() => {
     AsyncStorage.getItem(TOKEN_KEY).then((token) => {
       if (token) router.replace("/(tabs)");
     });
   }, [router]);
+
+  useEffect(() => {
+    if (response?.type === "success") {
+      Alert.alert("Google", "Login Google OK");
+    }
+  }, [response]);
 
   const handleLogin = async () => {
     const emailClean = String(email || "").trim().toLowerCase();
@@ -66,6 +83,14 @@ export default function LoginScreen() {
       Alert.alert("Error", "Servidor");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      await promptAsync();
+    } catch {
+      Alert.alert("Error", "No se pudo iniciar Google");
     }
   };
 
@@ -123,11 +148,25 @@ export default function LoginScreen() {
                 borderColor: "rgba(255,255,255,0.15)",
               }}
             >
-              <Text style={{ fontSize: 26, fontWeight: "900", textAlign: "center", color: "#173B6B" }}>
+              <Text
+                style={{
+                  fontSize: 26,
+                  fontWeight: "900",
+                  textAlign: "center",
+                  color: "#173B6B",
+                }}
+              >
                 {t.login}
               </Text>
 
-              <Text style={{ textAlign: "center", marginTop: 8, marginBottom: 16, color: "rgba(23,59,107,0.8)" }}>
+              <Text
+                style={{
+                  textAlign: "center",
+                  marginTop: 8,
+                  marginBottom: 16,
+                  color: "rgba(23,59,107,0.8)",
+                }}
+              >
                 Accedé a tu cuenta para continuar
               </Text>
 
@@ -169,7 +208,14 @@ export default function LoginScreen() {
               </View>
 
               <Pressable onPress={() => router.push("/forgot-password")}>
-                <Text style={{ textAlign: "right", marginTop: 10, color: "#173B6B", fontWeight: "600" }}>
+                <Text
+                  style={{
+                    textAlign: "right",
+                    marginTop: 10,
+                    color: "#173B6B",
+                    fontWeight: "600",
+                  }}
+                >
                   {t.forgot}
                 </Text>
               </Pressable>
@@ -189,22 +235,46 @@ export default function LoginScreen() {
                 </Text>
               </Pressable>
 
-              {/* BOTONES DESACTIVADOS */}
-              <Pressable style={{ marginTop: 10, backgroundColor: "#ffffff", padding: 14, borderRadius: 20, alignItems: "center" }}>
+              <Pressable
+                onPress={handleGoogleLogin}
+                disabled={!request}
+                style={{
+                  marginTop: 10,
+                  backgroundColor: "#ffffff",
+                  padding: 14,
+                  borderRadius: 20,
+                  alignItems: "center",
+                  opacity: request ? 1 : 0.7,
+                }}
+              >
                 <Text style={{ fontWeight: "700" }}>{t.google}</Text>
               </Pressable>
 
-              <Pressable style={{ marginTop: 10, backgroundColor: "#000000", padding: 14, borderRadius: 20, alignItems: "center" }}>
+              <Pressable
+                style={{
+                  marginTop: 10,
+                  backgroundColor: "#000000",
+                  padding: 14,
+                  borderRadius: 20,
+                  alignItems: "center",
+                }}
+              >
                 <Text style={{ color: "#fff", fontWeight: "700" }}>{t.apple}</Text>
               </Pressable>
 
               <View style={{ alignItems: "center", marginTop: 14 }}>
                 <Text style={{ fontSize: 12, color: "rgba(23,59,107,0.7)" }}>
-                  <Text onPress={() => router.push("/legal/terms")} style={{ textDecorationLine: "underline" }}>
+                  <Text
+                    onPress={() => router.push("/legal/terms")}
+                    style={{ textDecorationLine: "underline" }}
+                  >
                     {t.terms}
                   </Text>
                   {" y "}
-                  <Text onPress={() => router.push("/legal/privacy")} style={{ textDecorationLine: "underline" }}>
+                  <Text
+                    onPress={() => router.push("/legal/privacy")}
+                    style={{ textDecorationLine: "underline" }}
+                  >
                     {t.privacy}
                   </Text>
                 </Text>
@@ -213,7 +283,9 @@ export default function LoginScreen() {
               <View style={{ alignItems: "center", marginTop: 16 }}>
                 <Text>{t.noAccount}</Text>
                 <Pressable onPress={() => router.push("/select-role")}>
-                  <Text style={{ fontWeight: "800", color: "#173B6B" }}>{t.register}</Text>
+                  <Text style={{ fontWeight: "800", color: "#173B6B" }}>
+                    {t.register}
+                  </Text>
                 </Pressable>
               </View>
             </View>

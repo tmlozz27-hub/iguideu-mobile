@@ -3,6 +3,7 @@
     "name": "I GUIDE U",
     "slug": "iguideu",
     "owner": "tomloz",
+    "scheme": "iguideu",
     "version": "1.0.0",
     "orientation": "portrait",
     "updates": {
