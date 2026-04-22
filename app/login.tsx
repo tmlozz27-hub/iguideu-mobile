@@ -1,11 +1,6 @@
-import { apiPost } from "@/config/api";
-import { translations } from "@/utils/i18n";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
-  ImageBackground,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -13,21 +8,15 @@ import {
   Text,
   TextInput,
   View,
+  ImageBackground,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import * as WebBrowser from "expo-web-browser";
-import * as Google from "expo-auth-session/providers/google";
-
-WebBrowser.maybeCompleteAuthSession();
-
-const lang = "es";
-const t = translations[lang];
+import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiPost } from "@/config/api";
 
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
-
-const GOOGLE_ANDROID_CLIENT_ID =
-  "1029517266976-b0ag2bt7u88hj3sb39ffc67umpa83veb.apps.googleusercontent.com";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -37,21 +26,11 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    androidClientId: GOOGLE_ANDROID_CLIENT_ID,
-  });
-
   useEffect(() => {
     AsyncStorage.getItem(TOKEN_KEY).then((token) => {
       if (token) router.replace("/(tabs)");
     });
   }, [router]);
-
-  useEffect(() => {
-    if (response?.type === "success") {
-      Alert.alert("Google", "Login Google OK");
-    }
-  }, [response]);
 
   const handleLogin = async () => {
     const emailClean = String(email || "").trim().toLowerCase();
@@ -83,14 +62,6 @@ export default function LoginScreen() {
       Alert.alert("Error", "Servidor");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    try {
-      await promptAsync();
-    } catch {
-      Alert.alert("Error", "No se pudo iniciar Google");
     }
   };
 
@@ -130,11 +101,23 @@ export default function LoginScreen() {
             showsVerticalScrollIndicator={false}
           >
             <View style={{ alignItems: "center", marginBottom: 20 }}>
-              <Text style={{ fontSize: 40, fontWeight: "900", color: "#173B6B" }}>
+              <Text
+                style={{
+                  fontSize: 40,
+                  fontWeight: "900",
+                  color: "#173B6B",
+                }}
+              >
                 I GUIDE U
               </Text>
 
-              <Text style={{ marginTop: 8, color: "#ffffff", fontWeight: "600" }}>
+              <Text
+                style={{
+                  marginTop: 8,
+                  color: "#ffffff",
+                  fontWeight: "600",
+                }}
+              >
                 Tu guía personal de turismo
               </Text>
             </View>
@@ -156,7 +139,7 @@ export default function LoginScreen() {
                   color: "#173B6B",
                 }}
               >
-                {t.login}
+                Iniciar sesión
               </Text>
 
               <Text
@@ -171,7 +154,7 @@ export default function LoginScreen() {
               </Text>
 
               <TextInput
-                placeholder={t.email}
+                placeholder="Correo electrónico"
                 placeholderTextColor="#7B879B"
                 value={email}
                 onChangeText={setEmail}
@@ -192,7 +175,7 @@ export default function LoginScreen() {
                 }}
               >
                 <TextInput
-                  placeholder={t.password}
+                  placeholder="Contraseña"
                   placeholderTextColor="#7B879B"
                   value={password}
                   onChangeText={setPassword}
@@ -216,7 +199,7 @@ export default function LoginScreen() {
                     fontWeight: "600",
                   }}
                 >
-                  {t.forgot}
+                  ¿Olvidaste tu contraseña?
                 </Text>
               </Pressable>
 
@@ -231,60 +214,43 @@ export default function LoginScreen() {
                 }}
               >
                 <Text style={{ color: "#fff", fontWeight: "800", fontSize: 18 }}>
-                  {loading ? "Ingresando..." : t.access}
+                  {loading ? "Ingresando..." : "Acceder"}
                 </Text>
               </Pressable>
 
               <Pressable
-                onPress={handleGoogleLogin}
-                disabled={!request}
                 style={{
                   marginTop: 10,
                   backgroundColor: "#ffffff",
                   padding: 14,
                   borderRadius: 20,
                   alignItems: "center",
-                  opacity: request ? 1 : 0.7,
                 }}
               >
-                <Text style={{ fontWeight: "700" }}>{t.google}</Text>
+                <Text style={{ fontWeight: "700" }}>
+                  Continuar con Google
+                </Text>
               </Pressable>
 
               <Pressable
                 style={{
                   marginTop: 10,
-                  backgroundColor: "#000000",
+                  backgroundColor: "#1877F2",
                   padding: 14,
                   borderRadius: 20,
                   alignItems: "center",
                 }}
               >
-                <Text style={{ color: "#fff", fontWeight: "700" }}>{t.apple}</Text>
+                <Text style={{ color: "#fff", fontWeight: "700" }}>
+                  Continuar con Facebook
+                </Text>
               </Pressable>
 
-              <View style={{ alignItems: "center", marginTop: 14 }}>
-                <Text style={{ fontSize: 12, color: "rgba(23,59,107,0.7)" }}>
-                  <Text
-                    onPress={() => router.push("/legal/terms")}
-                    style={{ textDecorationLine: "underline" }}
-                  >
-                    {t.terms}
-                  </Text>
-                  {" y "}
-                  <Text
-                    onPress={() => router.push("/legal/privacy")}
-                    style={{ textDecorationLine: "underline" }}
-                  >
-                    {t.privacy}
-                  </Text>
-                </Text>
-              </View>
-
               <View style={{ alignItems: "center", marginTop: 16 }}>
-                <Text>{t.noAccount}</Text>
+                <Text>¿No tienes cuenta?</Text>
                 <Pressable onPress={() => router.push("/select-role")}>
                   <Text style={{ fontWeight: "800", color: "#173B6B" }}>
-                    {t.register}
+                    Registrarse
                   </Text>
                 </Pressable>
               </View>
