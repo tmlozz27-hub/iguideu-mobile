@@ -35,7 +35,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
 
   const redirectUri = makeRedirectUri({
-    scheme: "iguideu",
+    useProxy: true,
   });
 
   const [request, response, promptAsync] = Google.useAuthRequest({
