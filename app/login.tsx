@@ -14,9 +14,17 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiPost } from "@/config/api";
+import * as WebBrowser from "expo-web-browser";
+import * as Google from "expo-auth-session/providers/google";
+import { makeRedirectUri } from "expo-auth-session";
+
+WebBrowser.maybeCompleteAuthSession();
 
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
+
+const GOOGLE_ANDROID_CLIENT_ID =
+  "1029517266976-b0ag2bt7u88hj3sb39ffc67umpa83veb.apps.googleusercontent.com";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -26,11 +34,28 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const redirectUri = makeRedirectUri({
+    scheme: "iguideu",
+  });
+
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    androidClientId: GOOGLE_ANDROID_CLIENT_ID,
+    redirectUri,
+  });
+
   useEffect(() => {
     AsyncStorage.getItem(TOKEN_KEY).then((token) => {
       if (token) router.replace("/(tabs)");
     });
   }, [router]);
+
+  useEffect(() => {
+    if (response?.type === "success") {
+      Alert.alert("Google", "Google login OK");
+    } else if (response?.type === "error") {
+      Alert.alert("Google", "Error al iniciar con Google");
+    }
+  }, [response]);
 
   const handleLogin = async () => {
     const emailClean = String(email || "").trim().toLowerCase();
@@ -62,6 +87,19 @@ export default function LoginScreen() {
       Alert.alert("Error", "Servidor");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      if (!request) {
+        Alert.alert("Google", "Google no está listo todavía");
+        return;
+      }
+
+      await promptAsync();
+    } catch {
+      Alert.alert("Google", "No se pudo iniciar Google");
     }
   };
 
@@ -219,12 +257,15 @@ export default function LoginScreen() {
               </Pressable>
 
               <Pressable
+                onPress={handleGoogleLogin}
+                disabled={!request}
                 style={{
                   marginTop: 10,
                   backgroundColor: "#ffffff",
                   padding: 14,
                   borderRadius: 20,
                   alignItems: "center",
+                  opacity: request ? 1 : 0.7,
                 }}
               >
                 <Text style={{ fontWeight: "700" }}>
