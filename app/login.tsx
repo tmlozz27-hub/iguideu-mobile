@@ -26,8 +26,8 @@ const t = translations[lang];
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
 
-// 🔴 CAMBIO REAL
-const GOOGLE_WEB_CLIENT_ID =
+// 🔴 ANDROID CLIENT (EL CORRECTO PARA APK)
+const GOOGLE_ANDROID_CLIENT_ID =
   "1029517266976-b0ag2bt7u88hj3sb39ffc67umpa83veb.apps.googleusercontent.com";
 
 export default function LoginScreen() {
@@ -38,9 +38,9 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // 🔴 CAMBIO REAL
+  // 🔴 USO CORRECTO PARA ANDROID
   const [request, response, promptAsync] = Google.useAuthRequest({
-    webClientId: GOOGLE_WEB_CLIENT_ID,
+    androidClientId: GOOGLE_ANDROID_CLIENT_ID,
   });
 
   useEffect(() => {
@@ -51,9 +51,7 @@ export default function LoginScreen() {
 
   useEffect(() => {
     if (response?.type === "success") {
-      Alert.alert("Google", "Login Google OK");
-    } else if (response?.type === "error") {
-      Alert.alert("Google", "Error Google");
+      Alert.alert("Google", "Login OK");
     }
   }, [response]);
 
@@ -93,7 +91,7 @@ export default function LoginScreen() {
   const handleGoogleLogin = async () => {
     try {
       if (!request) {
-        Alert.alert("Google", "Google no está listo");
+        Alert.alert("Google", "No listo");
         return;
       }
 
@@ -135,168 +133,47 @@ export default function LoginScreen() {
               paddingTop: 40,
               paddingBottom: 40,
             }}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
           >
             <View style={{ alignItems: "center", marginBottom: 20 }}>
               <Text style={{ fontSize: 40, fontWeight: "900", color: "#173B6B" }}>
                 I GUIDE U
               </Text>
-
               <Text style={{ marginTop: 8, color: "#ffffff", fontWeight: "600" }}>
                 Tu guía personal de turismo
               </Text>
             </View>
 
-            <View
-              style={{
-                backgroundColor: "rgba(255,255,255,0.10)",
-                borderRadius: 30,
-                padding: 24,
-                borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.15)",
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 26,
-                  fontWeight: "900",
-                  textAlign: "center",
-                  color: "#173B6B",
-                }}
-              >
+            <View style={{ backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 30, padding: 24 }}>
+              <Text style={{ fontSize: 26, fontWeight: "900", textAlign: "center", color: "#173B6B" }}>
                 {t.login}
-              </Text>
-
-              <Text
-                style={{
-                  textAlign: "center",
-                  marginTop: 8,
-                  marginBottom: 16,
-                  color: "rgba(23,59,107,0.8)",
-                }}
-              >
-                Accedé a tu cuenta para continuar
               </Text>
 
               <TextInput
                 placeholder={t.email}
-                placeholderTextColor="#7B879B"
                 value={email}
                 onChangeText={setEmail}
-                style={{
-                  backgroundColor: "rgba(255,255,255,0.6)",
-                  borderRadius: 18,
-                  padding: 14,
-                  marginBottom: 12,
-                }}
+                style={{ backgroundColor: "#fff", borderRadius: 18, padding: 14, marginBottom: 12 }}
               />
 
-              <View
-                style={{
-                  flexDirection: "row",
-                  backgroundColor: "rgba(255,255,255,0.6)",
-                  borderRadius: 18,
-                  alignItems: "center",
-                }}
-              >
-                <TextInput
-                  placeholder={t.password}
-                  placeholderTextColor="#7B879B"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!showPassword}
-                  style={{ flex: 1, padding: 14 }}
-                />
+              <TextInput
+                placeholder={t.password}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                style={{ backgroundColor: "#fff", borderRadius: 18, padding: 14 }}
+              />
 
-                <Pressable onPress={() => setShowPassword(!showPassword)}>
-                  <Text style={{ paddingHorizontal: 16, color: "#173B6B" }}>
-                    {showPassword ? "Ocultar" : "Ver"}
-                  </Text>
-                </Pressable>
-              </View>
-
-              <Pressable onPress={() => router.push("/forgot-password")}>
-                <Text
-                  style={{
-                    textAlign: "right",
-                    marginTop: 10,
-                    color: "#173B6B",
-                    fontWeight: "600",
-                  }}
-                >
-                  {t.forgot}
-                </Text>
+              <Pressable onPress={handleLogin} style={{ marginTop: 16, backgroundColor: "#173B6B", padding: 16, borderRadius: 20 }}>
+                <Text style={{ color: "#fff", textAlign: "center" }}>{loading ? "..." : t.access}</Text>
               </Pressable>
 
-              <Pressable
-                onPress={handleLogin}
-                style={{
-                  marginTop: 16,
-                  backgroundColor: "#173B6B",
-                  padding: 16,
-                  borderRadius: 20,
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ color: "#fff", fontWeight: "800", fontSize: 18 }}>
-                  {loading ? "Ingresando..." : t.access}
-                </Text>
+              <Pressable onPress={handleGoogleLogin} style={{ marginTop: 10, backgroundColor: "#fff", padding: 14, borderRadius: 20 }}>
+                <Text style={{ textAlign: "center", fontWeight: "700" }}>{t.google}</Text>
               </Pressable>
 
-              <Pressable
-                onPress={handleGoogleLogin}
-                disabled={!request}
-                style={{
-                  marginTop: 10,
-                  backgroundColor: "#ffffff",
-                  padding: 14,
-                  borderRadius: 20,
-                  alignItems: "center",
-                  opacity: request ? 1 : 0.7,
-                }}
-              >
-                <Text style={{ fontWeight: "700" }}>{t.google}</Text>
+              <Pressable style={{ marginTop: 10, backgroundColor: "#000", padding: 14, borderRadius: 20 }}>
+                <Text style={{ color: "#fff", textAlign: "center", fontWeight: "700" }}>{t.apple}</Text>
               </Pressable>
-
-              <Pressable
-                style={{
-                  marginTop: 10,
-                  backgroundColor: "#000000",
-                  padding: 14,
-                  borderRadius: 20,
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ color: "#fff", fontWeight: "700" }}>{t.apple}</Text>
-              </Pressable>
-
-              <View style={{ alignItems: "center", marginTop: 14 }}>
-                <Text style={{ fontSize: 12, color: "rgba(23,59,107,0.7)" }}>
-                  <Text
-                    onPress={() => router.push("/legal/terms")}
-                    style={{ textDecorationLine: "underline" }}
-                  >
-                    {t.terms}
-                  </Text>
-                  {" y "}
-                  <Text
-                    onPress={() => router.push("/legal/privacy")}
-                    style={{ textDecorationLine: "underline" }}
-                  >
-                    {t.privacy}
-                  </Text>
-                </Text>
-              </View>
-
-              <View style={{ alignItems: "center", marginTop: 16 }}>
-                <Text>{t.noAccount}</Text>
-                <Pressable onPress={() => router.push("/select-role")}>
-                  <Text style={{ fontWeight: "800", color: "#173B6B" }}>
-                    {t.register}
-                  </Text>
-                </Pressable>
-              </View>
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
