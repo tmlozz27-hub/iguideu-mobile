@@ -99,9 +99,7 @@ export default function LoginScreen() {
       router.replace("/(tabs)");
     } catch (error: unknown) {
       if (isErrorWithCode(error)) {
-        if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-          return;
-        }
+        if (error.code === statusCodes.SIGN_IN_CANCELLED) return;
 
         if (error.code === statusCodes.IN_PROGRESS) {
           Alert.alert("Google", "Google ya está abriéndose");
@@ -257,5 +255,4 @@ export default function LoginScreen() {
       </ImageBackground>
     </SafeAreaView>
   );
-}
 }

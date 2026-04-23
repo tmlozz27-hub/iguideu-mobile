@@ -24,6 +24,7 @@ export default {
       bundler: "metro"
     },
     plugins: [
+      "@react-native-google-signin/google-signin",
       [
         "@stripe/stripe-react-native",
         {
