@@ -7,7 +7,6 @@ import {
   Alert,
   ImageBackground,
   KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -15,10 +14,11 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import * as WebBrowser from "expo-web-browser";
-import * as Google from "expo-auth-session/providers/google";
-
-WebBrowser.maybeCompleteAuthSession();
+import {
+  GoogleSignin,
+  isErrorWithCode,
+  statusCodes,
+} from "@react-native-google-signin/google-signin";
 
 const lang = "es";
 const t = translations[lang];
@@ -26,32 +26,21 @@ const t = translations[lang];
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
 
-const GOOGLE_ANDROID_CLIENT_ID =
-  "1029517266976-b0ag2bt7u88hj3sb39ffc67umpa83veb.apps.googleusercontent.com";
-
 export default function LoginScreen() {
   const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    androidClientId: GOOGLE_ANDROID_CLIENT_ID,
-  });
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   useEffect(() => {
+    GoogleSignin.configure();
+
     AsyncStorage.getItem(TOKEN_KEY).then((token) => {
       if (token) router.replace("/(tabs)");
     });
   }, [router]);
-
-  useEffect(() => {
-    if (response?.type === "success") {
-      Alert.alert("Google", "Login OK");
-    }
-  }, [response]);
 
   const handleLogin = async () => {
     const emailClean = String(email || "").trim().toLowerCase();
@@ -88,14 +77,49 @@ export default function LoginScreen() {
 
   const handleGoogleLogin = async () => {
     try {
-      if (!request) {
-        Alert.alert("Google", "No listo");
+      setGoogleLoading(true);
+
+      await GoogleSignin.hasPlayServices();
+      const result = await GoogleSignin.signIn();
+
+      let userEmail = "";
+
+      if ("data" in result && result.data?.user?.email) {
+        userEmail = String(result.data.user.email);
+      } else if ("user" in result && result.user?.email) {
+        userEmail = String(result.user.email);
+      }
+
+      await AsyncStorage.setItem(TOKEN_KEY, "google_login_ok");
+      if (userEmail) {
+        await AsyncStorage.setItem(USER_EMAIL_KEY, userEmail);
+      }
+
+      Alert.alert("Google", "Cuenta seleccionada correctamente");
+      router.replace("/(tabs)");
+    } catch (error: unknown) {
+      if (isErrorWithCode(error)) {
+        if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+          return;
+        }
+
+        if (error.code === statusCodes.IN_PROGRESS) {
+          Alert.alert("Google", "Google ya está abriéndose");
+          return;
+        }
+
+        if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+          Alert.alert("Google", "Google Play Services no disponible");
+          return;
+        }
+
+        Alert.alert("Google", `Error: ${error.code}`);
         return;
       }
 
-      await promptAsync();
-    } catch {
-      Alert.alert("Error", "No se pudo iniciar Google");
+      Alert.alert("Google", "No se pudo iniciar Google");
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -119,10 +143,7 @@ export default function LoginScreen() {
           }}
         />
 
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
+        <KeyboardAvoidingView style={{ flex: 1 }}>
           <ScrollView
             contentContainerStyle={{
               flexGrow: 1,
@@ -131,6 +152,7 @@ export default function LoginScreen() {
               paddingTop: 40,
               paddingBottom: 40,
             }}
+            keyboardShouldPersistTaps="handled"
           >
             <View style={{ alignItems: "center", marginBottom: 20 }}>
               <Text style={{ fontSize: 40, fontWeight: "900", color: "#173B6B" }}>
@@ -175,7 +197,7 @@ export default function LoginScreen() {
                 placeholder={t.password}
                 value={password}
                 onChangeText={setPassword}
-                secureTextEntry={!showPassword}
+                secureTextEntry
                 style={{
                   backgroundColor: "#fff",
                   borderRadius: 18,
@@ -207,7 +229,7 @@ export default function LoginScreen() {
                 }}
               >
                 <Text style={{ textAlign: "center", fontWeight: "700" }}>
-                  {t.google}
+                  {googleLoading ? "Abriendo Google..." : t.google}
                 </Text>
               </Pressable>
 
@@ -235,4 +257,5 @@ export default function LoginScreen() {
       </ImageBackground>
     </SafeAreaView>
   );
+}
 }
