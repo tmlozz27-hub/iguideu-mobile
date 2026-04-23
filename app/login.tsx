@@ -26,7 +26,6 @@ const t = translations[lang];
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
 
-// 🔴 ANDROID CLIENT (EL CORRECTO PARA APK)
 const GOOGLE_ANDROID_CLIENT_ID =
   "1029517266976-b0ag2bt7u88hj3sb39ffc67umpa83veb.apps.googleusercontent.com";
 
@@ -38,7 +37,6 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // 🔴 USO CORRECTO PARA ANDROID
   const [request, response, promptAsync] = Google.useAuthRequest({
     androidClientId: GOOGLE_ANDROID_CLIENT_ID,
   });
@@ -143,8 +141,21 @@ export default function LoginScreen() {
               </Text>
             </View>
 
-            <View style={{ backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 30, padding: 24 }}>
-              <Text style={{ fontSize: 26, fontWeight: "900", textAlign: "center", color: "#173B6B" }}>
+            <View
+              style={{
+                backgroundColor: "rgba(255,255,255,0.1)",
+                borderRadius: 30,
+                padding: 24,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 26,
+                  fontWeight: "900",
+                  textAlign: "center",
+                  color: "#173B6B",
+                }}
+              >
                 {t.login}
               </Text>
 
@@ -152,7 +163,12 @@ export default function LoginScreen() {
                 placeholder={t.email}
                 value={email}
                 onChangeText={setEmail}
-                style={{ backgroundColor: "#fff", borderRadius: 18, padding: 14, marginBottom: 12 }}
+                style={{
+                  backgroundColor: "#fff",
+                  borderRadius: 18,
+                  padding: 14,
+                  marginBottom: 12,
+                }}
               />
 
               <TextInput
@@ -160,19 +176,58 @@ export default function LoginScreen() {
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
-                style={{ backgroundColor: "#fff", borderRadius: 18, padding: 14 }}
+                style={{
+                  backgroundColor: "#fff",
+                  borderRadius: 18,
+                  padding: 14,
+                }}
               />
 
-              <Pressable onPress={handleLogin} style={{ marginTop: 16, backgroundColor: "#173B6B", padding: 16, borderRadius: 20 }}>
-                <Text style={{ color: "#fff", textAlign: "center" }}>{loading ? "..." : t.access}</Text>
+              <Pressable
+                onPress={handleLogin}
+                style={{
+                  marginTop: 16,
+                  backgroundColor: "#173B6B",
+                  padding: 16,
+                  borderRadius: 20,
+                }}
+              >
+                <Text style={{ color: "#fff", textAlign: "center" }}>
+                  {loading ? "..." : t.access}
+                </Text>
               </Pressable>
 
-              <Pressable onPress={handleGoogleLogin} style={{ marginTop: 10, backgroundColor: "#fff", padding: 14, borderRadius: 20 }}>
-                <Text style={{ textAlign: "center", fontWeight: "700" }}>{t.google}</Text>
+              <Pressable
+                onPress={handleGoogleLogin}
+                style={{
+                  marginTop: 10,
+                  backgroundColor: "#fff",
+                  padding: 14,
+                  borderRadius: 20,
+                }}
+              >
+                <Text style={{ textAlign: "center", fontWeight: "700" }}>
+                  {t.google}
+                </Text>
               </Pressable>
 
-              <Pressable style={{ marginTop: 10, backgroundColor: "#000", padding: 14, borderRadius: 20 }}>
-                <Text style={{ color: "#fff", textAlign: "center", fontWeight: "700" }}>{t.apple}</Text>
+              <Pressable
+                style={{
+                  marginTop: 10,
+                  backgroundColor: "#000",
+                  padding: 14,
+                  borderRadius: 20,
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#fff",
+                    textAlign: "center",
+                    fontWeight: "700",
+                  }}
+                >
+                  {t.apple}
+                </Text>
               </Pressable>
             </View>
           </ScrollView>
