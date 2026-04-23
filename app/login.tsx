@@ -26,7 +26,8 @@ const t = translations[lang];
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
 
-const GOOGLE_ANDROID_CLIENT_ID =
+// 🔴 CAMBIO REAL
+const GOOGLE_WEB_CLIENT_ID =
   "1029517266976-b0ag2bt7u88hj3sb39ffc67umpa83veb.apps.googleusercontent.com";
 
 export default function LoginScreen() {
@@ -37,8 +38,9 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // 🔴 CAMBIO REAL
   const [request, response, promptAsync] = Google.useAuthRequest({
-    androidClientId: GOOGLE_ANDROID_CLIENT_ID,
+    webClientId: GOOGLE_WEB_CLIENT_ID,
   });
 
   useEffect(() => {
@@ -50,6 +52,8 @@ export default function LoginScreen() {
   useEffect(() => {
     if (response?.type === "success") {
       Alert.alert("Google", "Login Google OK");
+    } else if (response?.type === "error") {
+      Alert.alert("Google", "Error Google");
     }
   }, [response]);
 
@@ -88,6 +92,11 @@ export default function LoginScreen() {
 
   const handleGoogleLogin = async () => {
     try {
+      if (!request) {
+        Alert.alert("Google", "Google no está listo");
+        return;
+      }
+
       await promptAsync();
     } catch {
       Alert.alert("Error", "No se pudo iniciar Google");
