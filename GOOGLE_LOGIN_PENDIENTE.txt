@@ -1,0 +1,10 @@
+FALTA PARA HABILITAR GOOGLE LOGIN SIN ROMPER NADA:
+
+1. Android OAuth Client ID real
+2. Expo OAuth Client ID real (si se usa Expo Go)
+3. Recién con eso se conecta el botón Google
+
+SIN ESOS IDS:
+- no se habilita
+- rompe login
+- no se toca más código

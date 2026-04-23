@@ -11,6 +11,14 @@
     },
     "assetBundlePatterns": [
       "**/*"
+    ],
+    "plugins": [
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "androidClientId": "1029517266976-b0ag2bt7u88hj3sb39ffc67umpa83veb.apps.googleusercontent.com"
+        }
+      ]
     ]
   }
 }
