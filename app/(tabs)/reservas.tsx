@@ -385,38 +385,9 @@ export default function ReservasScreen() {
       style={{ flex: 1, backgroundColor: "#76A9E8" }}
       resizeMode="cover"
     >
-      <View
-        style={{
-          position: "absolute",
-          top: 0,
-          right: 0,
-          bottom: 0,
-          left: 0,
-          backgroundColor: "rgba(90,136,204,0.44)"
-        }}
-      />
-      <View
-        style={{
-          position: "absolute",
-          top: -20,
-          right: -10,
-          width: 240,
-          height: 240,
-          borderRadius: 120,
-          backgroundColor: "rgba(255,255,255,0.10)"
-        }}
-      />
-      <View
-        style={{
-          position: "absolute",
-          bottom: 120,
-          left: -30,
-          width: 170,
-          height: 170,
-          borderRadius: 85,
-          backgroundColor: "rgba(168,240,233,0.14)"
-        }}
-      />
+      
+      
+      
 
       <ScrollView
         keyboardShouldPersistTaps="handled"

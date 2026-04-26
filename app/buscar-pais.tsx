@@ -235,7 +235,7 @@ export default function BuscarPaisScreen() {
         style={{ flex: 1, backgroundColor: "#76A9E8" }}
         resizeMode="cover"
       >
-        <View style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, backgroundColor: "rgba(90,136,204,0.30)" }} />
+        
 
         <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12 }}>
           <View style={{ backgroundColor: "rgba(255,255,255,0.60)", borderRadius: 24, padding: 18 }}>

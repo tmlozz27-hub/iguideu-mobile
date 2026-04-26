@@ -68,16 +68,7 @@ export default function HomeTabScreen() {
       resizeMode="cover"
       style={{ flex: 1 }}
     >
-      <View
-        style={{
-          position: "absolute",
-          top: 0,
-          right: 0,
-          bottom: 0,
-          left: 0,
-          backgroundColor: "rgba(183,209,245,0.52)",
-        }}
-      />
+      
 
       <ScrollView
         style={{ flex: 1 }}

@@ -117,16 +117,7 @@ export default function GuidesByCountryScreen() {
           style={{ flex: 1, backgroundColor: "#76A9E8" }}
           resizeMode="cover"
         >
-          <View
-            style={{
-              position: "absolute",
-              top: 0,
-              right: 0,
-              bottom: 0,
-              left: 0,
-              backgroundColor: "rgba(90,136,204,0.34)"
-            }}
-          />
+          
           <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
             <ActivityIndicator size="large" color="#15539A" />
             <Text style={{ marginTop: 12, color: "#15539A", fontWeight: "800", fontSize: 18 }}>
@@ -147,38 +138,9 @@ export default function GuidesByCountryScreen() {
         style={{ flex: 1, backgroundColor: "#76A9E8" }}
         resizeMode="cover"
       >
-        <View
-          style={{
-            position: "absolute",
-            top: 0,
-            right: 0,
-            bottom: 0,
-            left: 0,
-            backgroundColor: "rgba(90,136,204,0.30)"
-          }}
-        />
-        <View
-          style={{
-            position: "absolute",
-            top: -20,
-            right: -10,
-            width: 220,
-            height: 220,
-            borderRadius: 110,
-            backgroundColor: "rgba(255,255,255,0.10)"
-          }}
-        />
-        <View
-          style={{
-            position: "absolute",
-            bottom: 100,
-            left: -30,
-            width: 170,
-            height: 170,
-            borderRadius: 85,
-            backgroundColor: "rgba(168,240,233,0.14)"
-          }}
-        />
+        
+        
+        
 
         <ScrollView
           contentContainerStyle={{ padding: 20, paddingBottom: 28 }}

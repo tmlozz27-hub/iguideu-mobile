@@ -67,7 +67,7 @@ export default function GuiasScreen() {
       style={{ flex: 1, backgroundColor: "#76A9E8" }}
       resizeMode="cover"
     >
-      <View style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, backgroundColor: "rgba(90,136,204,0.35)" }} />
+      
 
       <ScrollView
         style={{ flex: 1 }}

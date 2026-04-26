@@ -103,16 +103,7 @@ export default function LoginScreen() {
         style={{ flex: 1 }}
         resizeMode="cover"
       >
-        <View
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(183,209,245,0.55)",
-          }}
-        />
+        
 
         <KeyboardAvoidingView
           style={{ flex: 1 }}

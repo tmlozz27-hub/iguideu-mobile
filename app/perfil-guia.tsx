@@ -156,38 +156,9 @@ export default function PerfilGuia() {
       style={{ flex: 1, backgroundColor: "#0B3E91" }}
       resizeMode="cover"
     >
-      <View
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: "rgba(11,62,145,0.74)"
-        }}
-      />
-      <View
-        style={{
-          position: "absolute",
-          top: -40,
-          right: -20,
-          width: 220,
-          height: 220,
-          borderRadius: 110,
-          backgroundColor: "rgba(88,196,255,0.14)"
-        }}
-      />
-      <View
-        style={{
-          position: "absolute",
-          bottom: 140,
-          left: -40,
-          width: 180,
-          height: 180,
-          borderRadius: 90,
-          backgroundColor: "rgba(18,184,166,0.10)"
-        }}
-      />
+      
+      
+      
 
       <ScrollView
         style={{ flex: 1 }}
