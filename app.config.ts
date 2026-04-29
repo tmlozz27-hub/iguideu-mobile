@@ -30,7 +30,8 @@ export default {
           merchantIdentifier: "merchant.com.auroragalactic.iguideu",
           enableGooglePay: true
         }
-      ]
+      ],
+      "@react-native-google-signin/google-signin"
     ],
     extra: {
       stripePublishableKey: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",

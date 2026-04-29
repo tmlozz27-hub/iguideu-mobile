@@ -1,6 +1,7 @@
 import { apiPost } from "@/config/api";
 import { translations } from "@/utils/i18n";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -15,19 +16,12 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import * as WebBrowser from "expo-web-browser";
-import * as Google from "expo-auth-session/providers/google";
-
-WebBrowser.maybeCompleteAuthSession();
 
 const lang = "es";
 const t = translations[lang];
 
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
-
-const GOOGLE_ANDROID_CLIENT_ID =
-  "1029517266976-b0ag2bt7u88hj3sb39ffc67umpa83veb.apps.googleusercontent.com";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -37,9 +31,13 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    androidClientId: GOOGLE_ANDROID_CLIENT_ID,
-  });
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId:
+        "661263042735-677bo9vuvgkds5g80h2phrn683rv3d88.apps.googleusercontent.com",
+      offlineAccess: false,
+    });
+  }, []);
 
   useEffect(() => {
     AsyncStorage.getItem(TOKEN_KEY).then((token) => {
@@ -47,11 +45,55 @@ export default function LoginScreen() {
     });
   }, [router]);
 
-  useEffect(() => {
-    if (response?.type === "success") {
-      Alert.alert("Google", "Login Google OK");
+  const saveSession = async (token: string, userEmail?: string) => {
+    await AsyncStorage.setItem(TOKEN_KEY, String(token));
+    if (userEmail) {
+      await AsyncStorage.setItem(USER_EMAIL_KEY, String(userEmail));
     }
-  }, [response]);
+    router.replace("/(tabs)");
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      setLoading(true);
+
+      await GoogleSignin.hasPlayServices({
+        showPlayServicesUpdateDialog: true,
+      });
+
+      await GoogleSignin.signOut();
+
+      const userInfo: any = await GoogleSignin.signIn();
+
+      let idToken =
+        userInfo?.idToken ||
+        userInfo?.data?.idToken ||
+        "";
+
+      if (!idToken) {
+        const tokens = await GoogleSignin.getTokens();
+        idToken = tokens.idToken;
+      }
+
+      if (!idToken) {
+        Alert.alert("Error", "Google no devolvió token");
+        return;
+      }
+
+      const data = await apiPost("/api/auth/google", { token: idToken });
+
+      if (!data?.token) {
+        Alert.alert("Error", "Google no validado por backend");
+        return;
+      }
+
+      await saveSession(data.token, data.email);
+    } catch (e: any) {
+      Alert.alert("Error Google", e?.message || "No se pudo iniciar Google");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogin = async () => {
     const emailClean = String(email || "").trim().toLowerCase();
@@ -75,22 +117,11 @@ export default function LoginScreen() {
         return;
       }
 
-      await AsyncStorage.setItem(TOKEN_KEY, String(data.token));
-      await AsyncStorage.setItem(USER_EMAIL_KEY, emailClean);
-
-      router.replace("/(tabs)");
+      await saveSession(data.token, emailClean);
     } catch {
       Alert.alert("Error", "Servidor");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    try {
-      await promptAsync();
-    } catch {
-      Alert.alert("Error", "No se pudo iniciar Google");
     }
   };
 
@@ -103,8 +134,6 @@ export default function LoginScreen() {
         style={{ flex: 1 }}
         resizeMode="cover"
       >
-        
-
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -166,6 +195,8 @@ export default function LoginScreen() {
                 placeholderTextColor="#7B879B"
                 value={email}
                 onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
                 style={{
                   backgroundColor: "rgba(255,255,255,0.6)",
                   borderRadius: 18,
@@ -199,20 +230,14 @@ export default function LoginScreen() {
               </View>
 
               <Pressable onPress={() => router.push("/forgot-password")}>
-                <Text
-                  style={{
-                    textAlign: "right",
-                    marginTop: 10,
-                    color: "#173B6B",
-                    fontWeight: "600",
-                  }}
-                >
+                <Text style={{ textAlign: "right", marginTop: 10, color: "#173B6B", fontWeight: "600" }}>
                   {t.forgot}
                 </Text>
               </Pressable>
 
               <Pressable
                 onPress={handleLogin}
+                disabled={loading}
                 style={{
                   marginTop: 16,
                   backgroundColor: "#173B6B",
@@ -228,14 +253,13 @@ export default function LoginScreen() {
 
               <Pressable
                 onPress={handleGoogleLogin}
-                disabled={!request}
+                disabled={loading}
                 style={{
                   marginTop: 10,
                   backgroundColor: "#ffffff",
                   padding: 14,
                   borderRadius: 20,
                   alignItems: "center",
-                  opacity: request ? 1 : 0.7,
                 }}
               >
                 <Text style={{ fontWeight: "700" }}>{t.google}</Text>
@@ -244,7 +268,7 @@ export default function LoginScreen() {
               <Pressable
                 style={{
                   marginTop: 10,
-                  backgroundColor: "#000000",
+                  backgroundColor: "#000",
                   padding: 14,
                   borderRadius: 20,
                   alignItems: "center",
@@ -254,30 +278,11 @@ export default function LoginScreen() {
               </Pressable>
 
               <View style={{ alignItems: "center", marginTop: 14 }}>
-                <Text style={{ fontSize: 12, color: "rgba(23,59,107,0.7)" }}>
-                  <Text
-                    onPress={() => router.push("/legal/terms")}
-                    style={{ textDecorationLine: "underline" }}
-                  >
-                    {t.terms}
-                  </Text>
+                <Text style={{ fontSize: 12 }}>
+                  <Text onPress={() => router.push("/legal/terms")}>{t.terms}</Text>
                   {" y "}
-                  <Text
-                    onPress={() => router.push("/legal/privacy")}
-                    style={{ textDecorationLine: "underline" }}
-                  >
-                    {t.privacy}
-                  </Text>
+                  <Text onPress={() => router.push("/legal/privacy")}>{t.privacy}</Text>
                 </Text>
-              </View>
-
-              <View style={{ alignItems: "center", marginTop: 16 }}>
-                <Text>{t.noAccount}</Text>
-                <Pressable onPress={() => router.push("/select-role")}>
-                  <Text style={{ fontWeight: "800", color: "#173B6B" }}>
-                    {t.register}
-                  </Text>
-                </Pressable>
               </View>
             </View>
           </ScrollView>
