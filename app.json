@@ -11,6 +11,15 @@
     },
     "assetBundlePatterns": [
       "**/*"
-    ]
+    ],
+    "android": {
+      "package": "com.auroragalactic.iguideu",
+      "permissions": ["ACCESS_FINE_LOCATION"],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyC-qFKhmFTQC1b1p7kd7CBLeDIYlrM1cAk"
+        }
+      }
+    }
   }
 }
