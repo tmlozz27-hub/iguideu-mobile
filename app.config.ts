@@ -9,6 +9,7 @@ export default {
     orientation: "portrait",
     userInterfaceStyle: "automatic",
     assetBundlePatterns: ["**/*"],
+
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.auroragalactic.iguideu",
@@ -16,13 +17,22 @@ export default {
         ITSAppUsesNonExemptEncryption: false
       }
     },
+
     android: {
       package: "com.auroragalactic.iguideu",
-      usesCleartextTraffic: true
+      usesCleartextTraffic: true,
+      permissions: ["ACCESS_FINE_LOCATION"],
+      config: {
+        googleMaps: {
+          apiKey: "AIzaSyC-qFKhmFTQC1b1p7kd7CBLeDIYlrM1cAk"
+        }
+      }
     },
+
     web: {
       bundler: "metro"
     },
+
     plugins: [
       [
         "@stripe/stripe-react-native",
@@ -33,6 +43,7 @@ export default {
       ],
       "@react-native-google-signin/google-signin"
     ],
+
     extra: {
       stripePublishableKey: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
       stripeMode: process.env.EXPO_PUBLIC_STRIPE_MODE || "test",
