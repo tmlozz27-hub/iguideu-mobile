@@ -41,7 +41,12 @@ export default {
           enableGooglePay: true
         }
       ],
-      "@react-native-google-signin/google-signin"
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          iosUrlScheme: "com.googleusercontent.apps.661263042735-677bo9vuvgkds5g80h2phrn683rv3d88"
+        }
+      ]
     ],
 
     extra: {

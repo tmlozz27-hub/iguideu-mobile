@@ -2,13 +2,13 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   FlatList,
+  ImageBackground,
   KeyboardAvoidingView,
   Platform,
   Pressable,
   Text,
   TextInput,
-  View,
-  ImageBackground
+  View
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams } from "expo-router";
@@ -43,36 +43,42 @@ export default function ChatScreen() {
   const [senderId, setSenderId] = useState("");
   const [senderName, setSenderName] = useState("");
   const [senderEmail, setSenderEmail] = useState("");
-  const [senderType, setSenderType] = useState("traveler");
-
-  async function getAuthHeaders() {
-    const token = await AsyncStorage.getItem(TOKEN_KEY);
-    if (!token) throw new Error("No hay sesión activa.");
-    return { Authorization: `Bearer ${token}` };
-  }
+  const [senderType] = useState("traveler");
 
   async function loadMe() {
-    const headers = await getAuthHeaders();
-    const me = await apiGet("/api/auth/me", headers);
-    const user = (me as any)?.user || me || {};
+    const savedEmail = String((await AsyncStorage.getItem(USER_EMAIL_KEY)) || "").trim().toLowerCase();
 
-    setSenderId(String(user?._id || user?.id || "").trim());
-    setSenderName(String(user?.name || "").trim());
-    setSenderEmail(String(user?.email || "").trim());
-    setSenderType("traveler");
+    try {
+      const me = await apiGet("/api/auth/me");
+      const user = (me as any)?.user || me || {};
+
+      setSenderId(String(user?._id || user?.id || savedEmail || "traveler").trim());
+      setSenderName(String(user?.name || "Viajero").trim());
+      setSenderEmail(String(user?.email || savedEmail).trim().toLowerCase());
+    } catch {
+      setSenderId(savedEmail || "traveler");
+      setSenderName("Viajero");
+      setSenderEmail(savedEmail);
+    }
   }
 
   async function loadMessages() {
     if (!bookingId) return;
 
     const data = await apiGet(`/api/chat/messages?bookingId=${bookingId}`);
-    const list = Array.isArray(data) ? data : (data as any)?.items || [];
+    const list = Array.isArray(data)
+      ? data
+      : Array.isArray((data as any)?.items)
+        ? (data as any).items
+        : Array.isArray((data as any)?.messages)
+          ? (data as any).messages
+          : [];
 
     setMessages(list);
 
     setTimeout(() => {
       listRef.current?.scrollToEnd({ animated: false });
-    }, 50);
+    }, 80);
   }
 
   async function refreshChat() {
@@ -88,25 +94,47 @@ export default function ChatScreen() {
   }
 
   async function sendMessage() {
-    const clean = text.trim();
-    if (!clean || !bookingId || !senderId) return;
+    const clean = String(text || "").trim();
+
+    if (!clean) {
+      return;
+    }
+
+    if (!bookingId) {
+      Alert.alert("Error", "Falta bookingId del chat.");
+      return;
+    }
+
+    const finalSenderId = String(senderId || senderEmail || "traveler").trim();
+    const finalSenderEmail = String(senderEmail || "").trim().toLowerCase();
 
     try {
-      await apiPost("/api/chat/messages", {
-        bookingId,
-        senderId,
-        senderName,
-        senderEmail,
+      const body = {
+        bookingId: String(bookingId),
+        senderId: finalSenderId,
+        senderName: senderName || "Viajero",
+        senderEmail: finalSenderEmail,
         senderType,
-        text: clean
-      });
+        text: clean,
+        message: clean
+      };
+
+      try {
+        await apiPost("/api/chat/messages", body);
+      } catch (e: any) {
+        if (String(e?.message || "").includes("404")) {
+          await apiPost("/api/chat/send", body);
+        } else {
+          throw e;
+        }
+      }
 
       setText("");
       await loadMessages();
 
       setTimeout(() => {
         listRef.current?.scrollToEnd({ animated: true });
-      }, 100);
+      }, 120);
     } catch (e: any) {
       Alert.alert("Error", e?.message || "No se pudo enviar");
     }
@@ -128,9 +156,6 @@ export default function ChatScreen() {
       style={{ flex: 1 }}
       resizeMode="cover"
     >
-      {/* Overlay azul */}
-      
-
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -144,34 +169,27 @@ export default function ChatScreen() {
             paddingBottom: 20
           }}
           renderItem={({ item }) => {
-            const body =
-              item.text || item.message || item.body || item.content || "";
-
-            const mine = String(item.senderId) === String(senderId);
+            const body = item.text || item.message || item.body || item.content || "";
+            const mine = String(item.senderId || "") === String(senderId || "");
 
             return (
-              <View style={{
-                marginBottom: 10,
-                alignItems: mine ? "flex-end" : "flex-start"
-              }}>
-                <View style={{
-                  maxWidth: "80%",
-                  borderRadius: 18,
-                  padding: 14,
-                  backgroundColor: mine
-                    ? "#12b8a6"
-                    : "rgba(255,255,255,0.15)",
-                  borderWidth: 1,
-                  borderColor: mine
-                    ? "#12b8a6"
-                    : "rgba(255,255,255,0.2)"
-                }}>
-                  <Text style={{
-                    color: "#fff",
-                    fontSize: 16
-                  }}>
-                    {body}
-                  </Text>
+              <View
+                style={{
+                  marginBottom: 10,
+                  alignItems: mine ? "flex-end" : "flex-start"
+                }}
+              >
+                <View
+                  style={{
+                    maxWidth: "80%",
+                    borderRadius: 18,
+                    padding: 14,
+                    backgroundColor: mine ? "#12b8a6" : "rgba(255,255,255,0.20)",
+                    borderWidth: 1,
+                    borderColor: mine ? "#12b8a6" : "rgba(255,255,255,0.30)"
+                  }}
+                >
+                  <Text style={{ color: "#fff", fontSize: 16 }}>{body}</Text>
                 </View>
               </View>
             );
@@ -183,19 +201,23 @@ export default function ChatScreen() {
           }
         />
 
-        <View style={{
-          paddingHorizontal: 14,
-          paddingBottom: bottomGap,
-          paddingTop: 8
-        }}>
-          <View style={{
-            flexDirection: "row",
-            alignItems: "center",
-            backgroundColor: "rgba(255,255,255,0.12)",
-            borderRadius: 24,
-            paddingHorizontal: 10,
-            paddingVertical: 6
-          }}>
+        <View
+          style={{
+            paddingHorizontal: 14,
+            paddingBottom: bottomGap,
+            paddingTop: 8
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: "rgba(255,255,255,0.18)",
+              borderRadius: 24,
+              paddingHorizontal: 10,
+              paddingVertical: 6
+            }}
+          >
             <TextInput
               value={text}
               onChangeText={setText}
@@ -219,12 +241,7 @@ export default function ChatScreen() {
                 paddingVertical: 10
               }}
             >
-              <Text style={{
-                color: "#fff",
-                fontWeight: "800"
-              }}>
-                Enviar
-              </Text>
+              <Text style={{ color: "#fff", fontWeight: "800" }}>Enviar</Text>
             </Pressable>
           </View>
         </View>

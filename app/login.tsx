@@ -46,10 +46,14 @@ export default function LoginScreen() {
   }, [router]);
 
   const saveSession = async (token: string, userEmail?: string) => {
+    const cleanEmail = String(userEmail || "").trim().toLowerCase();
+
     await AsyncStorage.setItem(TOKEN_KEY, String(token));
-    if (userEmail) {
-      await AsyncStorage.setItem(USER_EMAIL_KEY, String(userEmail));
+
+    if (cleanEmail) {
+      await AsyncStorage.setItem(USER_EMAIL_KEY, cleanEmail);
     }
+
     router.replace("/(tabs)");
   };
 
@@ -87,7 +91,16 @@ export default function LoginScreen() {
         return;
       }
 
-      await saveSession(data.token, data.email);
+      const emailFromBackend =
+        data?.email ||
+        data?.user?.email ||
+        data?.userEmail ||
+        data?.profile?.email ||
+        userInfo?.user?.email ||
+        userInfo?.data?.user?.email ||
+        "";
+
+      await saveSession(data.token, emailFromBackend);
     } catch (e: any) {
       Alert.alert("Error Google", e?.message || "No se pudo iniciar Google");
     } finally {
