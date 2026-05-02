@@ -296,6 +296,15 @@ export default function LoginScreen() {
                   {" y "}
                   <Text onPress={() => router.push("/legal/privacy")}>{t.privacy}</Text>
                 </Text>
+
+                <Pressable
+                  onPress={() => router.push("/select-role")}
+                  style={{ marginTop: 12 }}
+                >
+                  <Text style={{ color: "#173B6B", fontWeight: "900", fontSize: 15 }}>
+                    ¿No tenés cuenta? Registrarse
+                  </Text>
+                </Pressable>
               </View>
             </View>
           </ScrollView>
