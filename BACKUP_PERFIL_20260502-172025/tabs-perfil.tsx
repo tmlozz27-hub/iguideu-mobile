@@ -47,10 +47,7 @@ export default function ProfileScreen() {
 
   const loadUser = useCallback(async () => {
     try {
-      setLoading(true);
-
       const token = await AsyncStorage.getItem(TOKEN_KEY);
-      const storedEmail = await AsyncStorage.getItem(USER_EMAIL_KEY);
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
       const cachedRaw = await AsyncStorage.getItem(PROFILE_CACHE_KEY);
@@ -60,16 +57,13 @@ export default function ProfileScreen() {
       const u = data?.user || data || {};
       const profile = u?.travelerProfile || u?.profile || {};
 
-      const finalEmail = firstNonEmpty(
-        u?.email,
-        data?.email,
-        data?.user?.email,
-        profile?.email,
-        cached?.email,
-        storedEmail
-      );
+      // 🔥 ÚNICO CAMBIO
+      const savedEmail = String((await AsyncStorage.getItem(USER_EMAIL_KEY)) || "").trim().toLowerCase();
 
-      setUser({ ...u, email: finalEmail });
+      setUser({
+        ...u,
+        email: firstNonEmpty(u?.email, profile?.email, cached?.email, savedEmail)
+      });
 
       setName(firstNonEmpty(u?.name, profile?.name, cached?.name));
       setLastName(firstNonEmpty(u?.lastName, profile?.lastName, profile?.surname, cached?.lastName));
@@ -92,8 +86,7 @@ export default function ProfileScreen() {
         ) || null
       );
     } catch {
-      const storedEmail = await AsyncStorage.getItem(USER_EMAIL_KEY);
-      setUser({ email: storedEmail || "" });
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -179,11 +172,7 @@ export default function ProfileScreen() {
         style={{ flex: 1 }}
         resizeMode="cover"
       >
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{ paddingBottom: 40 }}
-          showsVerticalScrollIndicator={false}
-        >
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 40 }}>
           <View style={{ paddingTop: 48, paddingHorizontal: 24, paddingBottom: 30 }}>
             <Text style={titleMain}>I GUIDE U</Text>
             <Text style={titleSub}>Perfil de viajero</Text>
@@ -202,61 +191,14 @@ export default function ProfileScreen() {
           <View style={card}>
             <Text style={section}>Información personal</Text>
 
-            {saved ? (
-              <View
-                style={{
-                  backgroundColor: "rgba(22,163,74,0.14)",
-                  borderWidth: 1,
-                  borderColor: "rgba(22,163,74,0.30)",
-                  borderRadius: 16,
-                  paddingHorizontal: 14,
-                  paddingVertical: 12,
-                  marginBottom: 16
-                }}
-              >
-                <Text style={{ color: "#166534", fontSize: 15, fontWeight: "800" }}>
-                  Perfil guardado correctamente
-                </Text>
-              </View>
-            ) : null}
-
             <Text style={label}>Email</Text>
             <Text style={emailText}>{loading ? "Cargando..." : user?.email || "-"}</Text>
 
             <Text style={label}>Nombre</Text>
-            <TextInput value={name} onChangeText={(value) => { setName(value); setSaved(false); }} placeholder="Tu nombre" placeholderTextColor="#6b7280" style={input} />
+            <TextInput value={name} onChangeText={setName} style={input} />
 
             <Text style={label}>Apellido</Text>
-            <TextInput value={lastName} onChangeText={(value) => { setLastName(value); setSaved(false); }} placeholder="Tu apellido" placeholderTextColor="#6b7280" style={input} />
-
-            <Text style={label}>País de residencia</Text>
-            <TextInput value={country} onChangeText={(value) => { setCountry(value); setSaved(false); }} placeholder="Tu país de residencia" placeholderTextColor="#6b7280" style={input} />
-
-            <Text style={label}>Ciudad</Text>
-            <TextInput value={city} onChangeText={(value) => { setCity(value); setSaved(false); }} placeholder="Tu ciudad" placeholderTextColor="#6b7280" style={input} />
-
-            <Text style={label}>Idioma principal</Text>
-            <TextInput value={language} onChangeText={(value) => { setLanguage(value); setSaved(false); }} placeholder="Tu idioma principal" placeholderTextColor="#6b7280" style={input} />
-
-            <Text style={label}>Teléfono</Text>
-            <TextInput value={phone} onChangeText={(value) => { setPhone(value); setSaved(false); }} placeholder="Tu número de contacto" placeholderTextColor="#6b7280" style={input} />
-
-            <Text style={label}>Tipo de viaje</Text>
-            <TextInput value={travelStyle} onChangeText={(value) => { setTravelStyle(value); setSaved(false); }} placeholder="Relax, aventura, cultura, familia" placeholderTextColor="#6b7280" style={input} />
-
-            <Text style={label}>Intereses</Text>
-            <TextInput value={interests} onChangeText={(value) => { setInterests(value); setSaved(false); }} placeholder="Historia, gastronomía, naturaleza, arte" placeholderTextColor="#6b7280" style={input} />
-
-            <Text style={label}>Sobre vos</Text>
-            <TextInput value={about} onChangeText={(value) => { setAbout(value); setSaved(false); }} placeholder="Contá brevemente qué experiencia te gustaría vivir" placeholderTextColor="#6b7280" multiline numberOfLines={4} textAlignVertical="top" style={[input, { minHeight: 120, paddingTop: 14 }]} />
-
-            <Pressable onPress={handleSave} disabled={saving} style={[buttonPrimary, { backgroundColor: saving ? "#5a6b85" : saved ? "#16a34a" : "#173B6B" }]}>
-              <Text style={buttonPrimaryText}>{saving ? "Guardando..." : saved ? "✓ Perfil guardado" : "Guardar"}</Text>
-            </Pressable>
-
-            <Pressable onPress={handleLogout} style={buttonDanger}>
-              <Text style={buttonDangerText}>Cerrar sesión</Text>
-            </Pressable>
+            <TextInput value={lastName} onChangeText={setLastName} style={input} />
           </View>
         </ScrollView>
       </ImageBackground>
@@ -264,15 +206,11 @@ export default function ProfileScreen() {
   );
 }
 
-const titleMain = { color: "#173B6B", fontSize: 36, fontWeight: "900" as const, textAlign: "center" as const };
-const titleSub = { color: "#173B6B", fontSize: 26, fontWeight: "800" as const, textAlign: "center" as const, marginTop: 10, marginBottom: 20 };
-const photoBox = { alignSelf: "center" as const, width: 180, height: 180, borderRadius: 90, overflow: "hidden" as const, backgroundColor: "rgba(255,255,255,0.25)", borderWidth: 3, borderColor: "#ffffff", justifyContent: "center" as const, alignItems: "center" as const };
-const card = { backgroundColor: "rgba(255,255,255,0.20)", borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 22, borderWidth: 1, borderColor: "rgba(255,255,255,0.25)" };
-const section = { fontSize: 22, fontWeight: "800" as const, marginBottom: 18, color: "#173B6B" };
-const label = { fontSize: 14, fontWeight: "700" as const, marginBottom: 6, color: "#374151" };
-const emailText = { fontSize: 16, marginBottom: 16, color: "#111827" };
-const input = { backgroundColor: "rgba(255,255,255,0.6)", borderRadius: 16, padding: 14, marginBottom: 12, color: "#173B6B" };
-const buttonPrimary = { padding: 16, borderRadius: 16, alignItems: "center" as const, marginTop: 12 };
-const buttonPrimaryText = { color: "#ffffff", fontWeight: "800" as const, fontSize: 16 };
-const buttonDanger = { backgroundColor: "#dc2626", padding: 16, borderRadius: 16, alignItems: "center" as const, marginTop: 12 };
-const buttonDangerText = { color: "#ffffff", fontWeight: "800" as const, fontSize: 16 };
+const titleMain = { color:"#173B6B", fontSize:36, fontWeight:"900", textAlign:"center" };
+const titleSub = { color:"#173B6B", fontSize:26, fontWeight:"800", textAlign:"center" };
+const photoBox = { alignSelf:"center", width:180, height:180, borderRadius:90, overflow:"hidden", backgroundColor:"rgba(255,255,255,0.25)", borderWidth:3, borderColor:"#fff", justifyContent:"center", alignItems:"center" };
+const card = { backgroundColor:"rgba(255,255,255,0.20)", borderTopLeftRadius:30, borderTopRightRadius:30, padding:22 };
+const section = { fontSize:22, fontWeight:"800", marginBottom:18, color:"#173B6B" };
+const label = { fontSize:14, fontWeight:"700", marginBottom:6 };
+const emailText = { fontSize:16, marginBottom:16 };
+const input = { backgroundColor:"#fff", borderRadius:16, padding:14, marginBottom:12 };

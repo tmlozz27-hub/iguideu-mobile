@@ -46,7 +46,7 @@ export default function TabsLayout() {
       position: "absolute" as const,
       left: 14,
       right: 14,
-      bottom: 30, // 🔥 SUBE EL TAB (ANTES ESTABA MUY ABAJO)
+      bottom: 30,
       height: 60,
       borderRadius: 22,
       backgroundColor: "rgba(255,255,255,0.9)",
@@ -60,7 +60,7 @@ export default function TabsLayout() {
     tabBarInactiveTintColor: "#15539A",
     tabBarLabelStyle: {
       fontSize: 11,
-      fontWeight: "800"
+      fontWeight: "800" as const   // 🔥 ESTE ES EL FIX
     }
   };
 

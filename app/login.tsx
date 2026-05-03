@@ -84,23 +84,28 @@ export default function LoginScreen() {
         return;
       }
 
-      const data = await apiPost("/api/auth/google", { token: idToken });
+      const emailFromGoogle =
+        userInfo?.user?.email ||
+        userInfo?.data?.user?.email ||
+        "";
+
+      const nameFromGoogle =
+        userInfo?.user?.name ||
+        userInfo?.data?.user?.name ||
+        "";
+
+      const data = await apiPost("/api/auth/google", {
+        token: idToken,
+        email: emailFromGoogle,
+        name: nameFromGoogle,
+      });
 
       if (!data?.token) {
         Alert.alert("Error", "Google no validado por backend");
         return;
       }
 
-      const emailFromBackend =
-        data?.email ||
-        data?.user?.email ||
-        data?.userEmail ||
-        data?.profile?.email ||
-        userInfo?.user?.email ||
-        userInfo?.data?.user?.email ||
-        "";
-
-      await saveSession(data.token, emailFromBackend);
+      await saveSession(data.token, emailFromGoogle);
     } catch (e: any) {
       Alert.alert("Error Google", e?.message || "No se pudo iniciar Google");
     } finally {

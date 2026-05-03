@@ -4,18 +4,15 @@
     "strict": false,
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "*"
-      ]
+      "@/*": ["*"]
     },
     "allowSyntheticDefaultImports": true
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx"
-  ],
+  "include": ["**/*.ts", "**/*.tsx"],
   "exclude": [
     "node_modules",
+    "BACKUP_PERFIL_*",
+    "BACKUP_*",
     "__DISABLED__ROUTES",
     "_backup_api_dupes_20260128_000957"
   ]
