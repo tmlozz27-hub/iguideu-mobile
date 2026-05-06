@@ -31,10 +31,8 @@ export default function TabsLayout() {
   useEffect(() => {
     if (role !== "guide") return;
 
-    const allowed = pathname === "/perfil" || pathname === "/(tabs)/perfil";
-
-    if (!allowed) {
-      router.replace("/(tabs)/perfil");
+    if (pathname !== "/perfil-guia") {
+      router.replace("/perfil-guia");
     }
   }, [pathname, role, router]);
 
@@ -43,24 +41,7 @@ export default function TabsLayout() {
   const screenOptions = {
     headerShown: false,
     tabBarStyle: {
-      position: "absolute" as const,
-      left: 14,
-      right: 14,
-      bottom: 30,
-      height: 60,
-      borderRadius: 22,
-      backgroundColor: "rgba(255,255,255,0.9)",
-      borderTopWidth: 0,
-      elevation: 0,
-      shadowOpacity: 0,
-      paddingBottom: 6,
-      paddingTop: 6
-    },
-    tabBarActiveTintColor: "#15539A",
-    tabBarInactiveTintColor: "#15539A",
-    tabBarLabelStyle: {
-      fontSize: 11,
-      fontWeight: "800" as const   // 🔥 ESTE ES EL FIX
+      display: "none" as const
     }
   };
 
@@ -73,47 +54,17 @@ export default function TabsLayout() {
         <Tabs.Screen name="index" options={{ href: null }} />
         <Tabs.Screen name="guias" options={{ href: null }} />
         <Tabs.Screen name="reservas" options={{ href: null }} />
-        <Tabs.Screen
-          name="perfil"
-          options={{
-            title: "Perfil",
-            tabBarIcon: TabIcon("person")
-          }}
-        />
+        <Tabs.Screen name="perfil" options={{ href: null }} />
       </Tabs>
     );
   }
 
   return (
     <Tabs screenOptions={screenOptions}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: "Inicio",
-          tabBarIcon: TabIcon("home")
-        }}
-      />
-      <Tabs.Screen
-        name="guias"
-        options={{
-          title: "Guías",
-          tabBarIcon: TabIcon("compass")
-        }}
-      />
-      <Tabs.Screen
-        name="reservas"
-        options={{
-          title: "Reservas",
-          tabBarIcon: TabIcon("calendar")
-        }}
-      />
-      <Tabs.Screen
-        name="perfil"
-        options={{
-          title: "Perfil",
-          tabBarIcon: TabIcon("person")
-        }}
-      />
+      <Tabs.Screen name="index" options={{ title: "Inicio", tabBarIcon: TabIcon("home") }} />
+      <Tabs.Screen name="guias" options={{ title: "Guías", tabBarIcon: TabIcon("compass") }} />
+      <Tabs.Screen name="reservas" options={{ title: "Reservas", tabBarIcon: TabIcon("calendar") }} />
+      <Tabs.Screen name="perfil" options={{ title: "Perfil", tabBarIcon: TabIcon("person") }} />
     </Tabs>
   );
 }
