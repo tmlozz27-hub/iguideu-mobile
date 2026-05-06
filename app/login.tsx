@@ -1,4 +1,4 @@
-import { apiPost } from "@/config/api";
+import { apiGet, apiPost } from "@/config/api";
 import { translations } from "@/utils/i18n";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
@@ -54,7 +54,19 @@ export default function LoginScreen() {
       await AsyncStorage.setItem(USER_EMAIL_KEY, cleanEmail);
     }
 
-    router.replace("/(tabs)");
+    try {
+      const me = await apiGet("/api/auth/me");
+      const role = me?.user?.role;
+
+      if (role === "guide") {
+        router.replace("/perfil-guia");
+        return;
+      }
+
+      router.replace("/(tabs)");
+    } catch {
+      router.replace("/(tabs)");
+    }
   };
 
   const handleGoogleLogin = async () => {
@@ -136,8 +148,8 @@ export default function LoginScreen() {
       }
 
       await saveSession(data.token, emailClean);
-    } catch {
-      Alert.alert("Error", "Servidor");
+    } catch (e: any) {
+      Alert.alert("Error", e?.message || "Servidor");
     } finally {
       setLoading(false);
     }

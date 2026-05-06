@@ -21,7 +21,16 @@ export default function SelectRoleScreen() {
         style={{ flex: 1 }}
         resizeMode="cover"
       >
-        
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(11,62,145,0.42)",
+          }}
+        />
 
         <ScrollView
           style={{ flex: 1 }}
