@@ -75,6 +75,7 @@ export default function PerfilViajero() {
     if (!cleanPhone) return Alert.alert("Error", "Ingresá tu teléfono");
     if (!acceptTerms) return Alert.alert("Error", "Debes aceptar los términos");
     if (!password.trim()) return Alert.alert("Error", "Ingresá una contraseña");
+
     if (password !== confirmPassword) {
       return Alert.alert("Error", "Las contraseñas no coinciden");
     }
@@ -146,6 +147,7 @@ export default function PerfilViajero() {
       ]);
     } catch (error: any) {
       const msg = String(error?.message || "");
+
       if (
         msg.toLowerCase().includes("already") ||
         msg.toLowerCase().includes("exists") ||
@@ -169,8 +171,6 @@ export default function PerfilViajero() {
         style={{ flex: 1 }}
         resizeMode="cover"
       >
-        
-
         <ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={{ paddingBottom: 40 }}
@@ -184,7 +184,9 @@ export default function PerfilViajero() {
               {mainPhoto ? (
                 <Image source={{ uri: mainPhoto.uri }} style={{ width: "100%", height: "100%" }} />
               ) : (
-                <Text style={{ color: "#173B6B", fontWeight: "800" }}>Agregar foto</Text>
+                <Text style={{ color: "#173B6B", fontWeight: "800" as const }}>
+                  Agregar foto
+                </Text>
               )}
             </Pressable>
           </View>
@@ -200,6 +202,7 @@ export default function PerfilViajero() {
               style={input}
               editable={!saving}
             />
+
             <TextInput
               value={email}
               onChangeText={setEmail}
@@ -210,6 +213,7 @@ export default function PerfilViajero() {
               style={input}
               editable={!saving}
             />
+
             <TextInput
               value={phone}
               onChangeText={setPhone}
@@ -218,6 +222,7 @@ export default function PerfilViajero() {
               style={input}
               editable={!saving}
             />
+
             <TextInput
               value={country}
               onChangeText={setCountry}
@@ -226,6 +231,7 @@ export default function PerfilViajero() {
               style={input}
               editable={!saving}
             />
+
             <TextInput
               value={city}
               onChangeText={setCity}
@@ -234,6 +240,7 @@ export default function PerfilViajero() {
               style={input}
               editable={!saving}
             />
+
             <TextInput
               value={language}
               onChangeText={setLanguage}
@@ -242,6 +249,7 @@ export default function PerfilViajero() {
               style={input}
               editable={!saving}
             />
+
             <TextInput
               value={travelStyle}
               onChangeText={setTravelStyle}
@@ -250,6 +258,7 @@ export default function PerfilViajero() {
               style={input}
               editable={!saving}
             />
+
             <TextInput
               value={interests}
               onChangeText={setInterests}
@@ -258,6 +267,7 @@ export default function PerfilViajero() {
               style={input}
               editable={!saving}
             />
+
             <TextInput
               value={about}
               onChangeText={setAbout}
@@ -268,7 +278,7 @@ export default function PerfilViajero() {
               editable={!saving}
             />
 
-            <View style={{ position: "relative" }}>
+            <View style={{ position: "relative" as const }}>
               <TextInput
                 value={password}
                 onChangeText={setPassword}
@@ -278,17 +288,18 @@ export default function PerfilViajero() {
                 style={[input, { paddingRight: 84 }]}
                 editable={!saving}
               />
+
               <Pressable
                 onPress={() => setShowPassword(!showPassword)}
-                style={{ position: "absolute", right: 14, top: 14 }}
+                style={{ position: "absolute" as const, right: 14, top: 14 }}
               >
-                <Text style={{ color: "#173B6B", fontWeight: "800" }}>
+                <Text style={{ color: "#173B6B", fontWeight: "800" as const }}>
                   {showPassword ? "Ocultar" : "Ver"}
                 </Text>
               </Pressable>
             </View>
 
-            <View style={{ position: "relative" }}>
+            <View style={{ position: "relative" as const }}>
               <TextInput
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
@@ -298,11 +309,12 @@ export default function PerfilViajero() {
                 style={[input, { paddingRight: 84 }]}
                 editable={!saving}
               />
+
               <Pressable
                 onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                style={{ position: "absolute", right: 14, top: 14 }}
+                style={{ position: "absolute" as const, right: 14, top: 14 }}
               >
-                <Text style={{ color: "#173B6B", fontWeight: "800" }}>
+                <Text style={{ color: "#173B6B", fontWeight: "800" as const }}>
                   {showConfirmPassword ? "Ocultar" : "Ver"}
                 </Text>
               </Pressable>
@@ -310,7 +322,11 @@ export default function PerfilViajero() {
 
             <Pressable
               onPress={() => setAcceptTerms(!acceptTerms)}
-              style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}
+              style={{
+                flexDirection: "row" as const,
+                alignItems: "center" as const,
+                marginTop: 8
+              }}
             >
               <View
                 style={{
@@ -321,12 +337,13 @@ export default function PerfilViajero() {
                   borderColor: "#4A8FDF",
                   backgroundColor: acceptTerms ? "#4A8FDF" : "transparent",
                   marginRight: 10,
-                  justifyContent: "center",
-                  alignItems: "center"
+                  justifyContent: "center" as const,
+                  alignItems: "center" as const
                 }}
               >
                 {acceptTerms && <Text style={{ color: "#fff" }}>✓</Text>}
               </View>
+
               <Text>Acepto términos</Text>
             </Pressable>
 
@@ -335,7 +352,7 @@ export default function PerfilViajero() {
               style={[button, saving ? { opacity: 0.7 } : null]}
               disabled={saving}
             >
-              <Text style={{ color: "#fff", fontWeight: "800" }}>
+              <Text style={{ color: "#fff", fontWeight: "800" as const }}>
                 {saving ? "GUARDANDO..." : "GUARDAR PERFIL"}
               </Text>
             </Pressable>
@@ -349,30 +366,30 @@ export default function PerfilViajero() {
 const titleMain = {
   color: "#173B6B",
   fontSize: 36,
-  fontWeight: "900",
-  textAlign: "center"
+  fontWeight: "900" as const,
+  textAlign: "center" as const
 };
 
 const titleSub = {
   color: "#fff",
   fontSize: 26,
-  fontWeight: "800",
-  textAlign: "center",
+  fontWeight: "800" as const,
+  textAlign: "center" as const,
   marginTop: 10,
   marginBottom: 20
 };
 
 const photoBox = {
-  alignSelf: "center",
+  alignSelf: "center" as const,
   width: 180,
   height: 180,
   borderRadius: 90,
-  overflow: "hidden",
+  overflow: "hidden" as const,
   backgroundColor: "rgba(255,255,255,0.25)",
   borderWidth: 3,
   borderColor: "#fff",
-  justifyContent: "center",
-  alignItems: "center"
+  justifyContent: "center" as const,
+  alignItems: "center" as const
 };
 
 const card = {
@@ -386,7 +403,7 @@ const card = {
 
 const section = {
   fontSize: 22,
-  fontWeight: "800",
+  fontWeight: "800" as const,
   marginBottom: 20,
   color: "#173B6B"
 };
@@ -402,6 +419,6 @@ const button = {
   backgroundColor: "#173B6B",
   padding: 16,
   borderRadius: 16,
-  alignItems: "center",
+  alignItems: "center" as const,
   marginTop: 12
 };
