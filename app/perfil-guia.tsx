@@ -4,7 +4,7 @@ import {
   Image,
   ImageBackground,
   Pressable,
- ScrollView,
+  ScrollView,
   Text,
   TextInput,
   View
@@ -37,9 +37,12 @@ export default function PerfilGuia() {
   const [mainPhoto, setMainPhoto] = useState<PickedMedia | null>(null);
   const [loading, setLoading] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [isExistingGuide, setIsExistingGuide] = useState(false);
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     loadGuideProfile();
@@ -47,28 +50,24 @@ export default function PerfilGuia() {
 
   const loadGuideProfile = async () => {
     try {
-      const token =
-        (await AsyncStorage.getItem("iguideu_token")) || "";
+      const token = (await AsyncStorage.getItem("iguideu_token")) || "";
 
       if (!token) return;
 
-      const response = await fetch(
-        `${API_BASE}/api/guides/me`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(`${API_BASE}/api/guides/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       const data = await response.json();
 
-      const guide =
-        data?.item ||
-        data?.guide ||
-        null;
+      const guide = data?.item || data?.guide || null;
 
       if (!guide) return;
+
+      setIsExistingGuide(true);
+      setAcceptTerms(true);
 
       setName(guide.name || "");
       setEmail(guide.email || "");
@@ -78,28 +77,31 @@ export default function PerfilGuia() {
       setLanguages(guide.languages || "");
       setBio(guide.bio || "");
 
-      setPriceHour(
-        guide.priceHour
-          ? String(guide.priceHour)
-          : ""
-      );
+      if (guide.guideType === "freelance" || guide.guideType === "certified") {
+        setGuideType(guide.guideType);
+      }
 
-      setPriceDay(
-        guide.priceDay
-          ? String(guide.priceDay)
-          : ""
-      );
+      setPriceHour(guide.priceHour ? String(guide.priceHour) : "");
+      setPriceDay(guide.priceDay ? String(guide.priceDay) : "");
+      setPrice24h(guide.price24h ? String(guide.price24h) : "");
 
-      setPrice24h(
-        guide.price24h
-          ? String(guide.price24h)
-          : ""
-      );
+      if (guide?.mediaDraft?.mainPhoto?.uri) {
+        setMainPhoto({ uri: guide.mediaDraft.mainPhoto.uri });
+      }
+
+      if (Array.isArray(guide?.mediaDraft?.galleryPhotos)) {
+        setGalleryPhotos(
+          guide.mediaDraft.galleryPhotos
+            .filter((item: any) => item?.uri)
+            .map((item: any) => ({ uri: item.uri }))
+        );
+      }
+
+      if (guide?.mediaDraft?.video?.uri) {
+        setVideo({ uri: guide.mediaDraft.video.uri });
+      }
     } catch (e) {
-      console.log(
-        "GUIDE_PROFILE_LOAD_ERROR",
-        e
-      );
+      console.log("GUIDE_PROFILE_LOAD_ERROR", e);
     }
   };
 
@@ -139,53 +141,84 @@ export default function PerfilGuia() {
     const cleanCountry = country.trim();
     const cleanLanguages = languages.trim();
     const cleanBio = bio.trim();
+    const cleanPassword = password.trim();
+    const cleanConfirmPassword = confirmPassword.trim();
 
-    if (!cleanName || !cleanEmail || !cleanPhone || !cleanCity || !cleanCountry) {
+    if (!cleanName || !cleanEmail) {
+      Alert.alert("Faltan datos", "Completá nombre y email.");
+      return;
+    }
+
+    if (!isExistingGuide && (!cleanPhone || !cleanCity || !cleanCountry)) {
       Alert.alert("Faltan datos", "Completá nombre, email, teléfono, ciudad y país.");
       return;
     }
 
-    if (!password || password.length < 6) {
-      Alert.alert("Error", "La contraseña debe tener al menos 6 caracteres");
-      return;
+    if (!isExistingGuide) {
+      if (!cleanPassword || cleanPassword.length < 6) {
+        Alert.alert("Error", "La contraseña debe tener al menos 6 caracteres");
+        return;
+      }
+
+      if (cleanPassword !== cleanConfirmPassword) {
+        Alert.alert("Error", "Las contraseñas no coinciden");
+        return;
+      }
+
+      if (!acceptTerms) {
+        Alert.alert("Error", "Debes aceptar los términos y condiciones");
+        return;
+      }
     }
 
-    if (password !== confirmPassword) {
-      Alert.alert("Error", "Las contraseñas no coinciden");
-      return;
-    }
+    if (isExistingGuide && cleanPassword) {
+      if (cleanPassword.length < 6) {
+        Alert.alert("Error", "La nueva contraseña debe tener al menos 6 caracteres");
+        return;
+      }
 
-    if (!acceptTerms) {
-      Alert.alert("Error", "Debes aceptar los términos y condiciones");
-      return;
+      if (cleanPassword !== cleanConfirmPassword) {
+        Alert.alert("Error", "Las contraseñas no coinciden");
+        return;
+      }
     }
 
     try {
       setLoading(true);
 
+      const token = (await AsyncStorage.getItem("iguideu_token")) || "";
+
+      const body: any = {
+        name: cleanName,
+        email: cleanEmail,
+        phone: cleanPhone,
+        city: cleanCity,
+        country: cleanCountry,
+        languages: cleanLanguages,
+        bio: cleanBio,
+        priceHour: Number(priceHour) || 0,
+        priceDay: Number(priceDay) || 0,
+        price24h: Number(price24h) || 0,
+        guideType,
+        active: true,
+        mediaDraft: {
+          mainPhoto: mainPhoto ? { uri: mainPhoto.uri } : null,
+          galleryPhotos: galleryPhotos.map((item) => ({ uri: item.uri })),
+          video: video ? { uri: video.uri } : null
+        }
+      };
+
+      if (cleanPassword) {
+        body.password = cleanPassword;
+      }
+
       const response = await fetch(`${API_BASE}/api/guides`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: cleanName,
-          email: cleanEmail,
-          phone: cleanPhone,
-          city: cleanCity,
-          country: cleanCountry,
-          languages: cleanLanguages,
-          bio: cleanBio,
-          priceHour: Number(priceHour) || 0,
-          priceDay: Number(priceDay) || 0,
-          price24h: Number(price24h) || 0,
-          guideType,
-          active: true,
-          password,
-          mediaDraft: {
-            mainPhoto: mainPhoto ? { uri: mainPhoto.uri } : null,
-            galleryPhotos: galleryPhotos.map((item) => ({ uri: item.uri })),
-            video: video ? { uri: video.uri } : null
-          }
-        })
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify(body)
       });
 
       const text = await response.text();
@@ -203,7 +236,15 @@ export default function PerfilGuia() {
         return;
       }
 
-      Alert.alert("Perfil creado", "Tu perfil de guía ya está activo.");
+      setIsExistingGuide(true);
+      setAcceptTerms(true);
+      setPassword("");
+      setConfirmPassword("");
+
+      Alert.alert(
+        isExistingGuide ? "Perfil actualizado" : "Perfil creado",
+        isExistingGuide ? "Tus cambios fueron guardados correctamente." : "Tu perfil de guía ya está activo."
+      );
     } catch (error: any) {
       Alert.alert("Error", error?.message || "No se pudo conectar con el servidor.");
     } finally {
@@ -219,47 +260,14 @@ export default function PerfilGuia() {
       style={{ flex: 1, backgroundColor: "#0B3E91" }}
       resizeMode="cover"
     >
-      <View
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: "rgba(11,62,145,0.74)"
-        }}
-      />
+      <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(11,62,145,0.74)" }} />
 
-      <View
-        style={{
-          position: "absolute",
-          top: -40,
-          right: -20,
-          width: 220,
-          height: 220,
-          borderRadius: 110,
-          backgroundColor: "rgba(88,196,255,0.14)"
-        }}
-      />
+      <View style={{ position: "absolute", top: -40, right: -20, width: 220, height: 220, borderRadius: 110, backgroundColor: "rgba(88,196,255,0.14)" }} />
 
-      <View
-        style={{
-          position: "absolute",
-          bottom: 140,
-          left: -40,
-          width: 180,
-          height: 180,
-          borderRadius: 90,
-          backgroundColor: "rgba(18,184,166,0.10)"
-        }}
-      />
+      <View style={{ position: "absolute", bottom: 140, left: -40, width: 180, height: 180, borderRadius: 90, backgroundColor: "rgba(18,184,166,0.10)" }} />
 
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
-        showsVerticalScrollIndicator={false}
-      >
-        <Text style={title}>Completar perfil de guía</Text>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+        <Text style={title}>{isExistingGuide ? "Editar perfil" : "Completar perfil"}</Text>
 
         <Pressable
           style={mainBox}
@@ -274,98 +282,56 @@ export default function PerfilGuia() {
           ) : (
             <View style={mainPlaceholder}>
               <Text style={mainPlaceholderTitle}>Foto principal</Text>
-              <Text style={mainPlaceholderSubtitle}>
-                Tocá para cargar tu imagen principal
-              </Text>
+              <Text style={mainPlaceholderSubtitle}>Tocá para cargar tu imagen principal</Text>
             </View>
           )}
         </Pressable>
 
         <View style={typeSection}>
-          <Pressable
-            onPress={() => setGuideType("certified")}
-            style={[typeButton, guideType === "certified" ? typeButtonActive : null]}
-          >
+          <Pressable onPress={() => setGuideType("certified")} style={[typeButton, guideType === "certified" ? typeButtonActive : null]}>
             <Text style={typeButtonText}>Certificado</Text>
           </Pressable>
 
-          <Pressable
-            onPress={() => setGuideType("freelance")}
-            style={[typeButton, guideType === "freelance" ? typeButtonActive : null]}
-          >
+          <Pressable onPress={() => setGuideType("freelance")} style={[typeButton, guideType === "freelance" ? typeButtonActive : null]}>
             <Text style={typeButtonText}>Freelance</Text>
             <Text style={typeHint}>sin título oficial</Text>
           </Pressable>
         </View>
 
         <View style={glassCard}>
-          <TextInput
-            placeholder="Nombre completo"
-            placeholderTextColor="#6b7280"
-            value={name}
-            onChangeText={setName}
-            style={input}
-            editable={!loading}
-          />
+          <TextInput placeholder="Nombre completo" placeholderTextColor="#6b7280" value={name} onChangeText={setName} style={input} editable={!loading} />
 
-          <TextInput
-            placeholder="Email"
-            placeholderTextColor="#6b7280"
-            value={email}
-            onChangeText={setEmail}
-            style={input}
-            editable={!loading}
-            autoCapitalize="none"
-            keyboardType="email-address"
-          />
+          <TextInput placeholder="Email" placeholderTextColor="#6b7280" value={email} onChangeText={setEmail} style={input} editable={!loading} autoCapitalize="none" keyboardType="email-address" />
 
-          <TextInput
-            placeholder="Teléfono"
-            placeholderTextColor="#6b7280"
-            value={phone}
-            onChangeText={setPhone}
-            style={input}
-            editable={!loading}
-          />
+          <TextInput placeholder="Teléfono" placeholderTextColor="#6b7280" value={phone} onChangeText={setPhone} style={input} editable={!loading} />
 
           <View style={rowFields}>
-            <TextInput
-              placeholder="Ciudad"
-              placeholderTextColor="#6b7280"
-              value={city}
-              onChangeText={setCity}
-              style={[input, halfInput]}
-              editable={!loading}
-            />
+            <TextInput placeholder="Ciudad" placeholderTextColor="#6b7280" value={city} onChangeText={setCity} style={[input, halfInput]} editable={!loading} />
 
-            <TextInput
-              placeholder="País"
-              placeholderTextColor="#6b7280"
-              value={country}
-              onChangeText={setCountry}
-              style={[input, halfInput]}
-              editable={!loading}
-            />
+            <TextInput placeholder="País" placeholderTextColor="#6b7280" value={country} onChangeText={setCountry} style={[input, halfInput]} editable={!loading} />
           </View>
 
           <Text style={section}>Fotos + Video</Text>
 
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={row}
-          >
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={row}>
             {gallerySlots.map((item, i) => (
               <View key={i} style={card}>
                 {item ? (
-                  <Image source={{ uri: item.uri }} style={img} />
+                  <Pressable
+                    onPress={() => {
+                      if (loading) return;
+                      const copy = [...galleryPhotos];
+                      copy.splice(i, 1);
+                      setGalleryPhotos(copy);
+                    }}
+                  >
+                    <Image source={{ uri: item.uri }} style={img} />
+                  </Pressable>
                 ) : (
                   <Pressable
                     onPress={async () => {
                       if (loading) return;
-
                       const picked = await pickImage();
-
                       if (picked) {
                         const copy = [...galleryPhotos];
                         copy[i] = picked;
@@ -386,10 +352,7 @@ export default function PerfilGuia() {
                   <Text style={videoEmoji}>🎬</Text>
                   <Text style={videoText}>Video</Text>
 
-                  <Pressable
-                    onPress={() => setVideo(null)}
-                    style={removeBtn}
-                  >
+                  <Pressable onPress={() => setVideo(null)} style={removeBtn}>
                     <Text style={removeBtnText}>Quitar</Text>
                   </Pressable>
                 </View>
@@ -401,110 +364,62 @@ export default function PerfilGuia() {
             </View>
           </ScrollView>
 
-          <TextInput
-            placeholder="Idiomas"
-            placeholderTextColor="#6b7280"
-            value={languages}
-            onChangeText={setLanguages}
-            style={input}
-            editable={!loading}
-          />
+          <TextInput placeholder="Idiomas" placeholderTextColor="#6b7280" value={languages} onChangeText={setLanguages} style={input} editable={!loading} />
 
-          <TextInput
-            placeholder="Bio"
-            placeholderTextColor="#6b7280"
-            value={bio}
-            onChangeText={setBio}
-            style={[input, bioInput]}
-            editable={!loading}
-            multiline
-            textAlignVertical="top"
-          />
+          <TextInput placeholder="Bio" placeholderTextColor="#6b7280" value={bio} onChangeText={setBio} style={[input, bioInput]} editable={!loading} multiline textAlignVertical="top" />
 
           <Text style={section}>Tarifas</Text>
 
-          <TextInput
-            placeholder="Precio por hora"
-            placeholderTextColor="#6b7280"
-            value={priceHour}
-            onChangeText={setPriceHour}
-            style={input}
-            editable={!loading}
-            keyboardType="numeric"
-          />
+          <TextInput placeholder="Precio por hora" placeholderTextColor="#6b7280" value={priceHour} onChangeText={setPriceHour} style={input} editable={!loading} keyboardType="numeric" />
 
-          <TextInput
-            placeholder="Precio jornada"
-            placeholderTextColor="#6b7280"
-            value={priceDay}
-            onChangeText={setPriceDay}
-            style={input}
-            editable={!loading}
-            keyboardType="numeric"
-          />
+          <TextInput placeholder="Precio jornada" placeholderTextColor="#6b7280" value={priceDay} onChangeText={setPriceDay} style={input} editable={!loading} keyboardType="numeric" />
 
-          <TextInput
-            placeholder="Precio 24h"
-            placeholderTextColor="#6b7280"
-            value={price24h}
-            onChangeText={setPrice24h}
-            style={input}
-            editable={!loading}
-            keyboardType="numeric"
-          />
+          <TextInput placeholder="Precio 24h" placeholderTextColor="#6b7280" value={price24h} onChangeText={setPrice24h} style={input} editable={!loading} keyboardType="numeric" />
 
           <View style={rulesBox}>
             <Text style={rulesTitle}>Antes de ofrecer tu servicio</Text>
-
-            <Text style={ruleLine}>
-              • Tus tarifas deben corresponder al servicio indicado.
-            </Text>
-
-            <Text style={ruleLine}>
-              • Comidas, transporte o entradas no están incluidas salvo que lo aclares expresamente.
-            </Text>
-
-            <Text style={ruleLine}>
-              • Si el recorrido implica gastos compartidos, deben quedar claros antes de confirmar.
-            </Text>
-
-            <Text style={ruleLine}>
-              • Mantené tu información, idiomas y precios siempre actualizados.
-            </Text>
-
-            <Text style={ruleLine}>
-              • Al aceptar una solicitud, el servicio queda registrado dentro de la plataforma.
-            </Text>
+            <Text style={ruleLine}>• Tus tarifas deben corresponder al servicio indicado.</Text>
+            <Text style={ruleLine}>• Comidas, transporte o entradas no están incluidas salvo que lo aclares expresamente.</Text>
+            <Text style={ruleLine}>• Si el recorrido implica gastos compartidos, deben quedar claros antes de confirmar.</Text>
+            <Text style={ruleLine}>• Mantené tu información, idiomas y precios siempre actualizados.</Text>
+            <Text style={ruleLine}>• Al aceptar una solicitud, el servicio queda registrado dentro de la plataforma.</Text>
           </View>
 
-          <TextInput
-            placeholder="Contraseña"
-            placeholderTextColor="#6b7280"
-            value={password}
-            onChangeText={setPassword}
-            style={input}
-            secureTextEntry
-            editable={!loading}
-          />
+          <Text style={section}>{isExistingGuide ? "Cambiar contraseña opcional" : "Crear contraseña"}</Text>
 
-          <TextInput
-            placeholder="Confirmar contraseña"
-            placeholderTextColor="#6b7280"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            style={input}
-            secureTextEntry
-            editable={!loading}
-          />
+          <View style={passwordRow}>
+            <TextInput
+              placeholder={isExistingGuide ? "Nueva contraseña opcional" : "Contraseña"}
+              placeholderTextColor="#6b7280"
+              value={password}
+              onChangeText={setPassword}
+              style={passwordInput}
+              secureTextEntry={!showPassword}
+              editable={!loading}
+            />
 
-          <Pressable
-            onPress={() => setAcceptTerms((prev) => !prev)}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginTop: 10
-            }}
-          >
+            <Pressable onPress={() => setShowPassword((prev) => !prev)} style={showButton} disabled={loading}>
+              <Text style={showButtonText}>{showPassword ? "Ocultar" : "Ver"}</Text>
+            </Pressable>
+          </View>
+
+          <View style={passwordRow}>
+            <TextInput
+              placeholder={isExistingGuide ? "Confirmar nueva contraseña" : "Confirmar contraseña"}
+              placeholderTextColor="#6b7280"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              style={passwordInput}
+              secureTextEntry={!showConfirmPassword}
+              editable={!loading}
+            />
+
+            <Pressable onPress={() => setShowConfirmPassword((prev) => !prev)} style={showButton} disabled={loading}>
+              <Text style={showButtonText}>{showConfirmPassword ? "Ocultar" : "Ver"}</Text>
+            </Pressable>
+          </View>
+
+          <Pressable onPress={() => setAcceptTerms((prev) => !prev)} style={{ flexDirection: "row", alignItems: "center", marginTop: 10 }}>
             <View
               style={{
                 width: 22,
@@ -518,32 +433,17 @@ export default function PerfilGuia() {
                 marginRight: 10
               }}
             >
-              {acceptTerms && (
-                <Text style={{ color: "#fff", fontWeight: "800" as const }}>
-                  ✓
-                </Text>
-              )}
+              {acceptTerms && <Text style={{ color: "#fff", fontWeight: "800" as const }}>✓</Text>}
             </View>
 
-            <Text style={{ color: "#fff", flex: 1 }}>
-              Acepto los términos y condiciones
-            </Text>
+            <Text style={{ color: "#fff", flex: 1 }}>Acepto los términos y condiciones</Text>
           </Pressable>
 
-          <Pressable
-            onPress={handleSave}
-            style={[btn, loading ? btnDisabled : null]}
-            disabled={loading}
-          >
-            <Text style={btnText}>
-              {loading ? "Guardando..." : "Guardar perfil"}
-            </Text>
+          <Pressable onPress={handleSave} style={[btn, loading ? btnDisabled : null]} disabled={loading}>
+            <Text style={btnText}>{loading ? "Guardando..." : isExistingGuide ? "Guardar cambios" : "Guardar perfil"}</Text>
           </Pressable>
 
-          <Pressable
-            onPress={() => router.push("/reservas-guia")}
-            style={secondaryBtn}
-          >
+          <Pressable onPress={() => router.push("/reservas-guia")} style={secondaryBtn}>
             <Text style={secondaryBtnText}>Mis reservas</Text>
           </Pressable>
         </View>
@@ -577,6 +477,30 @@ const input = {
   borderRadius: 12,
   marginBottom: 10,
   color: "#173B6B"
+};
+
+const passwordRow = {
+  flexDirection: "row" as const,
+  alignItems: "center" as const,
+  backgroundColor: "#fff",
+  borderRadius: 12,
+  marginBottom: 10
+};
+
+const passwordInput = {
+  flex: 1,
+  padding: 12,
+  color: "#173B6B"
+};
+
+const showButton = {
+  paddingHorizontal: 14,
+  paddingVertical: 12
+};
+
+const showButtonText = {
+  color: "#173B6B",
+  fontWeight: "800" as const
 };
 
 const halfInput = {

@@ -133,17 +133,6 @@ export default function HomeTabScreen() {
           >
             Descubrí tu próximo guía
           </Text>
-
-          <Text
-            style={{
-              color: "rgba(23,59,107,0.82)",
-              fontSize: 16,
-              textAlign: "center",
-              marginTop: 12,
-            }}
-          >
-            Elegí cómo querés explorar: por país, por cercanía o desde tus reservas.
-          </Text>
         </View>
 
         <View
