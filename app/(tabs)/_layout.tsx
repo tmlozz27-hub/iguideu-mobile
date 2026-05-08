@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Tabs, usePathname, useRouter } from "expo-router";
+import { Tabs } from "expo-router";
 import { apiGet } from "@/config/api";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function TabsLayout() {
-  const router = useRouter();
-  const pathname = usePathname();
   const [role, setRole] = useState<"traveler" | "guide" | null>(null);
 
   useEffect(() => {
@@ -15,6 +13,7 @@ export default function TabsLayout() {
       try {
         const data = await apiGet("/api/auth/me");
         const userRole = data?.user?.role === "guide" ? "guide" : "traveler";
+
         if (active) setRole(userRole);
       } catch {
         if (active) setRole("traveler");
@@ -27,14 +26,6 @@ export default function TabsLayout() {
       active = false;
     };
   }, []);
-
-  useEffect(() => {
-    if (role !== "guide") return;
-
-    if (pathname !== "/perfil-guia") {
-      router.replace("/perfil-guia");
-    }
-  }, [pathname, role, router]);
 
   if (!role) return null;
 

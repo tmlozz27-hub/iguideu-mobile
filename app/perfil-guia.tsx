@@ -1,10 +1,10 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Image,
   ImageBackground,
   Pressable,
-  ScrollView,
+ ScrollView,
   Text,
   TextInput,
   View
@@ -12,6 +12,7 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { API_BASE } from "@/config/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type PickedMedia = {
   uri: string;
@@ -39,6 +40,68 @@ export default function PerfilGuia() {
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  useEffect(() => {
+    loadGuideProfile();
+  }, []);
+
+  const loadGuideProfile = async () => {
+    try {
+      const token =
+        (await AsyncStorage.getItem("iguideu_token")) || "";
+
+      if (!token) return;
+
+      const response = await fetch(
+        `${API_BASE}/api/guides/me`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      const guide =
+        data?.item ||
+        data?.guide ||
+        null;
+
+      if (!guide) return;
+
+      setName(guide.name || "");
+      setEmail(guide.email || "");
+      setPhone(guide.phone || "");
+      setCity(guide.city || "");
+      setCountry(guide.country || "");
+      setLanguages(guide.languages || "");
+      setBio(guide.bio || "");
+
+      setPriceHour(
+        guide.priceHour
+          ? String(guide.priceHour)
+          : ""
+      );
+
+      setPriceDay(
+        guide.priceDay
+          ? String(guide.priceDay)
+          : ""
+      );
+
+      setPrice24h(
+        guide.price24h
+          ? String(guide.price24h)
+          : ""
+      );
+    } catch (e) {
+      console.log(
+        "GUIDE_PROFILE_LOAD_ERROR",
+        e
+      );
+    }
+  };
 
   const gallerySlots = useMemo(() => {
     return [0, 1, 2, 3].map((i) => galleryPhotos[i] || null);
@@ -166,6 +229,7 @@ export default function PerfilGuia() {
           backgroundColor: "rgba(11,62,145,0.74)"
         }}
       />
+
       <View
         style={{
           position: "absolute",
@@ -177,6 +241,7 @@ export default function PerfilGuia() {
           backgroundColor: "rgba(88,196,255,0.14)"
         }}
       />
+
       <View
         style={{
           position: "absolute",
@@ -209,7 +274,9 @@ export default function PerfilGuia() {
           ) : (
             <View style={mainPlaceholder}>
               <Text style={mainPlaceholderTitle}>Foto principal</Text>
-              <Text style={mainPlaceholderSubtitle}>Tocá para cargar tu imagen principal</Text>
+              <Text style={mainPlaceholderSubtitle}>
+                Tocá para cargar tu imagen principal
+              </Text>
             </View>
           )}
         </Pressable>
@@ -270,6 +337,7 @@ export default function PerfilGuia() {
               style={[input, halfInput]}
               editable={!loading}
             />
+
             <TextInput
               placeholder="País"
               placeholderTextColor="#6b7280"
@@ -282,7 +350,11 @@ export default function PerfilGuia() {
 
           <Text style={section}>Fotos + Video</Text>
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={row}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={row}
+          >
             {gallerySlots.map((item, i) => (
               <View key={i} style={card}>
                 {item ? (
@@ -291,7 +363,9 @@ export default function PerfilGuia() {
                   <Pressable
                     onPress={async () => {
                       if (loading) return;
+
                       const picked = await pickImage();
+
                       if (picked) {
                         const copy = [...galleryPhotos];
                         copy[i] = picked;
@@ -311,7 +385,11 @@ export default function PerfilGuia() {
                 <View style={cardInner}>
                   <Text style={videoEmoji}>🎬</Text>
                   <Text style={videoText}>Video</Text>
-                  <Pressable onPress={() => setVideo(null)} style={removeBtn}>
+
+                  <Pressable
+                    onPress={() => setVideo(null)}
+                    style={removeBtn}
+                  >
                     <Text style={removeBtnText}>Quitar</Text>
                   </Pressable>
                 </View>
@@ -377,11 +455,26 @@ export default function PerfilGuia() {
 
           <View style={rulesBox}>
             <Text style={rulesTitle}>Antes de ofrecer tu servicio</Text>
-            <Text style={ruleLine}>• Tus tarifas deben corresponder al servicio indicado.</Text>
-            <Text style={ruleLine}>• Comidas, transporte o entradas no están incluidas salvo que lo aclares expresamente.</Text>
-            <Text style={ruleLine}>• Si el recorrido implica gastos compartidos, deben quedar claros antes de confirmar.</Text>
-            <Text style={ruleLine}>• Mantené tu información, idiomas y precios siempre actualizados.</Text>
-            <Text style={ruleLine}>• Al aceptar una solicitud, el servicio queda registrado dentro de la plataforma.</Text>
+
+            <Text style={ruleLine}>
+              • Tus tarifas deben corresponder al servicio indicado.
+            </Text>
+
+            <Text style={ruleLine}>
+              • Comidas, transporte o entradas no están incluidas salvo que lo aclares expresamente.
+            </Text>
+
+            <Text style={ruleLine}>
+              • Si el recorrido implica gastos compartidos, deben quedar claros antes de confirmar.
+            </Text>
+
+            <Text style={ruleLine}>
+              • Mantené tu información, idiomas y precios siempre actualizados.
+            </Text>
+
+            <Text style={ruleLine}>
+              • Al aceptar una solicitud, el servicio queda registrado dentro de la plataforma.
+            </Text>
           </View>
 
           <TextInput
@@ -426,7 +519,9 @@ export default function PerfilGuia() {
               }}
             >
               {acceptTerms && (
-                <Text style={{ color: "#fff", fontWeight: "800" }}>✓</Text>
+                <Text style={{ color: "#fff", fontWeight: "800" as const }}>
+                  ✓
+                </Text>
               )}
             </View>
 
@@ -435,12 +530,18 @@ export default function PerfilGuia() {
             </Text>
           </Pressable>
 
-          <Pressable onPress={handleSave} style={[btn, loading ? btnDisabled : null]} disabled={loading}>
-            <Text style={btnText}>{loading ? "Guardando..." : "Guardar perfil"}</Text>
+          <Pressable
+            onPress={handleSave}
+            style={[btn, loading ? btnDisabled : null]}
+            disabled={loading}
+          >
+            <Text style={btnText}>
+              {loading ? "Guardando..." : "Guardar perfil"}
+            </Text>
           </Pressable>
 
           <Pressable
-           onPress={() => router.push("/reservas-guia")}
+            onPress={() => router.push("/reservas-guia")}
             style={secondaryBtn}
           >
             <Text style={secondaryBtnText}>Mis reservas</Text>

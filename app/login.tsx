@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from "@/config/api";
+﻿import { apiGet, apiPost } from "@/config/api";
 import { translations } from "@/utils/i18n";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
@@ -38,12 +38,6 @@ export default function LoginScreen() {
       offlineAccess: false,
     });
   }, []);
-
-  useEffect(() => {
-    AsyncStorage.getItem(TOKEN_KEY).then((token) => {
-      if (token) router.replace("/(tabs)");
-    });
-  }, [router]);
 
   const saveSession = async (token: string, userEmail?: string) => {
     const cleanEmail = String(userEmail || "").trim().toLowerCase();
