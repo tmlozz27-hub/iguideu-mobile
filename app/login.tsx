@@ -1,5 +1,4 @@
-﻿import { apiGet, apiPost } from "@/config/api";
-import { translations } from "@/utils/i18n";
+import { apiGet, apiPost } from "@/config/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { useRouter } from "expo-router";
@@ -17,14 +16,65 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const lang = "es";
-const t = translations[lang];
-
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
 
+const copy = {
+  es: {
+    subtitle: "Tu guía personal de turismo",
+    login: "Iniciar sesión",
+    accessText: "Accedé a tu cuenta para continuar",
+    email: "Email",
+    password: "Contraseña",
+    show: "Ver",
+    hide: "Ocultar",
+    forgot: "¿Olvidaste tu contraseña?",
+    entering: "Ingresando...",
+    access: "Ingresar",
+    google: "Continuar con Google",
+    apple: "Continuar con Apple",
+    terms: "Términos y condiciones",
+    privacy: "Política de privacidad",
+    and: " y ",
+    register: "¿No tenés cuenta? Registrarse",
+    complete: "Completá email y contraseña",
+    wrong: "Credenciales incorrectas",
+    server: "Servidor",
+    googleToken: "Google no devolvió token",
+    googleBackend: "Google no validado por backend",
+    googleError: "No se pudo iniciar Google",
+  },
+  en: {
+    subtitle: "Your personal travel guide",
+    login: "Sign in",
+    accessText: "Access your account to continue",
+    email: "Email",
+    password: "Password",
+    show: "Show",
+    hide: "Hide",
+    forgot: "Forgot your password?",
+    entering: "Signing in...",
+    access: "Sign in",
+    google: "Continue with Google",
+    apple: "Continue with Apple",
+    terms: "Terms and conditions",
+    privacy: "Privacy policy",
+    and: " and ",
+    register: "Don’t have an account? Sign up",
+    complete: "Enter email and password",
+    wrong: "Invalid credentials",
+    server: "Server",
+    googleToken: "Google did not return a token",
+    googleBackend: "Google was not validated by backend",
+    googleError: "Could not sign in with Google",
+  },
+};
+
 export default function LoginScreen() {
   const router = useRouter();
+
+  const [lang, setLang] = useState<"es" | "en">("es");
+  const t = copy[lang];
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -75,10 +125,7 @@ export default function LoginScreen() {
 
       const userInfo: any = await GoogleSignin.signIn();
 
-      let idToken =
-        userInfo?.idToken ||
-        userInfo?.data?.idToken ||
-        "";
+      let idToken = userInfo?.idToken || userInfo?.data?.idToken || "";
 
       if (!idToken) {
         const tokens = await GoogleSignin.getTokens();
@@ -86,19 +133,15 @@ export default function LoginScreen() {
       }
 
       if (!idToken) {
-        Alert.alert("Error", "Google no devolvió token");
+        Alert.alert("Error", t.googleToken);
         return;
       }
 
       const emailFromGoogle =
-        userInfo?.user?.email ||
-        userInfo?.data?.user?.email ||
-        "";
+        userInfo?.user?.email || userInfo?.data?.user?.email || "";
 
       const nameFromGoogle =
-        userInfo?.user?.name ||
-        userInfo?.data?.user?.name ||
-        "";
+        userInfo?.user?.name || userInfo?.data?.user?.name || "";
 
       const data = await apiPost("/api/auth/google", {
         token: idToken,
@@ -107,13 +150,13 @@ export default function LoginScreen() {
       });
 
       if (!data?.token) {
-        Alert.alert("Error", "Google no validado por backend");
+        Alert.alert("Error", t.googleBackend);
         return;
       }
 
       await saveSession(data.token, emailFromGoogle);
     } catch (e: any) {
-      Alert.alert("Error Google", e?.message || "No se pudo iniciar Google");
+      Alert.alert("Error Google", e?.message || t.googleError);
     } finally {
       setLoading(false);
     }
@@ -124,7 +167,7 @@ export default function LoginScreen() {
     const passwordClean = String(password || "").trim();
 
     if (!emailClean || !passwordClean) {
-      Alert.alert("Error", "Completá email y contraseña");
+      Alert.alert("Error", t.complete);
       return;
     }
 
@@ -137,13 +180,13 @@ export default function LoginScreen() {
       });
 
       if (!data?.token) {
-        Alert.alert("Error", "Credenciales incorrectas");
+        Alert.alert("Error", t.wrong);
         return;
       }
 
       await saveSession(data.token, emailClean);
     } catch (e: any) {
-      Alert.alert("Error", e?.message || "Servidor");
+      Alert.alert("Error", e?.message || t.server);
     } finally {
       setLoading(false);
     }
@@ -173,13 +216,29 @@ export default function LoginScreen() {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
+            <View style={{ alignItems: "flex-end", marginBottom: 8 }}>
+              <Pressable
+                onPress={() => setLang(lang === "es" ? "en" : "es")}
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.72)",
+                  paddingHorizontal: 14,
+                  paddingVertical: 8,
+                  borderRadius: 18,
+                }}
+              >
+                <Text style={{ color: "#173B6B", fontWeight: "900" }}>
+                  {lang === "es" ? "ES" : "EN"}
+                </Text>
+              </Pressable>
+            </View>
+
             <View style={{ alignItems: "center", marginBottom: 20 }}>
               <Text style={{ fontSize: 40, fontWeight: "900", color: "#173B6B" }}>
                 I GUIDE U
               </Text>
 
               <Text style={{ marginTop: 8, color: "#ffffff", fontWeight: "600" }}>
-                Tu guía personal de turismo
+                {t.subtitle}
               </Text>
             </View>
 
@@ -211,7 +270,7 @@ export default function LoginScreen() {
                   color: "rgba(23,59,107,0.8)",
                 }}
               >
-                Accedé a tu cuenta para continuar
+                {t.accessText}
               </Text>
 
               <TextInput
@@ -248,7 +307,7 @@ export default function LoginScreen() {
 
                 <Pressable onPress={() => setShowPassword(!showPassword)}>
                   <Text style={{ paddingHorizontal: 16, color: "#173B6B" }}>
-                    {showPassword ? "Ocultar" : "Ver"}
+                    {showPassword ? t.hide : t.show}
                   </Text>
                 </Pressable>
               </View>
@@ -271,7 +330,7 @@ export default function LoginScreen() {
                 }}
               >
                 <Text style={{ color: "#fff", fontWeight: "800", fontSize: 18 }}>
-                  {loading ? "Ingresando..." : t.access}
+                  {loading ? t.entering : t.access}
                 </Text>
               </Pressable>
 
@@ -304,7 +363,7 @@ export default function LoginScreen() {
               <View style={{ alignItems: "center", marginTop: 14 }}>
                 <Text style={{ fontSize: 12 }}>
                   <Text onPress={() => router.push("/legal/terms")}>{t.terms}</Text>
-                  {" y "}
+                  {t.and}
                   <Text onPress={() => router.push("/legal/privacy")}>{t.privacy}</Text>
                 </Text>
 
@@ -313,7 +372,7 @@ export default function LoginScreen() {
                   style={{ marginTop: 12 }}
                 >
                   <Text style={{ color: "#173B6B", fontWeight: "900", fontSize: 15 }}>
-                    ¿No tenés cuenta? Registrarse
+                    {t.register}
                   </Text>
                 </Pressable>
               </View>
