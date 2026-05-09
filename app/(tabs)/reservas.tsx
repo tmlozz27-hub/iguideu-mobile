@@ -20,6 +20,8 @@ const USER_EMAIL_KEY = "iguideu_user_email";
 
 type Guide = {
   _id: string;
+  id?: string;
+  email?: string;
   name: string;
   country?: string;
   city?: string;
@@ -46,6 +48,10 @@ type Booking = {
   totalAmount?: number;
   status?: string;
   guideName?: string;
+  guideEmail?: string;
+  guideId?: string;
+  city?: string;
+  country?: string;
 };
 
 function formatDateToString(d: Date) {
@@ -192,7 +198,11 @@ export default function ReservasScreen() {
   }, [date]);
 
   const selectedGuide = useMemo(() => {
-    return guides.find((g) => g._id === selectedGuideId) || null;
+    return guides.find((g) => {
+      const mongoId = String(g._id || "");
+      const legacyId = String(g.id || "");
+      return mongoId === selectedGuideId || legacyId === selectedGuideId;
+    }) || null;
   }, [guides, selectedGuideId]);
 
   const selectedPriceHour = useMemo(() => {
@@ -307,6 +317,10 @@ export default function ReservasScreen() {
           date: date.trim(),
           hours: h,
           guideId: selectedGuideId,
+          guideName: selectedGuide?.name || "",
+          guideEmail: selectedGuide?.email || "",
+          city: selectedGuide?.city || "",
+          country: selectedGuide?.country || "",
           adults: adultsCount,
           youth: youthCount,
           children: childrenCount,
@@ -827,7 +841,7 @@ export default function ReservasScreen() {
               <Text style={{ fontSize: 18, fontWeight: "800", color: "#15539A" }}>
                 {booking.guideName || "Guía"}
               </Text>
-              <Text style={{ color: "#173B6B" }}>Email: {booking.travelerEmail || booking.email || "-"}</Text>
+              <Text style={{ color: "#173B6B" }}>Email guía: {booking.guideEmail || "-"}</Text>
               <Text style={{ color: "#173B6B" }}>Fecha: {booking.date || "-"}</Text>
               <Text style={{ color: "#173B6B" }}>Horas: {booking.hours ?? "-"}</Text>
               <Text style={{ color: "#173B6B" }}>Monto: USD {Number(amount || 0).toFixed(2)}</Text>
