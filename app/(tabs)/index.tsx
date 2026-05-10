@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   ImageBackground,
   Pressable,
@@ -7,48 +7,6 @@ import {
   View,
 } from "react-native";
 import { useRouter } from "expo-router";
-
-const copy = {
-  es: {
-    tagline: "Tu experiencia comienza aquí",
-    discover: "Descubrí tu próximo guía",
-
-    exploreTitle: "Explorar guías",
-    exploreSub: "Todos los perfiles",
-
-    nearbyTitle: "Guías cercanos",
-    nearbySub: "Cerca de vos",
-
-    countryTitle: "Guías por país",
-    countrySub: "Buscá tu destino",
-
-    bookingsTitle: "Mis reservas",
-    bookingsSub: "Tu actividad",
-
-    profileTitle: "Mi perfil",
-    profileSub: "Gestioná tu cuenta y tu información",
-  },
-
-  en: {
-    tagline: "Your experience starts here",
-    discover: "Discover your next guide",
-
-    exploreTitle: "Explore guides",
-    exploreSub: "All profiles",
-
-    nearbyTitle: "Nearby guides",
-    nearbySub: "Close to you",
-
-    countryTitle: "Guides by country",
-    countrySub: "Find your destination",
-
-    bookingsTitle: "My bookings",
-    bookingsSub: "Your activity",
-
-    profileTitle: "My profile",
-    profileSub: "Manage your account and information",
-  },
-};
 
 function Card({
   title,
@@ -102,10 +60,6 @@ function Card({
 export default function HomeTabScreen() {
   const router = useRouter();
 
-  const [lang, setLang] = useState<"es" | "en">("es");
-
-  const t = copy[lang];
-
   return (
     <ImageBackground
       source={{
@@ -134,34 +88,7 @@ export default function HomeTabScreen() {
         }}
         showsVerticalScrollIndicator={false}
       >
-        <View
-          style={{
-            alignItems: "flex-end",
-            marginBottom: 10,
-          }}
-        >
-          <Pressable
-            onPress={() => setLang(lang === "es" ? "en" : "es")}
-            style={{
-              backgroundColor: "rgba(255,255,255,0.75)",
-              paddingHorizontal: 14,
-              paddingVertical: 8,
-              borderRadius: 18,
-            }}
-          >
-            <Text
-              style={{
-                color: "#173B6B",
-                fontWeight: "900",
-                fontSize: 14,
-              }}
-            >
-              {lang === "es" ? "ES" : "EN"}
-            </Text>
-          </Pressable>
-        </View>
-
-        <View style={{ alignItems: "center", marginTop: 2 }}>
+        <View style={{ alignItems: "center", marginTop: 8 }}>
           <Text
             style={{
               color: "#173B6B",
@@ -181,7 +108,7 @@ export default function HomeTabScreen() {
               marginTop: 10,
             }}
           >
-            {t.tagline}
+            Your experience starts here
           </Text>
         </View>
 
@@ -204,7 +131,7 @@ export default function HomeTabScreen() {
               textAlign: "center",
             }}
           >
-            {t.discover}
+            Discover your next guide
           </Text>
         </View>
 
@@ -218,29 +145,29 @@ export default function HomeTabScreen() {
           }}
         >
           <Card
-            title={t.exploreTitle}
-            subtitle={t.exploreSub}
+            title="Explore guides"
+            subtitle="All profiles"
             emoji="🌍"
             onPress={() => router.push("/guias")}
           />
 
           <Card
-            title={t.nearbyTitle}
-            subtitle={t.nearbySub}
+            title="Nearby guides"
+            subtitle="Close to you"
             emoji="📍"
             onPress={() => router.push("/guias-cercanos")}
           />
 
           <Card
-            title={t.countryTitle}
-            subtitle={t.countrySub}
+            title="Guides by country"
+            subtitle="Find your destination"
             emoji="🧭"
             onPress={() => router.push("/buscar-pais")}
           />
 
           <Card
-            title={t.bookingsTitle}
-            subtitle={t.bookingsSub}
+            title="My bookings"
+            subtitle="Your activity"
             emoji="🗓️"
             onPress={() => router.push("/reservas")}
           />
@@ -248,8 +175,8 @@ export default function HomeTabScreen() {
 
         <View style={{ marginTop: 14 }}>
           <Card
-            title={t.profileTitle}
-            subtitle={t.profileSub}
+            title="My profile"
+            subtitle="Manage your account and information"
             emoji="👤"
             wide
             onPress={() => router.push("/perfil")}
