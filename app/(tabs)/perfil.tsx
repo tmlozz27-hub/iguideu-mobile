@@ -18,6 +18,7 @@ import { apiGet, apiPut } from "@/config/api";
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
 const PROFILE_CACHE_KEY = "iguideu_profile_cache";
+const LANG_KEY = "iguideu_lang";
 
 const copy = {
   es: {
@@ -148,6 +149,7 @@ export default function ProfileScreen() {
       setTravelStyle(firstNonEmpty(u?.travelStyle, profile?.travelStyle, cached?.travelStyle));
       setInterests(firstNonEmpty(u?.interests, profile?.interests, cached?.interests));
       setAbout(firstNonEmpty(u?.about, u?.bio, profile?.about, profile?.bio, cached?.about));
+
       setPhoto(
         firstNonEmpty(
           u?.photo,
@@ -169,11 +171,23 @@ export default function ProfileScreen() {
 
   useEffect(() => {
     loadUser();
+
+    AsyncStorage.getItem(LANG_KEY).then((savedLang) => {
+      if (savedLang === "es" || savedLang === "en") {
+        setLang(savedLang);
+      }
+    });
   }, [loadUser]);
 
   useFocusEffect(
     useCallback(() => {
       loadUser();
+
+      AsyncStorage.getItem(LANG_KEY).then((savedLang) => {
+        if (savedLang === "es" || savedLang === "en") {
+          setLang(savedLang);
+        }
+      });
     }, [loadUser])
   );
 
@@ -253,22 +267,6 @@ export default function ProfileScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={{ paddingTop: 30, paddingHorizontal: 24, paddingBottom: 30 }}>
-            <View style={{ alignItems: "flex-end", marginBottom: 8 }}>
-              <Pressable
-                onPress={() => setLang(lang === "es" ? "en" : "es")}
-                style={{
-                  backgroundColor: "rgba(255,255,255,0.72)",
-                  paddingHorizontal: 14,
-                  paddingVertical: 8,
-                  borderRadius: 18,
-                }}
-              >
-                <Text style={{ color: "#173B6B", fontWeight: "900" }}>
-                  {lang === "es" ? "ES" : "EN"}
-                </Text>
-              </Pressable>
-            </View>
-
             <Text style={titleMain}>I GUIDE U</Text>
             <Text style={titleSub}>{t.title}</Text>
 
@@ -287,17 +285,7 @@ export default function ProfileScreen() {
             <Text style={section}>{t.personalInfo}</Text>
 
             {saved ? (
-              <View
-                style={{
-                  backgroundColor: "rgba(22,163,74,0.14)",
-                  borderWidth: 1,
-                  borderColor: "rgba(22,163,74,0.30)",
-                  borderRadius: 16,
-                  paddingHorizontal: 14,
-                  paddingVertical: 12,
-                  marginBottom: 16
-                }}
-              >
+              <View style={{ backgroundColor: "rgba(22,163,74,0.14)", borderWidth: 1, borderColor: "rgba(22,163,74,0.30)", borderRadius: 16, paddingHorizontal: 14, paddingVertical: 12, marginBottom: 16 }}>
                 <Text style={{ color: "#166534", fontSize: 15, fontWeight: "800" }}>
                   {t.savedOk}
                 </Text>
