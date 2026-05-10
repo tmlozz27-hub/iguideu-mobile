@@ -1,3 +1,6 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiGet } from "@/config/api";
+import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -7,8 +10,45 @@ import {
   Text,
   View
 } from "react-native";
-import { useRouter } from "expo-router";
-import { apiGet } from "@/config/api";
+
+const LANG_KEY = "iguideu_lang";
+
+const copy = {
+  es: {
+    title: "Guías",
+    subtitle: "Abrí perfiles reales, revisá tarifas y seguí directo a reserva.",
+    nearby: "Guías cercanos",
+    reload: "Recargar",
+    byCountry: "Buscar por país",
+    empty: "No hay guías para mostrar.",
+    confirm: "A confirmar",
+    guide: "Guía",
+    locationConfirm: "Ubicación a confirmar",
+    languages: "Idiomas",
+    rating: "Rating",
+    day: "Jornada 8h",
+    hour: "Por hora",
+    defaultBio: "Guía local disponible para experiencias personalizadas.",
+    viewProfile: "Ver perfil",
+  },
+  en: {
+    title: "Guides",
+    subtitle: "Open real profiles, review rates, and continue directly to booking.",
+    nearby: "Nearby guides",
+    reload: "Reload",
+    byCountry: "Search by country",
+    empty: "No guides to show.",
+    confirm: "To be confirmed",
+    guide: "Guide",
+    locationConfirm: "Location to be confirmed",
+    languages: "Languages",
+    rating: "Rating",
+    day: "8h day",
+    hour: "Per hour",
+    defaultBio: "Local guide available for personalized experiences.",
+    viewProfile: "View profile",
+  },
+};
 
 type Guide = {
   _id?: string;
@@ -34,6 +74,15 @@ export default function GuiasScreen() {
   const router = useRouter();
   const [guides, setGuides] = useState<Guide[]>([]);
   const [loading, setLoading] = useState(false);
+  const [lang, setLang] = useState<"es" | "en">("es");
+  const t = copy[lang];
+
+  const loadLang = useCallback(async () => {
+    const savedLang = await AsyncStorage.getItem(LANG_KEY);
+    if (savedLang === "es" || savedLang === "en") {
+      setLang(savedLang);
+    }
+  }, []);
 
   const loadGuides = useCallback(async () => {
     try {
@@ -56,8 +105,15 @@ export default function GuiasScreen() {
   }, []);
 
   useEffect(() => {
+    loadLang();
     loadGuides();
-  }, [loadGuides]);
+  }, [loadLang, loadGuides]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadLang();
+    }, [loadLang])
+  );
 
   return (
     <ImageBackground
@@ -67,8 +123,6 @@ export default function GuiasScreen() {
       style={{ flex: 1, backgroundColor: "#76A9E8" }}
       resizeMode="cover"
     >
-      
-
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
@@ -82,11 +136,11 @@ export default function GuiasScreen() {
           }}
         >
           <Text style={{ fontSize: 30, fontWeight: "800", color: "#15539A" }}>
-            Guías
+            {t.title}
           </Text>
 
           <Text style={{ marginTop: 8, fontSize: 15, color: "#173B6B", lineHeight: 22 }}>
-            Abrí perfiles reales, revisá tarifas y seguí directo a reserva.
+            {t.subtitle}
           </Text>
 
           <View style={{ flexDirection: "row", gap: 10, marginTop: 16 }}>
@@ -101,7 +155,7 @@ export default function GuiasScreen() {
               }}
             >
               <Text style={{ color: "#ffffff", fontWeight: "800" }}>
-                Guías cercanos
+                {t.nearby}
               </Text>
             </Pressable>
 
@@ -116,7 +170,7 @@ export default function GuiasScreen() {
               }}
             >
               <Text style={{ color: "#15539A", fontWeight: "800" }}>
-                Recargar
+                {t.reload}
               </Text>
             </Pressable>
           </View>
@@ -132,7 +186,7 @@ export default function GuiasScreen() {
             }}
           >
             <Text style={{ color: "#15539A", fontWeight: "800" }}>
-              Buscar por país
+              {t.byCountry}
             </Text>
           </Pressable>
         </View>
@@ -153,7 +207,7 @@ export default function GuiasScreen() {
             }}
           >
             <Text style={{ color: "#173B6B" }}>
-              No hay guías para mostrar.
+              {t.empty}
             </Text>
           </View>
         )}
@@ -163,7 +217,7 @@ export default function GuiasScreen() {
           const location = [guide.city, guide.country].filter(Boolean).join(", ");
           const languages = Array.isArray(guide.languages) && guide.languages.length > 0
             ? guide.languages.join(", ")
-            : "A confirmar";
+            : t.confirm;
 
           return (
             <Pressable
@@ -177,25 +231,25 @@ export default function GuiasScreen() {
               }}
             >
               <Text style={{ fontSize: 24, fontWeight: "800", color: "#15539A" }}>
-                {guide.name || "Guía"}
+                {guide.name || t.guide}
               </Text>
 
               <Text style={{ marginTop: 8, color: "#173B6B" }}>
-                {location || "Ubicación a confirmar"}
+                {location || t.locationConfirm}
               </Text>
 
               <Text style={{ marginTop: 4, color: "#173B6B" }}>
-                Idiomas: {languages}
+                {t.languages}: {languages}
               </Text>
 
               <Text style={{ marginTop: 4, color: "#173B6B" }}>
-                Rating: {guide.rating ?? "-"}
+                {t.rating}: {guide.rating ?? "-"}
               </Text>
 
               <View style={{ flexDirection: "row", gap: 10, marginTop: 12 }}>
                 <View style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.25)", borderRadius: 16, padding: 12 }}>
                   <Text style={{ color: "#173B6B", fontSize: 13 }}>
-                    Jornada 8h
+                    {t.day}
                   </Text>
                   <Text style={{ color: "#15539A", fontWeight: "800", fontSize: 16 }}>
                     {money(guide.priceDay)}
@@ -204,7 +258,7 @@ export default function GuiasScreen() {
 
                 <View style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.25)", borderRadius: 16, padding: 12 }}>
                   <Text style={{ color: "#173B6B", fontSize: 13 }}>
-                    Por hora
+                    {t.hour}
                   </Text>
                   <Text style={{ color: "#15539A", fontWeight: "800", fontSize: 16 }}>
                     {money(guide.priceHour ?? guide.pricePerHour)}
@@ -213,7 +267,7 @@ export default function GuiasScreen() {
               </View>
 
               <Text style={{ marginTop: 14, color: "#173B6B", lineHeight: 22 }}>
-                {guide.bio || "Guía local disponible para experiencias personalizadas."}
+                {guide.bio || t.defaultBio}
               </Text>
 
               <View
@@ -226,7 +280,7 @@ export default function GuiasScreen() {
                 }}
               >
                 <Text style={{ color: "#ffffff", fontWeight: "800" }}>
-                  Ver perfil
+                  {t.viewProfile}
                 </Text>
               </View>
             </Pressable>
