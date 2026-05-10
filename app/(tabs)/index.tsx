@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useState } from "react";
 import {
   ImageBackground,
   Pressable,
@@ -6,45 +8,35 @@ import {
   Text,
   View,
 } from "react-native";
-import { useRouter } from "expo-router";
+
+const LANG_KEY = "iguideu_lang";
 
 const copy = {
   es: {
-    tagline: "Tu experiencia comienza aquí",
+    subtitle: "Tu experiencia comienza aquí",
     discover: "Descubrí tu próximo guía",
-
     exploreTitle: "Explorar guías",
     exploreSub: "Todos los perfiles",
-
     nearbyTitle: "Guías cercanos",
-    nearbySub: "Cerca de vos",
-
+    nearbySub: "Cerca tuyo",
     countryTitle: "Guías por país",
-    countrySub: "Buscá tu destino",
-
+    countrySub: "Encontrá tu destino",
     bookingsTitle: "Mis reservas",
     bookingsSub: "Tu actividad",
-
     profileTitle: "Mi perfil",
-    profileSub: "Gestioná tu cuenta y tu información",
+    profileSub: "Administrá tu cuenta e información",
   },
-
   en: {
-    tagline: "Your experience starts here",
+    subtitle: "Your experience starts here",
     discover: "Discover your next guide",
-
     exploreTitle: "Explore guides",
     exploreSub: "All profiles",
-
     nearbyTitle: "Nearby guides",
-    nearbySub: "Close to you",
-
+    nearbySub: "Near you",
     countryTitle: "Guides by country",
     countrySub: "Find your destination",
-
     bookingsTitle: "My bookings",
     bookingsSub: "Your activity",
-
     profileTitle: "My profile",
     profileSub: "Manage your account and information",
   },
@@ -103,8 +95,25 @@ export default function HomeTabScreen() {
   const router = useRouter();
 
   const [lang, setLang] = useState<"es" | "en">("es");
-
   const t = copy[lang];
+
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+
+      AsyncStorage.getItem(LANG_KEY).then((savedLang) => {
+        if (!active) return;
+
+        if (savedLang === "es" || savedLang === "en") {
+          setLang(savedLang);
+        }
+      });
+
+      return () => {
+        active = false;
+      };
+    }, [])
+  );
 
   return (
     <ImageBackground
@@ -134,34 +143,7 @@ export default function HomeTabScreen() {
         }}
         showsVerticalScrollIndicator={false}
       >
-        <View
-          style={{
-            alignItems: "flex-end",
-            marginBottom: 10,
-          }}
-        >
-          <Pressable
-            onPress={() => setLang(lang === "es" ? "en" : "es")}
-            style={{
-              backgroundColor: "rgba(255,255,255,0.75)",
-              paddingHorizontal: 14,
-              paddingVertical: 8,
-              borderRadius: 18,
-            }}
-          >
-            <Text
-              style={{
-                color: "#173B6B",
-                fontWeight: "900",
-                fontSize: 14,
-              }}
-            >
-              {lang === "es" ? "ES" : "EN"}
-            </Text>
-          </Pressable>
-        </View>
-
-        <View style={{ alignItems: "center", marginTop: 2 }}>
+        <View style={{ alignItems: "center", marginTop: 8 }}>
           <Text
             style={{
               color: "#173B6B",
@@ -181,7 +163,7 @@ export default function HomeTabScreen() {
               marginTop: 10,
             }}
           >
-            {t.tagline}
+            {t.subtitle}
           </Text>
         </View>
 

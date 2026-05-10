@@ -18,6 +18,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
+const LANG_KEY = "iguideu_lang";
 
 const copy = {
   es: {
@@ -87,7 +88,19 @@ export default function LoginScreen() {
         "661263042735-677bo9vuvgkds5g80h2phrn683rv3d88.apps.googleusercontent.com",
       offlineAccess: false,
     });
+
+    AsyncStorage.getItem(LANG_KEY).then((savedLang) => {
+      if (savedLang === "es" || savedLang === "en") {
+        setLang(savedLang);
+      }
+    });
   }, []);
+
+  const toggleLang = async () => {
+    const nextLang = lang === "es" ? "en" : "es";
+    setLang(nextLang);
+    await AsyncStorage.setItem(LANG_KEY, nextLang);
+  };
 
   const saveSession = async (token: string, userEmail?: string) => {
     const cleanEmail = String(userEmail || "").trim().toLowerCase();
@@ -218,7 +231,7 @@ export default function LoginScreen() {
           >
             <View style={{ alignItems: "flex-end", marginBottom: 8 }}>
               <Pressable
-                onPress={() => setLang(lang === "es" ? "en" : "es")}
+                onPress={toggleLang}
                 style={{
                   backgroundColor: "rgba(255,255,255,0.72)",
                   paddingHorizontal: 14,
@@ -251,25 +264,11 @@ export default function LoginScreen() {
                 borderColor: "rgba(255,255,255,0.15)",
               }}
             >
-              <Text
-                style={{
-                  fontSize: 26,
-                  fontWeight: "900",
-                  textAlign: "center",
-                  color: "#173B6B",
-                }}
-              >
+              <Text style={{ fontSize: 26, fontWeight: "900", textAlign: "center", color: "#173B6B" }}>
                 {t.login}
               </Text>
 
-              <Text
-                style={{
-                  textAlign: "center",
-                  marginTop: 8,
-                  marginBottom: 16,
-                  color: "rgba(23,59,107,0.8)",
-                }}
-              >
+              <Text style={{ textAlign: "center", marginTop: 8, marginBottom: 16, color: "rgba(23,59,107,0.8)" }}>
                 {t.accessText}
               </Text>
 
@@ -280,22 +279,10 @@ export default function LoginScreen() {
                 onChangeText={setEmail}
                 autoCapitalize="none"
                 keyboardType="email-address"
-                style={{
-                  backgroundColor: "rgba(255,255,255,0.6)",
-                  borderRadius: 18,
-                  padding: 14,
-                  marginBottom: 12,
-                }}
+                style={{ backgroundColor: "rgba(255,255,255,0.6)", borderRadius: 18, padding: 14, marginBottom: 12 }}
               />
 
-              <View
-                style={{
-                  flexDirection: "row",
-                  backgroundColor: "rgba(255,255,255,0.6)",
-                  borderRadius: 18,
-                  alignItems: "center",
-                }}
-              >
+              <View style={{ flexDirection: "row", backgroundColor: "rgba(255,255,255,0.6)", borderRadius: 18, alignItems: "center" }}>
                 <TextInput
                   placeholder={t.password}
                   placeholderTextColor="#7B879B"
@@ -321,13 +308,7 @@ export default function LoginScreen() {
               <Pressable
                 onPress={handleLogin}
                 disabled={loading}
-                style={{
-                  marginTop: 16,
-                  backgroundColor: "#173B6B",
-                  padding: 16,
-                  borderRadius: 20,
-                  alignItems: "center",
-                }}
+                style={{ marginTop: 16, backgroundColor: "#173B6B", padding: 16, borderRadius: 20, alignItems: "center" }}
               >
                 <Text style={{ color: "#fff", fontWeight: "800", fontSize: 18 }}>
                   {loading ? t.entering : t.access}
@@ -337,26 +318,12 @@ export default function LoginScreen() {
               <Pressable
                 onPress={handleGoogleLogin}
                 disabled={loading}
-                style={{
-                  marginTop: 10,
-                  backgroundColor: "#ffffff",
-                  padding: 14,
-                  borderRadius: 20,
-                  alignItems: "center",
-                }}
+                style={{ marginTop: 10, backgroundColor: "#ffffff", padding: 14, borderRadius: 20, alignItems: "center" }}
               >
                 <Text style={{ fontWeight: "700" }}>{t.google}</Text>
               </Pressable>
 
-              <Pressable
-                style={{
-                  marginTop: 10,
-                  backgroundColor: "#000",
-                  padding: 14,
-                  borderRadius: 20,
-                  alignItems: "center",
-                }}
-              >
+              <Pressable style={{ marginTop: 10, backgroundColor: "#000", padding: 14, borderRadius: 20, alignItems: "center" }}>
                 <Text style={{ color: "#fff", fontWeight: "700" }}>{t.apple}</Text>
               </Pressable>
 
@@ -367,10 +334,7 @@ export default function LoginScreen() {
                   <Text onPress={() => router.push("/legal/privacy")}>{t.privacy}</Text>
                 </Text>
 
-                <Pressable
-                  onPress={() => router.push("/select-role")}
-                  style={{ marginTop: 12 }}
-                >
+                <Pressable onPress={() => router.push("/select-role")} style={{ marginTop: 12 }}>
                   <Text style={{ color: "#173B6B", fontWeight: "900", fontSize: 15 }}>
                     {t.register}
                   </Text>
