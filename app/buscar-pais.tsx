@@ -1,4 +1,6 @@
-import React, { useMemo, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   ImageBackground,
   Pressable,
@@ -8,11 +10,27 @@ import {
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+
+const LANG_KEY = "iguideu_lang";
 
 type CountryItem = {
   code: string;
   name: string;
+};
+
+const copy = {
+  es: {
+    title: "Buscar guías por país",
+    subtitle: "Elegí un país para ver los guías disponibles.",
+    placeholder: "Buscar país...",
+    code: "Código",
+  },
+  en: {
+    title: "Search guides by country",
+    subtitle: "Choose a country to see available guides.",
+    placeholder: "Search country...",
+    code: "Code",
+  },
 };
 
 const COUNTRIES: CountryItem[] = [
@@ -215,6 +233,18 @@ const COUNTRIES: CountryItem[] = [
 export default function BuscarPaisScreen() {
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const [lang, setLang] = useState<"es" | "en">("es");
+  const t = copy[lang];
+
+  useFocusEffect(
+    useCallback(() => {
+      AsyncStorage.getItem(LANG_KEY).then((savedLang) => {
+        if (savedLang === "es" || savedLang === "en") {
+          setLang(savedLang);
+        }
+      });
+    }, [])
+  );
 
   const filteredCountries = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -235,22 +265,20 @@ export default function BuscarPaisScreen() {
         style={{ flex: 1, backgroundColor: "#76A9E8" }}
         resizeMode="cover"
       >
-        
-
         <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12 }}>
           <View style={{ backgroundColor: "rgba(255,255,255,0.60)", borderRadius: 24, padding: 18 }}>
             <Text style={{ fontSize: 28, fontWeight: "800", color: "#0B3C91" }}>
-              Buscar guías por país
+              {t.title}
             </Text>
 
             <Text style={{ marginTop: 8, fontSize: 15, color: "#173B6B" }}>
-              Elegí un país para ver los guías disponibles.
+              {t.subtitle}
             </Text>
 
             <TextInput
               value={query}
               onChangeText={setQuery}
-              placeholder="Buscar país..."
+              placeholder={t.placeholder}
               placeholderTextColor="#94a3b8"
               style={{
                 marginTop: 14,
@@ -285,7 +313,7 @@ export default function BuscarPaisScreen() {
                 {item.name}
               </Text>
               <Text style={{ marginTop: 4, color: "#173B6B" }}>
-                Código: {item.code}
+                {t.code}: {item.code}
               </Text>
             </Pressable>
           ))}
