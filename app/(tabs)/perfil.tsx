@@ -19,8 +19,76 @@ const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
 const PROFILE_CACHE_KEY = "iguideu_profile_cache";
 
+const copy = {
+  es: {
+    title: "Perfil de viajero",
+    addPhoto: "Agregar foto",
+    personalInfo: "Información personal",
+    savedOk: "Perfil guardado correctamente",
+    loading: "Cargando...",
+    name: "Nombre",
+    namePh: "Tu nombre",
+    lastName: "Apellido",
+    lastNamePh: "Tu apellido",
+    country: "País de residencia",
+    countryPh: "Tu país de residencia",
+    city: "Ciudad",
+    cityPh: "Tu ciudad",
+    language: "Idioma principal",
+    languagePh: "Tu idioma principal",
+    phone: "Teléfono",
+    phonePh: "Tu número de contacto",
+    travelStyle: "Tipo de viaje",
+    travelStylePh: "Relax, aventura, cultura, familia",
+    interests: "Intereses",
+    interestsPh: "Historia, gastronomía, naturaleza, arte",
+    about: "Sobre vos",
+    aboutPh: "Contá brevemente qué experiencia te gustaría vivir",
+    saving: "Guardando...",
+    saved: "✓ Perfil guardado",
+    save: "Guardar",
+    logout: "Cerrar sesión",
+    updated: "Perfil actualizado",
+    saveError: "No se pudo guardar",
+  },
+  en: {
+    title: "Traveler profile",
+    addPhoto: "Add photo",
+    personalInfo: "Personal information",
+    savedOk: "Profile saved successfully",
+    loading: "Loading...",
+    name: "First name",
+    namePh: "Your first name",
+    lastName: "Last name",
+    lastNamePh: "Your last name",
+    country: "Country of residence",
+    countryPh: "Your country of residence",
+    city: "City",
+    cityPh: "Your city",
+    language: "Main language",
+    languagePh: "Your main language",
+    phone: "Phone",
+    phonePh: "Your contact number",
+    travelStyle: "Travel style",
+    travelStylePh: "Relax, adventure, culture, family",
+    interests: "Interests",
+    interestsPh: "History, food, nature, art",
+    about: "About you",
+    aboutPh: "Briefly describe the experience you would like to have",
+    saving: "Saving...",
+    saved: "✓ Profile saved",
+    save: "Save",
+    logout: "Log out",
+    updated: "Profile updated",
+    saveError: "Could not save",
+  },
+};
+
 export default function ProfileScreen() {
   const router = useRouter();
+
+  const [lang, setLang] = useState<"es" | "en">("es");
+  const t = copy[lang];
 
   const [user, setUser] = useState<any>(null);
   const [name, setName] = useState("");
@@ -157,9 +225,9 @@ export default function ProfileScreen() {
 
       await loadUser();
       setSaved(true);
-      Alert.alert("OK", "Perfil actualizado");
+      Alert.alert("OK", t.updated);
     } catch {
-      Alert.alert("Error", "No se pudo guardar");
+      Alert.alert("Error", t.saveError);
     } finally {
       setSaving(false);
     }
@@ -184,23 +252,39 @@ export default function ProfileScreen() {
           contentContainerStyle={{ paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
-          <View style={{ paddingTop: 48, paddingHorizontal: 24, paddingBottom: 30 }}>
+          <View style={{ paddingTop: 30, paddingHorizontal: 24, paddingBottom: 30 }}>
+            <View style={{ alignItems: "flex-end", marginBottom: 8 }}>
+              <Pressable
+                onPress={() => setLang(lang === "es" ? "en" : "es")}
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.72)",
+                  paddingHorizontal: 14,
+                  paddingVertical: 8,
+                  borderRadius: 18,
+                }}
+              >
+                <Text style={{ color: "#173B6B", fontWeight: "900" }}>
+                  {lang === "es" ? "ES" : "EN"}
+                </Text>
+              </Pressable>
+            </View>
+
             <Text style={titleMain}>I GUIDE U</Text>
-            <Text style={titleSub}>Perfil de viajero</Text>
+            <Text style={titleSub}>{t.title}</Text>
 
             <Pressable onPress={pickImage} style={photoBox}>
               {photo ? (
                 <Image source={{ uri: photo }} style={{ width: "100%", height: "100%" }} />
               ) : (
                 <Text style={{ color: "#173B6B", fontWeight: "800", fontSize: 15 }}>
-                  Agregar foto
+                  {t.addPhoto}
                 </Text>
               )}
             </Pressable>
           </View>
 
           <View style={card}>
-            <Text style={section}>Información personal</Text>
+            <Text style={section}>{t.personalInfo}</Text>
 
             {saved ? (
               <View
@@ -215,47 +299,47 @@ export default function ProfileScreen() {
                 }}
               >
                 <Text style={{ color: "#166534", fontSize: 15, fontWeight: "800" }}>
-                  Perfil guardado correctamente
+                  {t.savedOk}
                 </Text>
               </View>
             ) : null}
 
             <Text style={label}>Email</Text>
-            <Text style={emailText}>{loading ? "Cargando..." : user?.email || "-"}</Text>
+            <Text style={emailText}>{loading ? t.loading : user?.email || "-"}</Text>
 
-            <Text style={label}>Nombre</Text>
-            <TextInput value={name} onChangeText={(value) => { setName(value); setSaved(false); }} placeholder="Tu nombre" placeholderTextColor="#6b7280" style={input} />
+            <Text style={label}>{t.name}</Text>
+            <TextInput value={name} onChangeText={(value) => { setName(value); setSaved(false); }} placeholder={t.namePh} placeholderTextColor="#6b7280" style={input} />
 
-            <Text style={label}>Apellido</Text>
-            <TextInput value={lastName} onChangeText={(value) => { setLastName(value); setSaved(false); }} placeholder="Tu apellido" placeholderTextColor="#6b7280" style={input} />
+            <Text style={label}>{t.lastName}</Text>
+            <TextInput value={lastName} onChangeText={(value) => { setLastName(value); setSaved(false); }} placeholder={t.lastNamePh} placeholderTextColor="#6b7280" style={input} />
 
-            <Text style={label}>País de residencia</Text>
-            <TextInput value={country} onChangeText={(value) => { setCountry(value); setSaved(false); }} placeholder="Tu país de residencia" placeholderTextColor="#6b7280" style={input} />
+            <Text style={label}>{t.country}</Text>
+            <TextInput value={country} onChangeText={(value) => { setCountry(value); setSaved(false); }} placeholder={t.countryPh} placeholderTextColor="#6b7280" style={input} />
 
-            <Text style={label}>Ciudad</Text>
-            <TextInput value={city} onChangeText={(value) => { setCity(value); setSaved(false); }} placeholder="Tu ciudad" placeholderTextColor="#6b7280" style={input} />
+            <Text style={label}>{t.city}</Text>
+            <TextInput value={city} onChangeText={(value) => { setCity(value); setSaved(false); }} placeholder={t.cityPh} placeholderTextColor="#6b7280" style={input} />
 
-            <Text style={label}>Idioma principal</Text>
-            <TextInput value={language} onChangeText={(value) => { setLanguage(value); setSaved(false); }} placeholder="Tu idioma principal" placeholderTextColor="#6b7280" style={input} />
+            <Text style={label}>{t.language}</Text>
+            <TextInput value={language} onChangeText={(value) => { setLanguage(value); setSaved(false); }} placeholder={t.languagePh} placeholderTextColor="#6b7280" style={input} />
 
-            <Text style={label}>Teléfono</Text>
-            <TextInput value={phone} onChangeText={(value) => { setPhone(value); setSaved(false); }} placeholder="Tu número de contacto" placeholderTextColor="#6b7280" style={input} />
+            <Text style={label}>{t.phone}</Text>
+            <TextInput value={phone} onChangeText={(value) => { setPhone(value); setSaved(false); }} placeholder={t.phonePh} placeholderTextColor="#6b7280" style={input} />
 
-            <Text style={label}>Tipo de viaje</Text>
-            <TextInput value={travelStyle} onChangeText={(value) => { setTravelStyle(value); setSaved(false); }} placeholder="Relax, aventura, cultura, familia" placeholderTextColor="#6b7280" style={input} />
+            <Text style={label}>{t.travelStyle}</Text>
+            <TextInput value={travelStyle} onChangeText={(value) => { setTravelStyle(value); setSaved(false); }} placeholder={t.travelStylePh} placeholderTextColor="#6b7280" style={input} />
 
-            <Text style={label}>Intereses</Text>
-            <TextInput value={interests} onChangeText={(value) => { setInterests(value); setSaved(false); }} placeholder="Historia, gastronomía, naturaleza, arte" placeholderTextColor="#6b7280" style={input} />
+            <Text style={label}>{t.interests}</Text>
+            <TextInput value={interests} onChangeText={(value) => { setInterests(value); setSaved(false); }} placeholder={t.interestsPh} placeholderTextColor="#6b7280" style={input} />
 
-            <Text style={label}>Sobre vos</Text>
-            <TextInput value={about} onChangeText={(value) => { setAbout(value); setSaved(false); }} placeholder="Contá brevemente qué experiencia te gustaría vivir" placeholderTextColor="#6b7280" multiline numberOfLines={4} textAlignVertical="top" style={[input, { minHeight: 120, paddingTop: 14 }]} />
+            <Text style={label}>{t.about}</Text>
+            <TextInput value={about} onChangeText={(value) => { setAbout(value); setSaved(false); }} placeholder={t.aboutPh} placeholderTextColor="#6b7280" multiline numberOfLines={4} textAlignVertical="top" style={[input, { minHeight: 120, paddingTop: 14 }]} />
 
             <Pressable onPress={handleSave} disabled={saving} style={[buttonPrimary, { backgroundColor: saving ? "#5a6b85" : saved ? "#16a34a" : "#173B6B" }]}>
-              <Text style={buttonPrimaryText}>{saving ? "Guardando..." : saved ? "✓ Perfil guardado" : "Guardar"}</Text>
+              <Text style={buttonPrimaryText}>{saving ? t.saving : saved ? t.saved : t.save}</Text>
             </Pressable>
 
             <Pressable onPress={handleLogout} style={buttonDanger}>
-              <Text style={buttonDangerText}>Cerrar sesión</Text>
+              <Text style={buttonDangerText}>{t.logout}</Text>
             </Pressable>
           </View>
         </ScrollView>
