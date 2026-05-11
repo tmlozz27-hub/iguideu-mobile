@@ -1,4 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiGet } from "@/config/api";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   ImageBackground,
@@ -8,8 +11,41 @@ import {
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { apiGet } from "@/config/api";
+
+const LANG_KEY = "iguideu_lang";
+
+const copy = {
+  es: {
+    loading: "Cargando guías",
+    titlePrefix: "Guías en",
+    thisCountry: "este país",
+    result: "Resultado",
+    guideSingular: "guía",
+    guidePlural: "guías",
+    noGuides: "No encontramos guías para",
+    totalLoaded: "Total de guías cargados en app",
+    back: "Volver",
+    guide: "Guía",
+    languages: "Idiomas",
+    priceHour: "Precio/hora",
+    viewProfile: "Ver perfil",
+  },
+  en: {
+    loading: "Loading guides",
+    titlePrefix: "Guides in",
+    thisCountry: "this country",
+    result: "Result",
+    guideSingular: "guide",
+    guidePlural: "guides",
+    noGuides: "We couldn’t find guides for",
+    totalLoaded: "Total guides loaded in app",
+    back: "Back",
+    guide: "Guide",
+    languages: "Languages",
+    priceHour: "Price/hour",
+    viewProfile: "View profile",
+  },
+};
 
 type Guide = {
   _id?: string;
@@ -53,10 +89,26 @@ export default function GuidesByCountryScreen() {
   const [loading, setLoading] = useState(true);
   const [guides, setGuides] = useState<Guide[]>([]);
   const [allGuidesCount, setAllGuidesCount] = useState(0);
+  const [lang, setLang] = useState<"es" | "en">("es");
+  const t = copy[lang];
+
+  const loadLang = useCallback(async () => {
+    const savedLang = await AsyncStorage.getItem(LANG_KEY);
+    if (savedLang === "es" || savedLang === "en") {
+      setLang(savedLang);
+    }
+  }, []);
 
   useEffect(() => {
+    loadLang();
     void loadGuides();
-  }, [country, code]);
+  }, [country, code, loadLang]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadLang();
+    }, [loadLang])
+  );
 
   async function loadGuides() {
     try {
@@ -117,11 +169,10 @@ export default function GuidesByCountryScreen() {
           style={{ flex: 1, backgroundColor: "#76A9E8" }}
           resizeMode="cover"
         >
-          
           <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
             <ActivityIndicator size="large" color="#15539A" />
             <Text style={{ marginTop: 12, color: "#15539A", fontWeight: "800", fontSize: 18 }}>
-              Cargando guías
+              {t.loading}
             </Text>
           </View>
         </ImageBackground>
@@ -138,10 +189,6 @@ export default function GuidesByCountryScreen() {
         style={{ flex: 1, backgroundColor: "#76A9E8" }}
         resizeMode="cover"
       >
-        
-        
-        
-
         <ScrollView
           contentContainerStyle={{ padding: 20, paddingBottom: 28 }}
           showsVerticalScrollIndicator={false}
@@ -156,11 +203,11 @@ export default function GuidesByCountryScreen() {
             }}
           >
             <Text style={{ fontSize: 28, fontWeight: "800", color: "#15539A" }}>
-              Guías en {country || code || "este país"}
+              {t.titlePrefix} {country || code || t.thisCountry}
             </Text>
 
             <Text style={{ marginTop: 8, fontSize: 15, color: "#173B6B", lineHeight: 22 }}>
-              Resultado: {guides.length} guía(s)
+              {t.result}: {guides.length} {guides.length === 1 ? t.guideSingular : t.guidePlural}
             </Text>
           </View>
 
@@ -176,11 +223,11 @@ export default function GuidesByCountryScreen() {
               }}
             >
               <Text style={{ fontSize: 18, fontWeight: "800", color: "#15539A" }}>
-                No encontramos guías para {country || code || "este país"}
+                {t.noGuides} {country || code || t.thisCountry}
               </Text>
 
               <Text style={{ marginTop: 8, fontSize: 14, color: "#173B6B" }}>
-                Total de guías cargados en app: {allGuidesCount}
+                {t.totalLoaded}: {allGuidesCount}
               </Text>
 
               <Pressable
@@ -194,7 +241,7 @@ export default function GuidesByCountryScreen() {
                   alignSelf: "flex-start"
                 }}
               >
-                <Text style={{ color: "#ffffff", fontWeight: "700" }}>Volver</Text>
+                <Text style={{ color: "#ffffff", fontWeight: "700" }}>{t.back}</Text>
               </Pressable>
             </View>
           ) : null}
@@ -221,7 +268,7 @@ export default function GuidesByCountryScreen() {
                 }}
               >
                 <Text style={{ fontSize: 20, fontWeight: "800", color: "#15539A" }}>
-                  {g.name || "Guía"}
+                  {g.name || t.guide}
                 </Text>
 
                 <Text style={{ marginTop: 4, color: "#173B6B" }}>
@@ -229,15 +276,15 @@ export default function GuidesByCountryScreen() {
                 </Text>
 
                 <Text style={{ marginTop: 4, color: "#173B6B" }}>
-                  Idiomas: {Array.isArray(g.languages) ? g.languages.join(", ") : "-"}
+                  {t.languages}: {Array.isArray(g.languages) ? g.languages.join(", ") : "-"}
                 </Text>
 
                 <Text style={{ marginTop: 4, color: "#173B6B" }}>
-                  Precio/hora: USD {g.priceHour ?? g.pricePerHour ?? "-"}
+                  {t.priceHour}: USD {g.priceHour ?? g.pricePerHour ?? "-"}
                 </Text>
 
                 <Text style={{ marginTop: 12, fontWeight: "800", color: "#15539A" }}>
-                  Ver perfil
+                  {t.viewProfile}
                 </Text>
               </Pressable>
             );
