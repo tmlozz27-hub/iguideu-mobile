@@ -1,8 +1,76 @@
-import React, { useEffect, useMemo, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Modal, Pressable, ScrollView, Text, View, ImageBackground } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useLocalSearchParams, useRouter } from "expo-router";
 import { apiGet } from "../config/api";
+
+const LANG_KEY = "iguideu_lang";
+
+const copy = {
+  es: {
+    loadingProfile: "Cargando perfil...",
+    notFound: "No se encontró el guía",
+    back: "Volver",
+    verifiedProfile: "Perfil verificado",
+    gallery: "Galería",
+    bio: "Bio",
+    languages: "Idiomas",
+    rates: "Tarifas",
+    perHour: "Por hora",
+    day8h: "Jornada 8h",
+    hours24: "24 horas",
+    beforeBooking: "Antes de reservar",
+    bullet1: "• Cada guía ofrece una experiencia personalizada según tus intereses",
+    bullet2: "• Podés coordinar directamente los detalles para adaptar el recorrido",
+    bullet3: "• Las tarifas corresponden al servicio del guía según la modalidad indicada",
+    bullet4: "• Gastos como comidas, transporte o entradas no están incluidos salvo que se indique expresamente",
+    bullet5: "• En actividades compartidas, el viajero cubre también los gastos del guía",
+    bullet6: "• Reservando a través de la plataforma asegurás una experiencia clara, segura y registrada",
+    requestService: "Solicitar servicio",
+    chatAfterPay: "El chat con el guía se habilita únicamente después del pago.",
+    close: "Cerrar",
+    videoPreview: "Vista ampliada del video de 45 segundos",
+    guideDefault: "Guía",
+    defaultBio: "Guía local con experiencia acompañando viajeros y creando experiencias personalizadas.",
+    islands: "Islas",
+    beach: "Playa",
+    forest: "Bosque",
+    mountain: "Montaña",
+    video45: "Video 45s",
+  },
+  en: {
+    loadingProfile: "Loading profile...",
+    notFound: "Guide not found",
+    back: "Back",
+    verifiedProfile: "Verified profile",
+    gallery: "Gallery",
+    bio: "Bio",
+    languages: "Languages",
+    rates: "Rates",
+    perHour: "Per hour",
+    day8h: "8h day",
+    hours24: "24 hours",
+    beforeBooking: "Before booking",
+    bullet1: "• Each guide offers a personalized experience based on your interests",
+    bullet2: "• You can coordinate details directly to adapt the itinerary",
+    bullet3: "• Rates correspond to the guide service according to the selected option",
+    bullet4: "• Expenses such as meals, transportation, or tickets are not included unless clearly stated",
+    bullet5: "• In shared activities, the traveler also covers the guide’s expenses",
+    bullet6: "• Booking through the platform ensures a clear, secure, and registered experience",
+    requestService: "Request service",
+    chatAfterPay: "Chat with the guide is enabled only after payment.",
+    close: "Close",
+    videoPreview: "Expanded preview of the 45-second video",
+    guideDefault: "Guide",
+    defaultBio: "Local guide experienced in accompanying travelers and creating personalized experiences.",
+    islands: "Islands",
+    beach: "Beach",
+    forest: "Forest",
+    mountain: "Mountain",
+    video45: "45s video",
+  },
+};
 
 type Guide = {
   _id?: string;
@@ -47,6 +115,26 @@ function toArray(value: unknown): string[] {
 export default function GuiaDetalleScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ guideId?: string; id?: string; guideData?: string }>();
+
+  const [lang, setLang] = useState<"es" | "en">("es");
+  const t = copy[lang];
+
+  const loadLang = useCallback(async () => {
+    const savedLang = await AsyncStorage.getItem(LANG_KEY);
+    if (savedLang === "es" || savedLang === "en") {
+      setLang(savedLang);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadLang();
+    }, [loadLang])
+  );
+
+  useEffect(() => {
+    loadLang();
+  }, [loadLang]);
 
   const guideId =
     typeof params.guideId === "string" && params.guideId.trim()
@@ -126,39 +214,37 @@ export default function GuiaDetalleScreen() {
     () => [
       {
         key: "photo-1",
-        label: "Islas",
+        label: t.islands,
         image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
       },
       {
         key: "photo-2",
-        label: "Playa",
+        label: t.beach,
         image: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80",
       },
       {
         key: "photo-3",
-        label: "Bosque",
+        label: t.forest,
         image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=80",
       },
       {
         key: "photo-4",
-        label: "Montaña",
+        label: t.mountain,
         image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80",
       },
       {
         key: "video-45s",
-        label: "Video 45s",
+        label: t.video45,
         image: "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=1200&q=80",
         isVideo: true,
       },
     ],
-    []
+    [t]
   );
 
-  const guideName = String(guide?.name || "Guía").trim();
+  const guideName = String(guide?.name || t.guideDefault).trim();
   const guideLocation = [guide?.city, guide?.country].filter(Boolean).join(", ") || "-";
-  const guideBio =
-    String(guide?.bio || "").trim() ||
-    "Guía local con experiencia acompañando viajeros y creando experiencias personalizadas.";
+  const guideBio = String(guide?.bio || "").trim() || t.defaultBio;
   const guideLanguages = toArray(guide?.languages);
   const guideLanguagesText = guideLanguages.length > 0 ? guideLanguages.join(", ") : "-";
 
@@ -191,7 +277,7 @@ export default function GuiaDetalleScreen() {
               >
                 <ActivityIndicator size="large" color="#ffffff" />
                 <Text style={{ color: "#dbeafe", fontSize: 15, fontWeight: "700", marginTop: 14 }}>
-                  Cargando perfil...
+                  {t.loadingProfile}
                 </Text>
               </View>
             </View>
@@ -222,7 +308,7 @@ export default function GuiaDetalleScreen() {
                 }}
               >
                 <Text style={{ color: "#ffffff", fontSize: 22, fontWeight: "800", textAlign: "center" }}>
-                  No se encontró el guía
+                  {t.notFound}
                 </Text>
                 <Text style={{ marginTop: 10, color: "#dbeafe", fontSize: 14, textAlign: "center" }}>
                   guideId: {guideId || "-"}
@@ -238,7 +324,7 @@ export default function GuiaDetalleScreen() {
                     paddingVertical: 10,
                   }}
                 >
-                  <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>Volver</Text>
+                  <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>{t.back}</Text>
                 </Pressable>
               </View>
             </View>
@@ -300,7 +386,7 @@ export default function GuiaDetalleScreen() {
                         borderRadius: 999,
                       }}
                     >
-                      <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>Volver</Text>
+                      <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>{t.back}</Text>
                     </Pressable>
 
                     <View
@@ -378,7 +464,7 @@ export default function GuiaDetalleScreen() {
                       }}
                     >
                       <Text style={{ color: "#dbeafe", fontSize: 14, fontWeight: "800" }}>
-                        {guide.rating ? `⭐ ${guide.rating}` : "Perfil verificado"}
+                        {guide.rating ? `⭐ ${guide.rating}` : t.verifiedProfile}
                       </Text>
                     </View>
                   </View>
@@ -395,7 +481,7 @@ export default function GuiaDetalleScreen() {
                 borderColor: "rgba(255,255,255,0.16)",
               }}
             >
-              <Text style={{ color: "#93c5fd", fontSize: 22, fontWeight: "900" }}>Galería</Text>
+              <Text style={{ color: "#93c5fd", fontSize: 22, fontWeight: "900" }}>{t.gallery}</Text>
 
               <ScrollView
                 horizontal
@@ -457,7 +543,7 @@ export default function GuiaDetalleScreen() {
                 borderColor: "rgba(255,255,255,0.16)",
               }}
             >
-              <Text style={{ color: "#93c5fd", fontSize: 22, fontWeight: "900" }}>Bio</Text>
+              <Text style={{ color: "#93c5fd", fontSize: 22, fontWeight: "900" }}>{t.bio}</Text>
 
               <Text
                 style={{
@@ -480,7 +566,7 @@ export default function GuiaDetalleScreen() {
                 borderColor: "rgba(255,255,255,0.16)",
               }}
             >
-              <Text style={{ color: "#93c5fd", fontSize: 22, fontWeight: "900" }}>Idiomas</Text>
+              <Text style={{ color: "#93c5fd", fontSize: 22, fontWeight: "900" }}>{t.languages}</Text>
 
               <Text
                 style={{
@@ -503,7 +589,7 @@ export default function GuiaDetalleScreen() {
                 borderColor: "rgba(255,255,255,0.16)",
               }}
             >
-              <Text style={{ color: "#93c5fd", fontSize: 22, fontWeight: "900" }}>Tarifas</Text>
+              <Text style={{ color: "#93c5fd", fontSize: 22, fontWeight: "900" }}>{t.rates}</Text>
 
               <View style={{ marginTop: 16, gap: 12 }}>
                 <View
@@ -517,7 +603,7 @@ export default function GuiaDetalleScreen() {
                     alignItems: "center",
                   }}
                 >
-                  <Text style={{ color: "#eaf4ff", fontSize: 17, fontWeight: "600" }}>Por hora</Text>
+                  <Text style={{ color: "#eaf4ff", fontSize: 17, fontWeight: "600" }}>{t.perHour}</Text>
                   <Text style={{ color: "#93c5fd", fontSize: 19, fontWeight: "900" }}>
                     USD {priceHour || 0}
                   </Text>
@@ -534,7 +620,7 @@ export default function GuiaDetalleScreen() {
                     alignItems: "center",
                   }}
                 >
-                  <Text style={{ color: "#eaf4ff", fontSize: 17, fontWeight: "600" }}>Jornada 8h</Text>
+                  <Text style={{ color: "#eaf4ff", fontSize: 17, fontWeight: "600" }}>{t.day8h}</Text>
                   <Text style={{ color: "#93c5fd", fontSize: 19, fontWeight: "900" }}>
                     USD {price8Hours || 0}
                   </Text>
@@ -551,7 +637,7 @@ export default function GuiaDetalleScreen() {
                     alignItems: "center",
                   }}
                 >
-                  <Text style={{ color: "#eaf4ff", fontSize: 17, fontWeight: "600" }}>24 horas</Text>
+                  <Text style={{ color: "#eaf4ff", fontSize: 17, fontWeight: "600" }}>{t.hours24}</Text>
                   <Text style={{ color: "#93c5fd", fontSize: 19, fontWeight: "900" }}>
                     USD {price24h || 0}
                   </Text>
@@ -570,27 +656,15 @@ export default function GuiaDetalleScreen() {
               }}
             >
               <Text style={{ color: "#93c5fd", fontSize: 21, fontWeight: "900" }}>
-                Antes de reservar
+                {t.beforeBooking}
               </Text>
 
-              <Text style={{ color: "#eef6ff", fontSize: 16, lineHeight: 24 }}>
-                • Cada guía ofrece una experiencia personalizada según tus intereses
-              </Text>
-              <Text style={{ color: "#eef6ff", fontSize: 16, lineHeight: 24 }}>
-                • Podés coordinar directamente los detalles para adaptar el recorrido
-              </Text>
-              <Text style={{ color: "#eef6ff", fontSize: 16, lineHeight: 24 }}>
-                • Las tarifas corresponden al servicio del guía según la modalidad indicada
-              </Text>
-              <Text style={{ color: "#eef6ff", fontSize: 16, lineHeight: 24 }}>
-                • Gastos como comidas, transporte o entradas no están incluidos salvo que se indique expresamente
-              </Text>
-              <Text style={{ color: "#eef6ff", fontSize: 16, lineHeight: 24 }}>
-                • En actividades compartidas, el viajero cubre también los gastos del guía
-              </Text>
-              <Text style={{ color: "#eef6ff", fontSize: 16, lineHeight: 24 }}>
-                • Reservando a través de la plataforma asegurás una experiencia clara, segura y registrada
-              </Text>
+              <Text style={{ color: "#eef6ff", fontSize: 16, lineHeight: 24 }}>{t.bullet1}</Text>
+              <Text style={{ color: "#eef6ff", fontSize: 16, lineHeight: 24 }}>{t.bullet2}</Text>
+              <Text style={{ color: "#eef6ff", fontSize: 16, lineHeight: 24 }}>{t.bullet3}</Text>
+              <Text style={{ color: "#eef6ff", fontSize: 16, lineHeight: 24 }}>{t.bullet4}</Text>
+              <Text style={{ color: "#eef6ff", fontSize: 16, lineHeight: 24 }}>{t.bullet5}</Text>
+              <Text style={{ color: "#eef6ff", fontSize: 16, lineHeight: 24 }}>{t.bullet6}</Text>
             </View>
 
             <Pressable
@@ -622,7 +696,7 @@ export default function GuiaDetalleScreen() {
                   }}
                 >
                   <Text style={{ color: "#ffffff", fontSize: 22, fontWeight: "900" }}>
-                    Solicitar servicio
+                    {t.requestService}
                   </Text>
                 </View>
               </ImageBackground>
@@ -635,7 +709,7 @@ export default function GuiaDetalleScreen() {
                 textAlign: "center",
               }}
             >
-              El chat con el guía se habilita únicamente después del pago.
+              {t.chatAfterPay}
             </Text>
           </ScrollView>
 
@@ -668,7 +742,7 @@ export default function GuiaDetalleScreen() {
                 }}
               >
                 <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "800" }}>
-                  Cerrar
+                  {t.close}
                 </Text>
               </Pressable>
 
@@ -719,7 +793,7 @@ export default function GuiaDetalleScreen() {
                           marginTop: 10,
                         }}
                       >
-                        Vista ampliada del video de 45 segundos
+                        {t.videoPreview}
                       </Text>
                     )}
                   </View>
