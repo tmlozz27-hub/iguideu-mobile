@@ -1,4 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiGet } from "@/config/api";
+import { useFocusEffect, useRouter } from "expo-router";
+import * as Location from "expo-location";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   ImageBackground,
@@ -7,11 +11,31 @@ import {
   Text,
   View
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
 import MapView, { Marker } from "react-native-maps";
-import * as Location from "expo-location";
-import { apiGet } from "@/config/api";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+const LANG_KEY = "iguideu_lang";
+
+const copy = {
+  es: {
+    loading: "Cargando guías cercanos",
+    title: "Guías cercanos",
+    subtitle: "Explorá guías ubicados cerca de tu zona y abrí su perfil para reservar.",
+    yourLocation: "Tu ubicación",
+    guide: "Guía",
+    emptyTitle: "No hay guías disponibles",
+    emptySubtitle: "Probá nuevamente en unos minutos.",
+  },
+  en: {
+    loading: "Loading nearby guides",
+    title: "Nearby guides",
+    subtitle: "Explore guides near your area and open their profile to book.",
+    yourLocation: "Your location",
+    guide: "Guide",
+    emptyTitle: "No guides available",
+    emptySubtitle: "Try again in a few minutes.",
+  },
+};
 
 type Guide = {
   _id?: string;
@@ -31,10 +55,26 @@ export default function GuiasCercanosScreen() {
   const [guides, setGuides] = useState<Guide[]>([]);
   const [loading, setLoading] = useState(true);
   const [center, setCenter] = useState({ lat: -34.6037, lng: -58.3816 });
+  const [lang, setLang] = useState<"es" | "en">("es");
+  const t = copy[lang];
+
+  const loadLang = useCallback(async () => {
+    const savedLang = await AsyncStorage.getItem(LANG_KEY);
+    if (savedLang === "es" || savedLang === "en") {
+      setLang(savedLang);
+    }
+  }, []);
 
   useEffect(() => {
+    loadLang();
     load();
-  }, []);
+  }, [loadLang]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadLang();
+    }, [loadLang])
+  );
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -104,11 +144,10 @@ export default function GuiasCercanosScreen() {
           style={{ flex: 1, backgroundColor: "#76A9E8" }}
           resizeMode="cover"
         >
-          
           <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
             <ActivityIndicator size="large" color="#15539A" />
             <Text style={{ marginTop: 12, color: "#15539A", fontWeight: "800", fontSize: 18 }}>
-              Cargando guías cercanos
+              {t.loading}
             </Text>
           </View>
         </ImageBackground>
@@ -125,10 +164,6 @@ export default function GuiasCercanosScreen() {
         style={{ flex: 1, backgroundColor: "#76A9E8" }}
         resizeMode="cover"
       >
-        
-        
-        
-
         <View style={{ flex: 1, paddingHorizontal: 14, paddingTop: 8, paddingBottom: 8 }}>
           <View
             style={{
@@ -141,11 +176,11 @@ export default function GuiasCercanosScreen() {
             }}
           >
             <Text style={{ fontSize: 28, fontWeight: "800", color: "#15539A", textAlign: "center" }}>
-              Guías cercanos
+              {t.title}
             </Text>
 
             <Text style={{ marginTop: 8, textAlign: "center", color: "#173B6B", fontSize: 15 }}>
-              Explorá guías ubicados cerca de tu zona y abrí su perfil para reservar.
+              {t.subtitle}
             </Text>
           </View>
 
@@ -171,7 +206,7 @@ export default function GuiasCercanosScreen() {
             >
               <Marker
                 coordinate={{ latitude: center.lat, longitude: center.lng }}
-                title="Tu ubicación"
+                title={t.yourLocation}
                 pinColor="#15539A"
               />
 
@@ -185,7 +220,7 @@ export default function GuiasCercanosScreen() {
                   <Marker
                     key={g._id || g.id || String(i)}
                     coordinate={{ latitude: lat, longitude: lng }}
-                    title={g.name || "Guía"}
+                    title={g.name || t.guide}
                     description={[g.city, g.country].filter(Boolean).join(", ")}
                     pinColor="#1CC9B7"
                   />
@@ -208,8 +243,8 @@ export default function GuiasCercanosScreen() {
             <ScrollView>
               {guides.length === 0 ? (
                 <View style={{ padding: 18 }}>
-                  <Text style={{ fontWeight: "800", color: "#15539A" }}>No hay guías disponibles</Text>
-                  <Text style={{ color: "#173B6B" }}>Probá nuevamente en unos minutos.</Text>
+                  <Text style={{ fontWeight: "800", color: "#15539A" }}>{t.emptyTitle}</Text>
+                  <Text style={{ color: "#173B6B" }}>{t.emptySubtitle}</Text>
                 </View>
               ) : (
                 guides.map((g, i) => {
