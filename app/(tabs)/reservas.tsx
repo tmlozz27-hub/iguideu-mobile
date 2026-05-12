@@ -16,8 +16,8 @@ const LANG_KEY = "iguideu_lang";
 const copy = {
   es: {
     title: "Reservas",
-    empty: "Todavía no hay reservas pagadas.",
-    guide: "Guía",
+    empty: "Todavia no hay reservas pagadas.",
+    guide: "Guia",
     date: "Fecha",
     hours: "Horas",
     amount: "Monto",
@@ -70,6 +70,7 @@ export default function ReservasScreen() {
 
   const loadLang = useCallback(async () => {
     const savedLang = await AsyncStorage.getItem(LANG_KEY);
+
     if (savedLang === "es" || savedLang === "en") {
       setLang(savedLang);
     }
