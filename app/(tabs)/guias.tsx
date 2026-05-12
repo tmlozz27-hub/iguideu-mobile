@@ -15,21 +15,21 @@ const LANG_KEY = "iguideu_lang";
 
 const copy = {
   es: {
-    title: "Guías",
-    subtitle: "Abrí perfiles reales, revisá tarifas y seguí directo a reserva.",
-    nearby: "Guías cercanos",
+    title: "Guias",
+    subtitle: "Abri perfiles reales, revisa tarifas y segui directo a reserva.",
+    nearby: "Guias cercanos",
     reload: "Recargar",
-    byCountry: "Buscar por país",
-    empty: "No hay guías para mostrar.",
+    byCountry: "Buscar por pais",
+    empty: "No hay guias para mostrar.",
     confirm: "A confirmar",
-    guide: "Guía",
-    locationConfirm: "Ubicación a confirmar",
+    guide: "Guia",
+    locationConfirm: "Ubicacion a confirmar",
     languages: "Idiomas",
     rating: "Rating",
     day: "Jornada 8h",
     hour: "Por hora",
-    defaultBio: "Guía local disponible para experiencias personalizadas.",
-    viewProfile: "Ver perfil",
+    defaultBio: "Guia local disponible para experiencias personalizadas.",
+    viewProfile: "Ver perfil"
   },
   en: {
     title: "Guides",
@@ -46,8 +46,8 @@ const copy = {
     day: "8h day",
     hour: "Per hour",
     defaultBio: "Local guide available for personalized experiences.",
-    viewProfile: "View profile",
-  },
+    viewProfile: "View profile"
+  }
 };
 
 type Guide = {
