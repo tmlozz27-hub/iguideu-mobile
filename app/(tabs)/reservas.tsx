@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ImageBackground,
   Pressable,
@@ -6,11 +8,33 @@ import {
   Text,
   View
 } from "react-native";
-import { useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiGet } from "../../config/api";
 
 const TOKEN_KEY = "iguideu_token";
+const LANG_KEY = "iguideu_lang";
+
+const copy = {
+  es: {
+    title: "Reservas",
+    empty: "Todavía no hay reservas pagadas.",
+    guide: "Guía",
+    date: "Fecha",
+    hours: "Horas",
+    amount: "Monto",
+    status: "Estado",
+    openChat: "ABRIR CHAT"
+  },
+  en: {
+    title: "Bookings",
+    empty: "There are no paid bookings yet.",
+    guide: "Guide",
+    date: "Date",
+    hours: "Hours",
+    amount: "Amount",
+    status: "Status",
+    openChat: "OPEN CHAT"
+  }
+};
 
 type Booking = {
   _id: string;
@@ -41,6 +65,15 @@ export default function ReservasScreen() {
   const router = useRouter();
 
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [lang, setLang] = useState<"es" | "en">("es");
+  const t = copy[lang];
+
+  const loadLang = useCallback(async () => {
+    const savedLang = await AsyncStorage.getItem(LANG_KEY);
+    if (savedLang === "es" || savedLang === "en") {
+      setLang(savedLang);
+    }
+  }, []);
 
   async function loadBookings() {
     try {
@@ -72,8 +105,15 @@ export default function ReservasScreen() {
   }
 
   useEffect(() => {
+    loadLang();
     loadBookings();
-  }, []);
+  }, [loadLang]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadLang();
+    }, [loadLang])
+  );
 
   return (
     <ImageBackground
@@ -100,7 +140,7 @@ export default function ReservasScreen() {
             marginBottom: 28
           }}
         >
-          Reservas
+          {t.title}
         </Text>
 
         {bookings.length === 0 ? (
@@ -118,7 +158,7 @@ export default function ReservasScreen() {
                 textAlign: "center"
               }}
             >
-              Todavía no hay reservas pagadas.
+              {t.empty}
             </Text>
           </View>
         ) : null}
@@ -150,7 +190,7 @@ export default function ReservasScreen() {
                   color: "#15539A"
                 }}
               >
-                {booking.guideName || "Guía"}
+                {booking.guideName || t.guide}
               </Text>
 
               <Text style={{ color: "#173B6B" }}>
@@ -158,15 +198,15 @@ export default function ReservasScreen() {
               </Text>
 
               <Text style={{ color: "#173B6B" }}>
-                Fecha: {booking.date || "-"}
+                {t.date}: {booking.date || "-"}
               </Text>
 
               <Text style={{ color: "#173B6B" }}>
-                Horas: {booking.hours ?? "-"}
+                {t.hours}: {booking.hours ?? "-"}
               </Text>
 
               <Text style={{ color: "#173B6B" }}>
-                Monto: USD {Number(amount || 0).toFixed(2)}
+                {t.amount}: USD {Number(amount || 0).toFixed(2)}
               </Text>
 
               <Text
@@ -175,7 +215,7 @@ export default function ReservasScreen() {
                   fontWeight: "800"
                 }}
               >
-                Estado: {booking.status || "-"}
+                {t.status}: {booking.status || "-"}
               </Text>
 
               <Pressable
@@ -201,7 +241,7 @@ export default function ReservasScreen() {
                     fontWeight: "800"
                   }}
                 >
-                  ABRIR CHAT
+                  {t.openChat}
                 </Text>
               </Pressable>
             </View>

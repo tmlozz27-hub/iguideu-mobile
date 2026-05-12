@@ -1,23 +1,70 @@
-import React, { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Pressable,
   ScrollView,
   Text,
   View,
 } from "react-native";
-import { useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE } from "@/config/api";
+
+const LANG_KEY = "iguideu_lang";
+
+const copy = {
+  es: {
+    title: "Mis reservas",
+    loading: "Cargando reservas...",
+    emptyTitle: "Reservas del guía",
+    empty: "Todavía no hay reservas pagadas para este guía.",
+    booking: "Reserva",
+    status: "Estado",
+    traveler: "Viajero",
+    total: "Total",
+    openChat: "ABRIR CHAT",
+    back: "Volver al perfil guía",
+  },
+  en: {
+    title: "My bookings",
+    loading: "Loading bookings...",
+    emptyTitle: "Guide bookings",
+    empty: "There are no paid bookings for this guide yet.",
+    booking: "Booking",
+    status: "Status",
+    traveler: "Traveler",
+    total: "Total",
+    openChat: "OPEN CHAT",
+    back: "Back to guide profile",
+  },
+};
 
 export default function ReservasGuia() {
   const router = useRouter();
 
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lang, setLang] = useState<"es" | "en">("es");
+
+  const t = copy[lang];
+
+  const loadLang = useCallback(async () => {
+    const savedLang = await AsyncStorage.getItem(LANG_KEY);
+
+    if (savedLang === "es" || savedLang === "en") {
+      setLang(savedLang);
+    }
+  }, []);
 
   useEffect(() => {
+    loadLang();
     loadBookings();
-  }, []);
+  }, [loadLang]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadLang();
+    }, [loadLang])
+  );
 
   const loadBookings = async () => {
     try {
@@ -73,7 +120,7 @@ export default function ReservasGuia() {
             marginBottom: 20,
           }}
         >
-          Mis reservas
+          {t.title}
         </Text>
 
         {loading ? (
@@ -90,7 +137,7 @@ export default function ReservasGuia() {
                 fontSize: 16,
               }}
             >
-              Cargando reservas...
+              {t.loading}
             </Text>
           </View>
         ) : bookings.length === 0 ? (
@@ -109,7 +156,7 @@ export default function ReservasGuia() {
                 marginBottom: 10,
               }}
             >
-              Reservas del guía
+              {t.emptyTitle}
             </Text>
 
             <Text
@@ -118,7 +165,7 @@ export default function ReservasGuia() {
                 fontSize: 16,
               }}
             >
-              Todavía no hay reservas pagadas para este guía.
+              {t.empty}
             </Text>
           </View>
         ) : (
@@ -140,7 +187,7 @@ export default function ReservasGuia() {
                   marginBottom: 8,
                 }}
               >
-                Reserva #{index + 1}
+                {t.booking} #{index + 1}
               </Text>
 
               <Text
@@ -149,7 +196,7 @@ export default function ReservasGuia() {
                   marginBottom: 4,
                 }}
               >
-                Estado: {booking.status || "PENDING"}
+                {t.status}: {booking.status || "PENDING"}
               </Text>
 
               <Text
@@ -158,7 +205,7 @@ export default function ReservasGuia() {
                   marginBottom: 4,
                 }}
               >
-                Traveler: {booking.travelerEmail || "-"}
+                {t.traveler}: {booking.travelerEmail || "-"}
               </Text>
 
               <Text
@@ -167,7 +214,7 @@ export default function ReservasGuia() {
                   marginBottom: 14,
                 }}
               >
-                Total: USD {booking.totalAmount || booking.amount || 0}
+                {t.total}: USD {booking.totalAmount || booking.amount || 0}
               </Text>
 
               <Pressable
@@ -193,7 +240,7 @@ export default function ReservasGuia() {
                     fontSize: 16,
                   }}
                 >
-                  ABRIR CHAT
+                  {t.openChat}
                 </Text>
               </Pressable>
             </View>
@@ -217,7 +264,7 @@ export default function ReservasGuia() {
               fontSize: 16,
             }}
           >
-            Volver al perfil guía
+            {t.back}
           </Text>
         </Pressable>
       </ScrollView>

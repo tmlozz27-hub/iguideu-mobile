@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+﻿import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Modal, Pressable, ScrollView, Text, View, ImageBackground } from "react-native";
@@ -10,10 +10,10 @@ const LANG_KEY = "iguideu_lang";
 const copy = {
   es: {
     loadingProfile: "Cargando perfil...",
-    notFound: "No se encontró el guía",
+    notFound: "No se encontrÃ³ el guía",
     back: "Volver",
     verifiedProfile: "Perfil verificado",
-    gallery: "Galería",
+    gallery: "GalerÃ­a",
     bio: "Bio",
     languages: "Idiomas",
     rates: "Tarifas",
@@ -28,15 +28,15 @@ const copy = {
     bullet5: "• En actividades compartidas, el viajero cubre también los gastos del guía",
     bullet6: "• Reservando a través de la plataforma asegurás una experiencia clara, segura y registrada",
     requestService: "Solicitar servicio",
-    chatAfterPay: "El chat con el guía se habilita únicamente después del pago.",
+    chatAfterPay: "El chat con el guía se habilita Ãºnicamente despuÃ©s del pago.",
     close: "Cerrar",
     videoPreview: "Vista ampliada del video de 45 segundos",
-    guideDefault: "Guía",
-    defaultBio: "Guía local con experiencia acompañando viajeros y creando experiencias personalizadas.",
+    guideDefault: "guía",
+    defaultBio: "guía local con experiencia acompaÃ±ando viajeros y creando experiencias personalizadas.",
     islands: "Islas",
     beach: "Playa",
     forest: "Bosque",
-    mountain: "Montaña",
+    mountain: "MontaÃ±a",
     video45: "Video 45s",
   },
   en: {
@@ -56,7 +56,7 @@ const copy = {
     bullet2: "• You can coordinate details directly to adapt the itinerary",
     bullet3: "• Rates correspond to the guide service according to the selected option",
     bullet4: "• Expenses such as meals, transportation, or tickets are not included unless clearly stated",
-    bullet5: "• In shared activities, the traveler also covers the guide’s expenses",
+    bullet5: "• In shared activities, the traveler also covers the guide's expenses",
     bullet6: "• Booking through the platform ensures a clear, secure, and registered experience",
     requestService: "Request service",
     chatAfterPay: "Chat with the guide is enabled only after payment.",
@@ -464,7 +464,7 @@ export default function GuiaDetalleScreen() {
                       }}
                     >
                       <Text style={{ color: "#dbeafe", fontSize: 14, fontWeight: "800" }}>
-                        {guide.rating ? `⭐ ${guide.rating}` : t.verifiedProfile}
+                        {guide.rating ? `â­ ${guide.rating}` : t.verifiedProfile}
                       </Text>
                     </View>
                   </View>
@@ -670,7 +670,7 @@ export default function GuiaDetalleScreen() {
             <Pressable
               onPress={() =>
                 router.push({
-                  pathname: "/(tabs)/reservas",
+                  pathname: "/crear-reserva",
                   params: {
                     guideId: selectedGuideId,
                   },
@@ -806,3 +806,4 @@ export default function GuiaDetalleScreen() {
     </ImageBackground>
   );
 }
+

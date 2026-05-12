@@ -1,4 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useLocalSearchParams } from "expo-router";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   FlatList,
@@ -10,13 +12,37 @@ import {
   TextInput,
   View
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { apiGet, apiPost } from "@/config/api";
 
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
+const LANG_KEY = "iguideu_lang";
+
+const copy = {
+  es: {
+    traveler: "Viajero",
+    error: "Error",
+    chatError: "Error chat",
+    missingBooking: "Falta bookingId del chat.",
+    sendError: "No se pudo enviar",
+    loading: "Cargando...",
+    empty: "No hay mensajes",
+    placeholder: "Escribir mensaje...",
+    send: "Enviar"
+  },
+  en: {
+    traveler: "Traveler",
+    error: "Error",
+    chatError: "Chat error",
+    missingBooking: "Missing chat bookingId.",
+    sendError: "Message could not be sent",
+    loading: "Loading...",
+    empty: "No messages yet",
+    placeholder: "Write a message...",
+    send: "Send"
+  }
+};
 
 type ChatMessage = {
   _id?: string;
@@ -44,20 +70,43 @@ export default function ChatScreen() {
   const [senderName, setSenderName] = useState("");
   const [senderEmail, setSenderEmail] = useState("");
   const [senderType] = useState("traveler");
+  const [lang, setLang] = useState<"es" | "en">("es");
+
+  const t = copy[lang];
+
+  const loadLang = useCallback(async () => {
+    const savedLang = await AsyncStorage.getItem(LANG_KEY);
+
+    if (savedLang === "es" || savedLang === "en") {
+      setLang(savedLang);
+    }
+  }, []);
 
   async function loadMe() {
-    const savedEmail = String((await AsyncStorage.getItem(USER_EMAIL_KEY)) || "").trim().toLowerCase();
+    const savedEmail = String(
+      (await AsyncStorage.getItem(USER_EMAIL_KEY)) || ""
+    )
+      .trim()
+      .toLowerCase();
 
     try {
       const me = await apiGet("/api/auth/me");
       const user = (me as any)?.user || me || {};
 
-      setSenderId(String(user?._id || user?.id || savedEmail || "traveler").trim());
-      setSenderName(String(user?.name || "Viajero").trim());
-      setSenderEmail(String(user?.email || savedEmail).trim().toLowerCase());
+      setSenderId(
+        String(user?._id || user?.id || savedEmail || "traveler").trim()
+      );
+
+      setSenderName(
+        String(user?.name || t.traveler).trim()
+      );
+
+      setSenderEmail(
+        String(user?.email || savedEmail).trim().toLowerCase()
+      );
     } catch {
       setSenderId(savedEmail || "traveler");
-      setSenderName("Viajero");
+      setSenderName(t.traveler);
       setSenderEmail(savedEmail);
     }
   }
@@ -65,7 +114,10 @@ export default function ChatScreen() {
   async function loadMessages() {
     if (!bookingId) return;
 
-    const data = await apiGet(`/api/chat/messages?bookingId=${bookingId}`);
+    const data = await apiGet(
+      `/api/chat/messages?bookingId=${bookingId}`
+    );
+
     const list = Array.isArray(data)
       ? data
       : Array.isArray((data as any)?.items)
@@ -87,7 +139,7 @@ export default function ChatScreen() {
       await loadMe();
       await loadMessages();
     } catch (e: any) {
-      Alert.alert("Error", e?.message || "Error chat");
+      Alert.alert(t.error, e?.message || t.chatError);
     } finally {
       setLoading(false);
     }
@@ -101,18 +153,23 @@ export default function ChatScreen() {
     }
 
     if (!bookingId) {
-      Alert.alert("Error", "Falta bookingId del chat.");
+      Alert.alert(t.error, t.missingBooking);
       return;
     }
 
-    const finalSenderId = String(senderId || senderEmail || "traveler").trim();
-    const finalSenderEmail = String(senderEmail || "").trim().toLowerCase();
+    const finalSenderId = String(
+      senderId || senderEmail || "traveler"
+    ).trim();
+
+    const finalSenderEmail = String(senderEmail || "")
+      .trim()
+      .toLowerCase();
 
     try {
       const body = {
         bookingId: String(bookingId),
         senderId: finalSenderId,
-        senderName: senderName || "Viajero",
+        senderName: senderName || t.traveler,
         senderEmail: finalSenderEmail,
         senderType,
         text: clean,
@@ -130,17 +187,19 @@ export default function ChatScreen() {
       }
 
       setText("");
+
       await loadMessages();
 
       setTimeout(() => {
         listRef.current?.scrollToEnd({ animated: true });
       }, 120);
     } catch (e: any) {
-      Alert.alert("Error", e?.message || "No se pudo enviar");
+      Alert.alert(t.error, e?.message || t.sendError);
     }
   }
 
   useEffect(() => {
+    loadLang();
     refreshChat();
   }, [bookingId]);
 
@@ -163,14 +222,24 @@ export default function ChatScreen() {
         <FlatList
           ref={listRef}
           data={messages}
-          keyExtractor={(item, i) => item._id || item.id || String(i)}
+          keyExtractor={(item, i) =>
+            item._id || item.id || String(i)
+          }
           contentContainerStyle={{
             padding: 16,
             paddingBottom: 20
           }}
           renderItem={({ item }) => {
-            const body = item.text || item.message || item.body || item.content || "";
-            const mine = String(item.senderId || "") === String(senderId || "");
+            const body =
+              item.text ||
+              item.message ||
+              item.body ||
+              item.content ||
+              "";
+
+            const mine =
+              String(item.senderId || "") ===
+              String(senderId || "");
 
             return (
               <View
@@ -184,19 +253,36 @@ export default function ChatScreen() {
                     maxWidth: "80%",
                     borderRadius: 18,
                     padding: 14,
-                    backgroundColor: mine ? "#12b8a6" : "rgba(255,255,255,0.20)",
+                    backgroundColor: mine
+                      ? "#12b8a6"
+                      : "rgba(255,255,255,0.20)",
                     borderWidth: 1,
-                    borderColor: mine ? "#12b8a6" : "rgba(255,255,255,0.30)"
+                    borderColor: mine
+                      ? "#12b8a6"
+                      : "rgba(255,255,255,0.30)"
                   }}
                 >
-                  <Text style={{ color: "#fff", fontSize: 16 }}>{body}</Text>
+                  <Text
+                    style={{
+                      color: "#fff",
+                      fontSize: 16
+                    }}
+                  >
+                    {body}
+                  </Text>
                 </View>
               </View>
             );
           }}
           ListEmptyComponent={
-            <Text style={{ color: "#fff", textAlign: "center", marginTop: 40 }}>
-              {loading ? "Cargando..." : "No hay mensajes"}
+            <Text
+              style={{
+                color: "#fff",
+                textAlign: "center",
+                marginTop: 40
+              }}
+            >
+              {loading ? t.loading : t.empty}
             </Text>
           }
         />
@@ -221,7 +307,7 @@ export default function ChatScreen() {
             <TextInput
               value={text}
               onChangeText={setText}
-              placeholder="Escribir mensaje..."
+              placeholder={t.placeholder}
               placeholderTextColor="#d1d5db"
               style={{
                 flex: 1,
@@ -241,7 +327,14 @@ export default function ChatScreen() {
                 paddingVertical: 10
               }}
             >
-              <Text style={{ color: "#fff", fontWeight: "800" }}>Enviar</Text>
+              <Text
+                style={{
+                  color: "#fff",
+                  fontWeight: "800"
+                }}
+              >
+                {t.send}
+              </Text>
             </Pressable>
           </View>
         </View>
