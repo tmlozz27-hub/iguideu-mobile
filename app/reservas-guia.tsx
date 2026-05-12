@@ -2,10 +2,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
+  ImageBackground,
   Pressable,
   ScrollView,
   Text,
-  View,
+  View
 } from "react-native";
 import { API_BASE } from "@/config/api";
 
@@ -99,25 +100,67 @@ export default function ReservasGuia() {
   };
 
   return (
-    <View
+    <ImageBackground
+      source={{
+        uri: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80"
+      }}
       style={{
         flex: 1,
-        backgroundColor: "#EAF3FF",
+        backgroundColor: "#0B3E91"
       }}
+      resizeMode="cover"
     >
+      <View
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "rgba(11,62,145,0.74)"
+        }}
+      />
+
+      <View
+        style={{
+          position: "absolute",
+          top: -40,
+          right: -20,
+          width: 220,
+          height: 220,
+          borderRadius: 110,
+          backgroundColor: "rgba(88,196,255,0.14)"
+        }}
+      />
+
+      <View
+        style={{
+          position: "absolute",
+          bottom: 140,
+          left: -40,
+          width: 180,
+          height: 180,
+          borderRadius: 90,
+          backgroundColor: "rgba(18,184,166,0.10)"
+        }}
+      />
+
       <ScrollView
         contentContainerStyle={{
           padding: 24,
-          paddingBottom: 40,
+          paddingBottom: 40
         }}
       >
         <Text
           style={{
-            color: "#173B6B",
+            color: "#fff",
             fontSize: 30,
             fontWeight: "900",
             textAlign: "center",
             marginBottom: 20,
+            textShadowColor: "rgba(0,0,0,0.18)",
+            textShadowOffset: { width: 0, height: 2 },
+            textShadowRadius: 8
           }}
         >
           {t.title}
@@ -126,15 +169,17 @@ export default function ReservasGuia() {
         {loading ? (
           <View
             style={{
-              backgroundColor: "rgba(255,255,255,0.8)",
+              backgroundColor: "rgba(255,255,255,0.10)",
               borderRadius: 22,
               padding: 20,
+              borderWidth: 1,
+              borderColor: "rgba(255,255,255,0.14)"
             }}
           >
             <Text
               style={{
-                color: "#173B6B",
-                fontSize: 16,
+                color: "#fff",
+                fontSize: 16
               }}
             >
               {t.loading}
@@ -143,17 +188,19 @@ export default function ReservasGuia() {
         ) : bookings.length === 0 ? (
           <View
             style={{
-              backgroundColor: "rgba(255,255,255,0.8)",
+              backgroundColor: "rgba(255,255,255,0.10)",
               borderRadius: 22,
               padding: 20,
+              borderWidth: 1,
+              borderColor: "rgba(255,255,255,0.14)"
             }}
           >
             <Text
               style={{
-                color: "#173B6B",
+                color: "#fff",
                 fontSize: 18,
                 fontWeight: "800",
-                marginBottom: 10,
+                marginBottom: 10
               }}
             >
               {t.emptyTitle}
@@ -161,8 +208,8 @@ export default function ReservasGuia() {
 
             <Text
               style={{
-                color: "#173B6B",
-                fontSize: 16,
+                color: "#e5eefb",
+                fontSize: 16
               }}
             >
               {t.empty}
@@ -173,18 +220,20 @@ export default function ReservasGuia() {
             <View
               key={booking._id || index}
               style={{
-                backgroundColor: "rgba(255,255,255,0.92)",
+                backgroundColor: "rgba(255,255,255,0.10)",
                 borderRadius: 22,
                 padding: 18,
                 marginBottom: 16,
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.14)"
               }}
             >
               <Text
                 style={{
-                  color: "#173B6B",
+                  color: "#fff",
                   fontSize: 18,
                   fontWeight: "800",
-                  marginBottom: 8,
+                  marginBottom: 8
                 }}
               >
                 {t.booking} #{index + 1}
@@ -192,8 +241,8 @@ export default function ReservasGuia() {
 
               <Text
                 style={{
-                  color: "#173B6B",
-                  marginBottom: 4,
+                  color: "#e5eefb",
+                  marginBottom: 4
                 }}
               >
                 {t.status}: {booking.status || "PENDING"}
@@ -201,8 +250,8 @@ export default function ReservasGuia() {
 
               <Text
                 style={{
-                  color: "#173B6B",
-                  marginBottom: 4,
+                  color: "#e5eefb",
+                  marginBottom: 4
                 }}
               >
                 {t.traveler}: {booking.travelerEmail || "-"}
@@ -210,8 +259,8 @@ export default function ReservasGuia() {
 
               <Text
                 style={{
-                  color: "#173B6B",
-                  marginBottom: 14,
+                  color: "#e5eefb",
+                  marginBottom: 14
                 }}
               >
                 {t.total}: USD {booking.totalAmount || booking.amount || 0}
@@ -230,14 +279,14 @@ export default function ReservasGuia() {
                   backgroundColor: "#12b8a6",
                   paddingVertical: 14,
                   borderRadius: 14,
-                  alignItems: "center",
+                  alignItems: "center"
                 }}
               >
                 <Text
                   style={{
                     color: "#fff",
                     fontWeight: "800",
-                    fontSize: 16,
+                    fontSize: 16
                   }}
                 >
                   {t.openChat}
@@ -250,10 +299,11 @@ export default function ReservasGuia() {
         <Pressable
           onPress={() => router.replace("/perfil-guia")}
           style={{
-            backgroundColor: "#173B6B",
+            backgroundColor: "rgba(47,95,147,0.96)",
             padding: 16,
-            borderRadius: 16,
+            borderRadius: 14,
             marginTop: 12,
+            alignItems: "center"
           }}
         >
           <Text
@@ -261,13 +311,13 @@ export default function ReservasGuia() {
               color: "#fff",
               fontWeight: "800",
               textAlign: "center",
-              fontSize: 16,
+              fontSize: 16
             }}
           >
             {t.back}
           </Text>
         </Pressable>
       </ScrollView>
-    </View>
+    </ImageBackground>
   );
 }
