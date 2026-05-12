@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
   ImageBackground,
@@ -10,13 +10,16 @@ import {
   View
 } from "react-native";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useStripe } from "@stripe/stripe-react-native";
 import { apiGet, apiPost } from "../config/api";
 
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
+const LANG_KEY = "iguideu_lang";
+
+type Lang = "es" | "en";
 
 type Guide = {
   _id: string;
@@ -46,6 +49,135 @@ type Booking = {
   totalAmount?: number;
   status?: string;
   guideName?: string;
+};
+
+const copy = {
+  es: {
+    title: "Reservas",
+    noGuideTitle: "Todavía no elegiste un guía",
+    noGuideText: "Primero elegí un guía desde Buscar guías por país o Guías cercanos.",
+    searchGuides: "IR A BUSCAR GUÍAS",
+    travelerEmail: "Email del viajero",
+    date: "Fecha",
+    today: "Hoy",
+    tomorrow: "Mañana",
+    plusTwoDays: "+2 días",
+    selectedDate: "Fecha seleccionada",
+    pickAnotherDate: "TOCAR PARA ELEGIR OTRA FECHA",
+    confirmDate: "CONFIRMAR FECHA",
+    guide: "Guía",
+    selectedGuide: "Guía seleccionada desde el perfil",
+    hours: "Horas",
+    adults: "Adultos (18+)",
+    youth: "Jóvenes (13 a 17)",
+    children: "Niños (0 a 12)",
+    summary: "Resumen",
+    totalTravelers: "Total viajeros",
+    adultPriceHour: "Precio adulto/hora",
+    youthPriceHour: "Precio joven/hora",
+    childrenFree: "Niños (0 a 12): sin cargo",
+    total: "Total",
+    beforeBooking: "Antes de confirmar tu reserva",
+    rule1: "El servicio corresponde a la modalidad indicada y se calcula por viajero según edad",
+    rule2: "Gastos como comidas, transporte o entradas no están incluidos salvo que se indique expresamente",
+    rule3: "Podés coordinar directamente con tu guía los gastos o detalles adicionales",
+    rule4: "Podés cancelar sin costo con más de 24 horas de anticipación",
+    rule5: "Si surge un imprevisto, podés coordinar directamente con tu guía un cambio de horario o fecha",
+    rule6: "Las horas adicionales se acuerdan con el guía y se cobran según la tarifa publicada",
+    confirmation: "Confirmación",
+    confirm1: "Confirmo que revisé la tarifa, duración y condiciones de esta reserva",
+    confirm2: "Confirmo que los gastos adicionales no están incluidos salvo que se indique expresamente",
+    confirm3: "Confirmo que leí las condiciones de cancelación, cambios e imprevistos",
+    securePayment: "Pago seguro · Reserva registrada · Mayor transparencia para ambas partes",
+    loading: "Cargando...",
+    payNow: "PAGAR AHORA",
+    openChat: "ABRIR CHAT",
+    contactAfterPayment: "Tu información de contacto se compartirá solo después del pago",
+    myBookings: "Mis reservas",
+    noPaidBookings: "Todavía no hay reservas pagadas.",
+    email: "Email",
+    amount: "Monto",
+    status: "Estado",
+    error: "Error",
+    noSession: "No hay sesión activa. Volvé a iniciar sesión.",
+    missingEmail: "Falta el email del viajero.",
+    enterDate: "Ingresá fecha.",
+    chooseGuide: "Primero elegí un guía.",
+    validHours: "Ingresá horas válidas.",
+    enterTraveler: "Ingresá al menos 1 viajero.",
+    bookingNoId: "La reserva se creó pero no volvió el bookingId.",
+    paymentStartError: "No se pudo iniciar el pago.",
+    paymentPrepareError: "No se pudo preparar el pago.",
+    paymentIncomplete: "Pago no completado",
+    paymentCancelled: "El pago fue cancelado.",
+    ok: "OK",
+    paymentSuccess: "Pago realizado correctamente.",
+    createBookingError: "No se pudo crear la reserva.",
+    loadBookingsError: "No se pudieron cargar las reservas."
+  },
+  en: {
+    title: "Bookings",
+    noGuideTitle: "You have not selected a guide yet",
+    noGuideText: "First choose a guide from Guides by country or Nearby guides.",
+    searchGuides: "SEARCH GUIDES",
+    travelerEmail: "Traveler email",
+    date: "Date",
+    today: "Today",
+    tomorrow: "Tomorrow",
+    plusTwoDays: "+2 days",
+    selectedDate: "Selected date",
+    pickAnotherDate: "TAP TO CHOOSE ANOTHER DATE",
+    confirmDate: "CONFIRM DATE",
+    guide: "Guide",
+    selectedGuide: "Guide selected from profile",
+    hours: "Hours",
+    adults: "Adults (18+)",
+    youth: "Young travelers (13 to 17)",
+    children: "Children (0 to 12)",
+    summary: "Summary",
+    totalTravelers: "Total travelers",
+    adultPriceHour: "Adult price/hour",
+    youthPriceHour: "Young traveler price/hour",
+    childrenFree: "Children (0 to 12): free",
+    total: "Total",
+    beforeBooking: "Before booking",
+    rule1: "The service corresponds to the selected option and is calculated per traveler by age",
+    rule2: "Expenses such as meals, transportation, or tickets are not included unless clearly stated",
+    rule3: "You can coordinate additional expenses or details directly with your guide",
+    rule4: "You can cancel for free more than 24 hours in advance",
+    rule5: "If something unexpected happens, you can coordinate a time or date change directly with your guide",
+    rule6: "Additional hours are agreed with the guide and charged according to the published rate",
+    confirmation: "Confirmation",
+    confirm1: "I confirm that I reviewed the rate, duration, and conditions of this booking",
+    confirm2: "I confirm that additional expenses are not included unless clearly stated",
+    confirm3: "I confirm that I read the cancellation, change, and unexpected event conditions",
+    securePayment: "Secure payment · Registered booking · More transparency for both parties",
+    loading: "Loading...",
+    payNow: "PAY NOW",
+    openChat: "OPEN CHAT",
+    contactAfterPayment: "Your contact information will be shared only after payment",
+    myBookings: "My bookings",
+    noPaidBookings: "There are no paid bookings yet.",
+    email: "Email",
+    amount: "Amount",
+    status: "Status",
+    error: "Error",
+    noSession: "There is no active session. Please sign in again.",
+    missingEmail: "Traveler email is missing.",
+    enterDate: "Enter a date.",
+    chooseGuide: "First choose a guide.",
+    validHours: "Enter valid hours.",
+    enterTraveler: "Enter at least 1 traveler.",
+    bookingNoId: "The booking was created but no bookingId was returned.",
+    paymentStartError: "Could not start payment.",
+    paymentPrepareError: "Could not prepare payment.",
+    paymentIncomplete: "Payment not completed",
+    paymentCancelled: "The payment was cancelled.",
+    ok: "OK",
+    paymentSuccess: "Payment completed successfully.",
+    createBookingError: "Could not create the booking.",
+    loadBookingsError: "Could not load bookings."
+  }
 };
 
 function formatDateToString(d: Date) {
@@ -107,6 +239,9 @@ export default function CrearReservaScreen() {
   const params = useLocalSearchParams<{ guideId?: string }>();
   const lockedGuideId = typeof params.guideId === "string" ? params.guideId : "";
 
+  const [lang, setLang] = useState<Lang>("es");
+  const t = copy[lang];
+
   const [travelerEmail, setTravelerEmail] = useState("");
   const [date, setDate] = useState(todayString());
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -120,6 +255,17 @@ export default function CrearReservaScreen() {
   const [selectedGuideId, setSelectedGuideId] = useState(lockedGuideId);
   const [loading, setLoading] = useState(false);
   const [lastPaidBookingId, setLastPaidBookingId] = useState("");
+
+  const loadLang = useCallback(async () => {
+    const savedLang = String((await AsyncStorage.getItem(LANG_KEY)) || "").trim().toLowerCase();
+
+    if (savedLang === "en" || savedLang.startsWith("en")) {
+      setLang("en");
+      return;
+    }
+
+    setLang("es");
+  }, []);
 
   async function loadGuides() {
     const data = await apiGet("/api/guides");
@@ -162,6 +308,8 @@ export default function CrearReservaScreen() {
     try {
       setLoading(true);
 
+      await loadLang();
+
       const savedEmail = String((await AsyncStorage.getItem(USER_EMAIL_KEY)) || "").trim().toLowerCase();
       if (savedEmail) {
         setTravelerEmail(savedEmail);
@@ -171,7 +319,7 @@ export default function CrearReservaScreen() {
       await loadBookings();
     } catch (error: any) {
       console.log("ERROR refresh reservas", error);
-      Alert.alert("Error", error?.message || "No se pudieron cargar las reservas.");
+      Alert.alert(t.error, error?.message || t.loadBookingsError);
     } finally {
       setLoading(false);
     }
@@ -180,6 +328,12 @@ export default function CrearReservaScreen() {
   useEffect(() => {
     refreshAll();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadLang();
+    }, [loadLang])
+  );
 
   useEffect(() => {
     if (lockedGuideId) {
@@ -271,32 +425,32 @@ export default function CrearReservaScreen() {
       const emailClean = String(travelerEmail || "").trim().toLowerCase();
 
       if (!headers) {
-        Alert.alert("Error", "No hay sesión activa. Volvé a iniciar sesión.");
+        Alert.alert(t.error, t.noSession);
         return;
       }
 
       if (!emailClean) {
-        Alert.alert("Error", "Falta el email del viajero.");
+        Alert.alert(t.error, t.missingEmail);
         return;
       }
 
       if (!date.trim()) {
-        Alert.alert("Error", "Ingresá fecha.");
+        Alert.alert(t.error, t.enterDate);
         return;
       }
 
       if (!selectedGuideId) {
-        Alert.alert("Error", "Primero elegí un guía.");
+        Alert.alert(t.error, t.chooseGuide);
         return;
       }
 
       if (!Number.isFinite(h) || h <= 0) {
-        Alert.alert("Error", "Ingresá horas válidas.");
+        Alert.alert(t.error, t.validHours);
         return;
       }
 
       if (travelersCount <= 0) {
-        Alert.alert("Error", "Ingresá al menos 1 viajero.");
+        Alert.alert(t.error, t.enterTraveler);
         return;
       }
 
@@ -325,7 +479,7 @@ export default function CrearReservaScreen() {
         (created as any)?.id;
 
       if (!bookingId) {
-        Alert.alert("Error", "La reserva se creó pero no volvió el bookingId.");
+        Alert.alert(t.error, t.bookingNoId);
         await loadBookings();
         return;
       }
@@ -339,7 +493,7 @@ export default function CrearReservaScreen() {
       const clientSecret = String(intentResponse?.clientSecret || "").trim();
 
       if (!clientSecret) {
-        Alert.alert("Error", "No se pudo iniciar el pago.");
+        Alert.alert(t.error, t.paymentStartError);
         await loadBookings();
         return;
       }
@@ -353,23 +507,23 @@ export default function CrearReservaScreen() {
       });
 
       if (init.error) {
-        Alert.alert("Error", init.error.message || "No se pudo preparar el pago.");
+        Alert.alert(t.error, init.error.message || t.paymentPrepareError);
         return;
       }
 
       const result = await presentPaymentSheet();
 
       if (result.error) {
-        Alert.alert("Pago no completado", result.error.message || "El pago fue cancelado.");
+        Alert.alert(t.paymentIncomplete, result.error.message || t.paymentCancelled);
         return;
       }
 
       setLastPaidBookingId(String(bookingId));
-      Alert.alert("OK", "Pago realizado correctamente.");
+      Alert.alert(t.ok, t.paymentSuccess);
       await loadBookings();
     } catch (error: any) {
       console.log("ERROR createBooking()", error);
-      Alert.alert("Error", error?.message || "No se pudo crear la reserva.");
+      Alert.alert(t.error, error?.message || t.createBookingError);
     } finally {
       setLoading(false);
     }
@@ -435,7 +589,7 @@ export default function CrearReservaScreen() {
             textShadowRadius: 6
           }}
         >
-          Reservas
+          {t.title}
         </Text>
 
         {!showReservationForm ? (
@@ -450,10 +604,10 @@ export default function CrearReservaScreen() {
             }}
           >
             <Text style={{ fontSize: 18, fontWeight: "800", color: "#15539A" }}>
-              Todavía no elegiste un guía
+              {t.noGuideTitle}
             </Text>
             <Text style={{ fontSize: 16, color: "#173B6B", lineHeight: 24 }}>
-              Primero elegí un guía desde Buscar guías por país o Guías cercanos.
+              {t.noGuideText}
             </Text>
 
             <Pressable
@@ -470,7 +624,7 @@ export default function CrearReservaScreen() {
               }}
             >
               <Text style={{ fontSize: 18, fontWeight: "800", color: "#ffffff" }}>
-                IR A BUSCAR GUÍAS
+                {t.searchGuides}
               </Text>
             </Pressable>
           </View>
@@ -478,7 +632,7 @@ export default function CrearReservaScreen() {
 
         {showReservationForm ? (
           <>
-            <Text style={{ fontSize: 16, color: "#15539A", fontWeight: "700" }}>Traveler Email</Text>
+            <Text style={{ fontSize: 16, color: "#15539A", fontWeight: "700" }}>{t.travelerEmail}</Text>
             <TextInput
               value={travelerEmail}
               onChangeText={setTravelerEmail}
@@ -497,13 +651,13 @@ export default function CrearReservaScreen() {
               }}
             />
 
-            <Text style={{ fontSize: 16, color: "#15539A", fontWeight: "700" }}>Fecha</Text>
+            <Text style={{ fontSize: 16, color: "#15539A", fontWeight: "700" }}>{t.date}</Text>
 
             <View style={{ flexDirection: "row", gap: 10 }}>
               {[
-                { label: "Hoy", value: todayString() },
-                { label: "Mañana", value: addDaysString(1) },
-                { label: "+2 días", value: addDaysString(2) }
+                { label: t.today, value: todayString() },
+                { label: t.tomorrow, value: addDaysString(1) },
+                { label: t.plusTwoDays, value: addDaysString(2) }
               ].map((opt) => (
                 <Pressable
                   key={opt.label}
@@ -540,10 +694,10 @@ export default function CrearReservaScreen() {
               }}
             >
               <Text style={{ fontSize: 16, color: "#111827" }}>
-                Fecha seleccionada: {date}
+                {t.selectedDate}: {date}
               </Text>
               <Text style={{ marginTop: 8, fontSize: 14, fontWeight: "700", color: "#15539A" }}>
-                TOCAR PARA ELEGIR OTRA FECHA
+                {t.pickAnotherDate}
               </Text>
             </Pressable>
 
@@ -579,14 +733,14 @@ export default function CrearReservaScreen() {
                     }}
                   >
                     <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "800" }}>
-                      CONFIRMAR FECHA
+                      {t.confirmDate}
                     </Text>
                   </Pressable>
                 ) : null}
               </View>
             ) : null}
 
-            <Text style={{ fontSize: 16, color: "#15539A", fontWeight: "700" }}>Guía</Text>
+            <Text style={{ fontSize: 16, color: "#15539A", fontWeight: "700" }}>{t.guide}</Text>
 
             <View
               style={{
@@ -602,11 +756,11 @@ export default function CrearReservaScreen() {
                 {selectedGuide.name} — {[selectedGuide.city, selectedGuide.country].filter(Boolean).join(", ")}
               </Text>
               <Text style={{ color: "#173B6B", marginTop: 8, fontSize: 15 }}>
-                Guía seleccionada desde el perfil
+                {t.selectedGuide}
               </Text>
             </View>
 
-            <Text style={{ fontSize: 16, color: "#15539A", fontWeight: "700" }}>Horas</Text>
+            <Text style={{ fontSize: 16, color: "#15539A", fontWeight: "700" }}>{t.hours}</Text>
             <TextInput
               value={hours}
               onChangeText={setHours}
@@ -624,7 +778,7 @@ export default function CrearReservaScreen() {
               }}
             />
 
-            <Text style={{ fontSize: 16, color: "#15539A", fontWeight: "700" }}>Adultos (18+)</Text>
+            <Text style={{ fontSize: 16, color: "#15539A", fontWeight: "700" }}>{t.adults}</Text>
             <TextInput
               value={adults}
               onChangeText={setAdults}
@@ -642,7 +796,7 @@ export default function CrearReservaScreen() {
               }}
             />
 
-            <Text style={{ fontSize: 16, color: "#15539A", fontWeight: "700" }}>Jóvenes (13 a 17)</Text>
+            <Text style={{ fontSize: 16, color: "#15539A", fontWeight: "700" }}>{t.youth}</Text>
             <TextInput
               value={youth}
               onChangeText={setYouth}
@@ -660,7 +814,7 @@ export default function CrearReservaScreen() {
               }}
             />
 
-            <Text style={{ fontSize: 16, color: "#15539A", fontWeight: "700" }}>Niños (0 a 12)</Text>
+            <Text style={{ fontSize: 16, color: "#15539A", fontWeight: "700" }}>{t.children}</Text>
             <TextInput
               value={children}
               onChangeText={setChildren}
@@ -688,19 +842,19 @@ export default function CrearReservaScreen() {
                 gap: 7
               }}
             >
-              <Text style={{ fontWeight: "800", fontSize: 18, color: "#15539A" }}>Resumen</Text>
-              <Text style={{ color: "#173B6B" }}>Guía: {selectedGuide?.name || "-"}</Text>
-              <Text style={{ color: "#173B6B" }}>Fecha: {date}</Text>
-              <Text style={{ color: "#173B6B" }}>Horas: {hours}</Text>
-              <Text style={{ color: "#173B6B" }}>Adultos (18+): {adultsCount}</Text>
-              <Text style={{ color: "#173B6B" }}>Jóvenes (13 a 17): {youthCount}</Text>
-              <Text style={{ color: "#173B6B" }}>Niños (0 a 12): {childrenCount}</Text>
-              <Text style={{ color: "#173B6B" }}>Total viajeros: {travelersCount}</Text>
-              <Text style={{ color: "#173B6B" }}>Precio adulto/hora: USD {selectedPriceHour || 0}</Text>
-              <Text style={{ color: "#173B6B" }}>Precio joven/hora: USD {youthPriceHour.toFixed(2)}</Text>
-              <Text style={{ color: "#173B6B" }}>Niños (0 a 12): sin cargo</Text>
+              <Text style={{ fontWeight: "800", fontSize: 18, color: "#15539A" }}>{t.summary}</Text>
+              <Text style={{ color: "#173B6B" }}>{t.guide}: {selectedGuide?.name || "-"}</Text>
+              <Text style={{ color: "#173B6B" }}>{t.date}: {date}</Text>
+              <Text style={{ color: "#173B6B" }}>{t.hours}: {hours}</Text>
+              <Text style={{ color: "#173B6B" }}>{t.adults}: {adultsCount}</Text>
+              <Text style={{ color: "#173B6B" }}>{t.youth}: {youthCount}</Text>
+              <Text style={{ color: "#173B6B" }}>{t.children}: {childrenCount}</Text>
+              <Text style={{ color: "#173B6B" }}>{t.totalTravelers}: {travelersCount}</Text>
+              <Text style={{ color: "#173B6B" }}>{t.adultPriceHour}: USD {selectedPriceHour || 0}</Text>
+              <Text style={{ color: "#173B6B" }}>{t.youthPriceHour}: USD {youthPriceHour.toFixed(2)}</Text>
+              <Text style={{ color: "#173B6B" }}>{t.childrenFree}</Text>
               <Text style={{ color: "#15539A", fontWeight: "800", marginTop: 4 }}>
-                Total: USD {totalAmount.toFixed(2)}
+                {t.total}: USD {totalAmount.toFixed(2)}
               </Text>
             </View>
 
@@ -715,27 +869,14 @@ export default function CrearReservaScreen() {
               }}
             >
               <Text style={{ fontSize: 18, fontWeight: "800", color: "#15539A" }}>
-                Antes de confirmar tu reserva
+                {t.beforeBooking}
               </Text>
 
-              <Text style={{ color: "#173B6B", lineHeight: 23 }}>
-                {'\u2022'} Each guide offers only the service according to the indicated modality and it is calculated per traveler by age
-              </Text>
-              <Text style={{ color: "#173B6B", lineHeight: 23 }}>
-                {'\u2022'} Gastos como comidas, transporte o entradas no están incluidos salvo que se indique expresamente
-              </Text>
-              <Text style={{ color: "#173B6B", lineHeight: 23 }}>
-                {'\u2022'} You can coordinate guide's expenses with your guide directly
-              </Text>
-              <Text style={{ color: "#173B6B", lineHeight: 23 }}>
-                {'\u2022'} Podés cancelar sin costo con más de 24 horas de anticipación
-              </Text>
-              <Text style={{ color: "#173B6B", lineHeight: 23 }}>
-                {'\u2022'} Si surge un imprevisto, podés coordinar directamente con tu guía un cambio de horario o fecha
-              </Text>
-              <Text style={{ color: "#173B6B", lineHeight: 23 }}>
-                {'\u2022'} Las horas adicionales se acuerdan con el guía y se cobran según la tarifa publicada
-              </Text>
+              {[t.rule1, t.rule2, t.rule3, t.rule4, t.rule5, t.rule6].map((item) => (
+                <Text key={item} style={{ color: "#173B6B", lineHeight: 23 }}>
+                  {"\u2022"} {item}
+                </Text>
+              ))}
             </View>
 
             <View
@@ -749,21 +890,17 @@ export default function CrearReservaScreen() {
               }}
             >
               <Text style={{ fontSize: 18, fontWeight: "800", color: "#15539A" }}>
-                Confirmación
+                {t.confirmation}
               </Text>
 
-              <Text style={{ color: "#173B6B", lineHeight: 23 }}>
-                {'\u2022'} Confirmo que revisé la tarifa, duración y condiciones de esta reserva
-              </Text>
-              <Text style={{ color: "#173B6B", lineHeight: 23 }}>
-                {'\u2022'} Confirmo que los gastos adicionales no están incluidos salvo que se indique expresamente
-              </Text>
-              <Text style={{ color: "#173B6B", lineHeight: 23 }}>
-                {'\u2022'} Confirmo que leí las condiciones de cancelación, cambios e imprevistos
-              </Text>
+              {[t.confirm1, t.confirm2, t.confirm3].map((item) => (
+                <Text key={item} style={{ color: "#173B6B", lineHeight: 23 }}>
+                  {"\u2022"} {item}
+                </Text>
+              ))}
 
               <Text style={{ marginTop: 6, fontSize: 14, color: "#173B6B" }}>
-                Pago seguro · Reserva registrada · Mayor transparencia para ambas partes
+                {t.securePayment}
               </Text>
             </View>
 
@@ -780,7 +917,7 @@ export default function CrearReservaScreen() {
               }}
             >
               <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "800" }}>
-                {loading ? "Cargando..." : "PAGAR AHORA"}
+                {loading ? t.loading : t.payNow}
               </Text>
             </Pressable>
 
@@ -796,13 +933,13 @@ export default function CrearReservaScreen() {
                 }}
               >
                 <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "800" }}>
-                  ABRIR CHAT
+                  {t.openChat}
                 </Text>
               </Pressable>
             ) : null}
 
             <Text style={{ fontSize: 15, textAlign: "center", color: "#173B6B", lineHeight: 22 }}>
-              Tu información de contacto se compartirá solo después del pago
+              {t.contactAfterPayment}
             </Text>
           </>
         ) : null}
@@ -819,7 +956,7 @@ export default function CrearReservaScreen() {
             textShadowRadius: 6
           }}
         >
-          Mis reservas
+          {t.myBookings}
         </Text>
 
         {bookings.length === 0 ? (
@@ -833,7 +970,7 @@ export default function CrearReservaScreen() {
             }}
           >
             <Text style={{ fontSize: 16, color: "#173B6B", lineHeight: 24 }}>
-              Todavía no hay reservas pagadas.
+              {t.noPaidBookings}
             </Text>
           </View>
         ) : null}
@@ -854,13 +991,13 @@ export default function CrearReservaScreen() {
               }}
             >
               <Text style={{ fontSize: 18, fontWeight: "800", color: "#15539A" }}>
-                {booking.guideName || "Guía"}
+                {booking.guideName || t.guide}
               </Text>
-              <Text style={{ color: "#173B6B" }}>Email: {booking.travelerEmail || booking.email || "-"}</Text>
-              <Text style={{ color: "#173B6B" }}>Fecha: {booking.date || "-"}</Text>
-              <Text style={{ color: "#173B6B" }}>Horas: {booking.hours ?? "-"}</Text>
-              <Text style={{ color: "#173B6B" }}>Monto: USD {Number(amount || 0).toFixed(2)}</Text>
-              <Text style={{ color: "#15539A", fontWeight: "800" }}>Estado: {booking.status || "-"}</Text>
+              <Text style={{ color: "#173B6B" }}>{t.email}: {booking.travelerEmail || booking.email || "-"}</Text>
+              <Text style={{ color: "#173B6B" }}>{t.date}: {booking.date || "-"}</Text>
+              <Text style={{ color: "#173B6B" }}>{t.hours}: {booking.hours ?? "-"}</Text>
+              <Text style={{ color: "#173B6B" }}>{t.amount}: USD {Number(amount || 0).toFixed(2)}</Text>
+              <Text style={{ color: "#15539A", fontWeight: "800" }}>{t.status}: {booking.status || "-"}</Text>
 
               <Pressable
                 onPress={() => router.push({ pathname: "/chat", params: { bookingId: booking._id } })}
@@ -874,7 +1011,7 @@ export default function CrearReservaScreen() {
                 }}
               >
                 <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "800" }}>
-                  ABRIR CHAT
+                  {t.openChat}
                 </Text>
               </Pressable>
             </View>
