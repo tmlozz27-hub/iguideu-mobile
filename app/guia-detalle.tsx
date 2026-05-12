@@ -10,10 +10,10 @@ const LANG_KEY = "iguideu_lang";
 const copy = {
   es: {
     loadingProfile: "Cargando perfil...",
-    notFound: "No se encontrÃ³ el guía",
+    notFound: "No se encontró el guía",
     back: "Volver",
     verifiedProfile: "Perfil verificado",
-    gallery: "GalerÃ­a",
+    gallery: "Galería",
     bio: "Bio",
     languages: "Idiomas",
     rates: "Tarifas",
@@ -28,15 +28,15 @@ const copy = {
     bullet5: "• En actividades compartidas, el viajero cubre también los gastos del guía",
     bullet6: "• Reservando a través de la plataforma asegurás una experiencia clara, segura y registrada",
     requestService: "Solicitar servicio",
-    chatAfterPay: "El chat con el guía se habilita Ãºnicamente despuÃ©s del pago.",
+    chatAfterPay: "El chat con el guía se habilita únicamente después del pago.",
     close: "Cerrar",
     videoPreview: "Vista ampliada del video de 45 segundos",
     guideDefault: "guía",
-    defaultBio: "guía local con experiencia acompaÃ±ando viajeros y creando experiencias personalizadas.",
+    defaultBio: "guía local con experiencia acompañando viajeros y creando experiencias personalizadas.",
     islands: "Islas",
     beach: "Playa",
     forest: "Bosque",
-    mountain: "MontaÃ±a",
+    mountain: "Montaña",
     video45: "Video 45s",
   },
   en: {
@@ -464,7 +464,7 @@ export default function GuiaDetalleScreen() {
                       }}
                     >
                       <Text style={{ color: "#dbeafe", fontSize: 14, fontWeight: "800" }}>
-                        {guide.rating ? `â­ ${guide.rating}` : t.verifiedProfile}
+                        {guide.rating ? `⭐ ${guide.rating}` : t.verifiedProfile}
                       </Text>
                     </View>
                   </View>
@@ -806,4 +806,5 @@ export default function GuiaDetalleScreen() {
     </ImageBackground>
   );
 }
+
 
