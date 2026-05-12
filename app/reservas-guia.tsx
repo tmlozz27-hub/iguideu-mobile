@@ -15,14 +15,14 @@ const copy = {
   es: {
     title: "Mis reservas",
     loading: "Cargando reservas...",
-    emptyTitle: "Reservas del guía",
-    empty: "Todavía no hay reservas pagadas para este guía.",
+    emptyTitle: "Reservas del guia",
+    empty: "Todavia no hay reservas pagadas para este guia.",
     booking: "Reserva",
     status: "Estado",
     traveler: "Viajero",
     total: "Total",
     openChat: "ABRIR CHAT",
-    back: "Volver al perfil guía",
+    back: "Volver al perfil guia"
   },
   en: {
     title: "My bookings",
@@ -34,8 +34,8 @@ const copy = {
     traveler: "Traveler",
     total: "Total",
     openChat: "OPEN CHAT",
-    back: "Back to guide profile",
-  },
+    back: "Back to guide profile"
+  }
 };
 
 export default function ReservasGuia() {
