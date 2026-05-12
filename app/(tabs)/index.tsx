@@ -13,18 +13,18 @@ const LANG_KEY = "iguideu_lang";
 
 const copy = {
   es: {
-    subtitle: "Tu experiencia comienza aquí",
-    discover: "Descubrí tu próximo guía",
-    exploreTitle: "Explorar guías",
+    subtitle: "Tu experiencia comienza aqui",
+    discover: "Descubri tu proximo guia",
+    exploreTitle: "Explorar guias",
     exploreSub: "Todos los perfiles",
-    nearbyTitle: "Guías cercanos",
+    nearbyTitle: "Guias cercanos",
     nearbySub: "Cerca tuyo",
-    countryTitle: "Guías por país",
-    countrySub: "Encontrá tu destino",
+    countryTitle: "Guias por pais",
+    countrySub: "Encontra tu destino",
     bookingsTitle: "Mis reservas",
     bookingsSub: "Tu actividad",
     profileTitle: "Mi perfil",
-    profileSub: "Administrá tu cuenta e información",
+    profileSub: "Administra tu cuenta e informacion"
   },
   en: {
     subtitle: "Your experience starts here",
@@ -38,8 +38,8 @@ const copy = {
     bookingsTitle: "My bookings",
     bookingsSub: "Your activity",
     profileTitle: "My profile",
-    profileSub: "Manage your account and information",
-  },
+    profileSub: "Manage your account and information"
+  }
 };
 
 function Card({
