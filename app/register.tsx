@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -10,12 +12,54 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter, useLocalSearchParams } from "expo-router";
 import { apiPost } from "@/config/api";
+
+const LANG_KEY = "iguideu_lang";
+
+const copy = {
+  es: {
+    subtitle: "Tu guia personal de turismo",
+    create: "Crear cuenta",
+    complete: "Completa tus datos",
+    name: "Nombre",
+    email: "Correo electronico",
+    password: "Contrasena",
+    confirm: "Confirmar contrasena",
+    creating: "Creando...",
+    createBtn: "Crear cuenta",
+    already: "Ya tenes cuenta? Iniciar sesion",
+    error: "Error",
+    fields: "Completa todos los campos",
+    mismatch: "Las contrasenas no coinciden",
+    registerError: "No se pudo registrar",
+    created: "Cuenta creada",
+    connectError: "No se pudo conectar"
+  },
+  en: {
+    subtitle: "Your personal travel guide",
+    create: "Create account",
+    complete: "Complete your information",
+    name: "Name",
+    email: "Email",
+    password: "Password",
+    confirm: "Confirm password",
+    creating: "Creating...",
+    createBtn: "Create account",
+    already: "Already have an account? Sign in",
+    error: "Error",
+    fields: "Complete all fields",
+    mismatch: "Passwords do not match",
+    registerError: "Could not register",
+    created: "Account created",
+    connectError: "Could not connect"
+  }
+};
 
 export default function RegisterScreen() {
   const router = useRouter();
   const { role } = useLocalSearchParams();
+
+  const [lang, setLang] = useState<"es" | "en">("es");
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -23,14 +67,24 @@ export default function RegisterScreen() {
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const t = copy[lang];
+
+  useEffect(() => {
+    AsyncStorage.getItem(LANG_KEY).then((savedLang) => {
+      if (savedLang === "es" || savedLang === "en") {
+        setLang(savedLang);
+      }
+    });
+  }, []);
+
   const handleRegister = async () => {
     if (!name || !email || !password || !confirm) {
-      Alert.alert("Error", "Completá todos los campos");
+      Alert.alert(t.error, t.fields);
       return;
     }
 
     if (password !== confirm) {
-      Alert.alert("Error", "Las contraseñas no coinciden");
+      Alert.alert(t.error, t.mismatch);
       return;
     }
 
@@ -45,15 +99,15 @@ export default function RegisterScreen() {
       });
 
       if (!data?.ok) {
-        Alert.alert("Error", "No se pudo registrar");
+        Alert.alert(t.error, t.registerError);
         return;
       }
 
-      Alert.alert("OK", "Cuenta creada");
+      Alert.alert("OK", t.created);
 
       router.replace("/login");
     } catch {
-      Alert.alert("Error", "No se pudo conectar");
+      Alert.alert(t.error, t.connectError);
     } finally {
       setLoading(false);
     }
@@ -74,7 +128,6 @@ export default function RegisterScreen() {
               paddingHorizontal: 18,
             }}
           >
-            {/* LOGO */}
             <View style={{ alignItems: "center", marginBottom: 24 }}>
               <Text style={{ fontSize: 28 }}>📍</Text>
 
@@ -89,11 +142,10 @@ export default function RegisterScreen() {
               </Text>
 
               <Text style={{ color: "#fff" }}>
-                Tu guía personal de turismo
+                {t.subtitle}
               </Text>
             </View>
 
-            {/* CARD */}
             <View
               style={{
                 width: "100%",
@@ -109,7 +161,7 @@ export default function RegisterScreen() {
                   textAlign: "center",
                 }}
               >
-                Crear cuenta
+                {t.create}
               </Text>
 
               <Text
@@ -119,25 +171,25 @@ export default function RegisterScreen() {
                   color: "#666",
                 }}
               >
-                Completá tus datos
+                {t.complete}
               </Text>
 
               <TextInput
-                placeholder="Nombre"
+                placeholder={t.name}
                 value={name}
                 onChangeText={setName}
                 style={input}
               />
 
               <TextInput
-                placeholder="Correo electrónico"
+                placeholder={t.email}
                 value={email}
                 onChangeText={setEmail}
                 style={input}
               />
 
               <TextInput
-                placeholder="Contraseña"
+                placeholder={t.password}
                 secureTextEntry
                 value={password}
                 onChangeText={setPassword}
@@ -145,7 +197,7 @@ export default function RegisterScreen() {
               />
 
               <TextInput
-                placeholder="Confirmar contraseña"
+                placeholder={t.confirm}
                 secureTextEntry
                 value={confirm}
                 onChangeText={setConfirm}
@@ -169,7 +221,7 @@ export default function RegisterScreen() {
                     color: "#fff",
                   }}
                 >
-                  {loading ? "Creando..." : "Crear cuenta"}
+                  {loading ? t.creating : t.createBtn}
                 </Text>
               </Pressable>
 
@@ -178,7 +230,7 @@ export default function RegisterScreen() {
                 style={{ marginTop: 16 }}
               >
                 <Text style={{ textAlign: "center" }}>
-                  ¿Ya tenés cuenta? Iniciar sesión
+                  {t.already}
                 </Text>
               </Pressable>
             </View>
