@@ -1,4 +1,6 @@
-import React from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
   ImageBackground,
   Pressable,
@@ -6,11 +8,35 @@ import {
   Text,
   View,
 } from "react-native";
-import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+const LANG_KEY = "iguideu_lang";
+
+const copy = {
+  es: {
+    title: "Elegi tu perfil",
+    traveler: "Viajero",
+    guide: "Guia"
+  },
+  en: {
+    title: "Choose your profile",
+    traveler: "Traveler",
+    guide: "Guide"
+  }
+};
 
 export default function SelectRoleScreen() {
   const router = useRouter();
+  const [lang, setLang] = useState<"es" | "en">("es");
+  const t = copy[lang];
+
+  useEffect(() => {
+    AsyncStorage.getItem(LANG_KEY).then((savedLang) => {
+      if (savedLang === "es" || savedLang === "en") {
+        setLang(savedLang);
+      }
+    });
+  }, []);
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={["left", "right"]}>
@@ -65,7 +91,7 @@ export default function SelectRoleScreen() {
                   marginTop: 26,
                 }}
               >
-                Elegí tu perfil
+                {t.title}
               </Text>
             </View>
 
@@ -89,7 +115,7 @@ export default function SelectRoleScreen() {
                     textAlign: "center",
                   }}
                 >
-                  Viajero
+                  {t.traveler}
                 </Text>
               </Pressable>
 
@@ -112,7 +138,7 @@ export default function SelectRoleScreen() {
                     textAlign: "center",
                   }}
                 >
-                  Guía
+                  {t.guide}
                 </Text>
               </Pressable>
             </View>
