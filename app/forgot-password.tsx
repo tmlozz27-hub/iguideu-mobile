@@ -18,22 +18,22 @@ const LANG_KEY = "iguideu_lang";
 
 const copy = {
   es: {
-    title: "Recuperar contraseña",
+    title: "Recuperar contrasena",
     subtitle:
-      "Ingresá tu email y te enviaremos instrucciones para recuperar el acceso.",
+      "Ingresa tu email y te enviaremos instrucciones para recuperar el acceso.",
     email: "Email",
     processing: "Procesando...",
     continue: "Continuar",
     back: "Volver al login",
     error: "Error",
     notice: "Aviso",
-    enterEmail: "Ingresá tu email.",
+    enterEmail: "Ingresa tu email.",
     tokenOk:
-      "Token generado correctamente. Continuá con la nueva contraseña.",
+      "Token generado correctamente. Continua con la nueva contrasena.",
     continueBtn: "Seguir",
     sent:
-      "Si el email existe, enviamos instrucciones para recuperar la contraseña.",
-    processError: "No se pudo procesar la recuperación.",
+      "Si el email existe, enviamos instrucciones para recuperar la contrasena.",
+    processError: "No se pudo procesar la recuperacion.",
     backendError: "No se pudo conectar al backend."
   },
   en: {
