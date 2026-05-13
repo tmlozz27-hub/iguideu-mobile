@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+﻿import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
@@ -101,7 +101,6 @@ export default function ReservasScreen() {
       setBookings(paidOnly);
     } catch (error) {
       console.log("ERROR loadBookings", error);
-      setBookings([]);
     }
   }
 
