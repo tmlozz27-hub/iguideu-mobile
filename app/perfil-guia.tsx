@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Image,
@@ -44,6 +44,8 @@ export default function PerfilGuia() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const [language, setLanguage] = useState<"es" | "en">("es");
+
   useEffect(() => {
     loadGuideProfile();
   }, []);
@@ -53,6 +55,12 @@ export default function PerfilGuia() {
       const token = (await AsyncStorage.getItem("iguideu_token")) || "";
 
       if (!token) return;
+
+      const savedLang = await AsyncStorage.getItem("iguideu_lang");
+
+      if (savedLang === "en" || savedLang === "es") {
+        setLanguage(savedLang);
+      }
 
       const response = await fetch(`${API_BASE}/api/guides/me`, {
         headers: {
@@ -252,6 +260,47 @@ export default function PerfilGuia() {
     }
   };
 
+  const t = {
+    title: language === "en"
+      ? (isExistingGuide ? "Edit profile" : "Complete profile")
+      : (isExistingGuide ? "Editar perfil" : "Completar perfil"),
+
+    mainPhoto: language === "en" ? "Main photo" : "Foto principal",
+
+    mainPhotoHint: language === "en"
+      ? "Tap to upload your main image"
+      : "Tocá para cargar tu imagen principal",
+
+    certified: language === "en" ? "Certified" : "Certificado",
+
+    photosVideo: language === "en"
+      ? "Photos + Video"
+      : "Fotos + Video",
+
+    rates: language === "en" ? "Rates" : "Tarifas",
+
+    rulesTitle: language === "en"
+      ? "Before offering your service"
+      : "Antes de ofrecer tu servicio",
+
+    passwordSection: language === "en"
+      ? (isExistingGuide ? "Optional password change" : "Create password")
+      : (isExistingGuide ? "Cambiar contraseña opcional" : "Crear contraseña"),
+
+    save: language === "en"
+      ? (loading ? "Saving..." : isExistingGuide ? "Save changes" : "Save profile")
+      : (loading ? "Guardando..." : isExistingGuide ? "Guardar cambios" : "Guardar perfil"),
+
+    bookings: language === "en" ? "My bookings" : "Mis reservas",
+
+    show: language === "en" ? "Show" : "Ver",
+    hide: language === "en" ? "Hide" : "Ocultar",
+
+    accept: language === "en"
+      ? "I accept the terms and conditions"
+      : "Acepto los términos y condiciones"
+  };
+
   return (
     <ImageBackground
       source={{
@@ -267,7 +316,7 @@ export default function PerfilGuia() {
       <View style={{ position: "absolute", bottom: 140, left: -40, width: 180, height: 180, borderRadius: 90, backgroundColor: "rgba(18,184,166,0.10)" }} />
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
-        <Text style={title}>{isExistingGuide ? "Editar perfil" : "Completar perfil"}</Text>
+        <Text style={title}>{t.title}</Text>
 
         <Pressable
           style={mainBox}
@@ -281,15 +330,15 @@ export default function PerfilGuia() {
             <Image source={{ uri: mainPhoto.uri }} style={mainImg} />
           ) : (
             <View style={mainPlaceholder}>
-              <Text style={mainPlaceholderTitle}>Foto principal</Text>
-              <Text style={mainPlaceholderSubtitle}>Tocá para cargar tu imagen principal</Text>
+              <Text style={mainPlaceholderTitle}>{t.mainPhoto}</Text>
+              <Text style={mainPlaceholderSubtitle}>{t.mainPhotoHint}</Text>
             </View>
           )}
         </Pressable>
 
         <View style={typeSection}>
           <Pressable onPress={() => setGuideType("certified")} style={[typeButton, guideType === "certified" ? typeButtonActive : null]}>
-            <Text style={typeButtonText}>Certificado</Text>
+            <Text style={typeButtonText}>{t.certified}</Text>
           </Pressable>
 
           <Pressable onPress={() => setGuideType("freelance")} style={[typeButton, guideType === "freelance" ? typeButtonActive : null]}>
@@ -311,7 +360,7 @@ export default function PerfilGuia() {
             <TextInput placeholder="País" placeholderTextColor="#6b7280" value={country} onChangeText={setCountry} style={[input, halfInput]} editable={!loading} />
           </View>
 
-          <Text style={section}>Fotos + Video</Text>
+          <Text style={section}>{t.photosVideo}</Text>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={row}>
             {gallerySlots.map((item, i) => (
@@ -368,7 +417,7 @@ export default function PerfilGuia() {
 
           <TextInput placeholder="Bio" placeholderTextColor="#6b7280" value={bio} onChangeText={setBio} style={[input, bioInput]} editable={!loading} multiline textAlignVertical="top" />
 
-          <Text style={section}>Tarifas</Text>
+          <Text style={section}>{t.rates}</Text>
 
           <TextInput placeholder="Precio por hora" placeholderTextColor="#6b7280" value={priceHour} onChangeText={setPriceHour} style={input} editable={!loading} keyboardType="numeric" />
 
@@ -377,7 +426,7 @@ export default function PerfilGuia() {
           <TextInput placeholder="Precio 24h" placeholderTextColor="#6b7280" value={price24h} onChangeText={setPrice24h} style={input} editable={!loading} keyboardType="numeric" />
 
           <View style={rulesBox}>
-            <Text style={rulesTitle}>Antes de ofrecer tu servicio</Text>
+            <Text style={rulesTitle}>{t.rulesTitle}</Text>
             <Text style={ruleLine}>• Tus tarifas deben corresponder al servicio indicado.</Text>
             <Text style={ruleLine}>• Comidas, transporte o entradas no están incluidas salvo que lo aclares expresamente.</Text>
             <Text style={ruleLine}>• Si el recorrido implica gastos compartidos, deben quedar claros antes de confirmar.</Text>
@@ -385,7 +434,7 @@ export default function PerfilGuia() {
             <Text style={ruleLine}>• Al aceptar una solicitud, el servicio queda registrado dentro de la plataforma.</Text>
           </View>
 
-          <Text style={section}>{isExistingGuide ? "Cambiar contraseña opcional" : "Crear contraseña"}</Text>
+          <Text style={section}>{t.passwordSection}</Text>
 
           <View style={passwordRow}>
             <TextInput
@@ -399,7 +448,7 @@ export default function PerfilGuia() {
             />
 
             <Pressable onPress={() => setShowPassword((prev) => !prev)} style={showButton} disabled={loading}>
-              <Text style={showButtonText}>{showPassword ? "Ocultar" : "Ver"}</Text>
+              <Text style={showButtonText}>{showPassword ? t.hide : t.show}</Text>
             </Pressable>
           </View>
 
@@ -415,7 +464,7 @@ export default function PerfilGuia() {
             />
 
             <Pressable onPress={() => setShowConfirmPassword((prev) => !prev)} style={showButton} disabled={loading}>
-              <Text style={showButtonText}>{showConfirmPassword ? "Ocultar" : "Ver"}</Text>
+              <Text style={showButtonText}>{showConfirmPassword ? t.hide : t.show}</Text>
             </Pressable>
           </View>
 
@@ -436,15 +485,15 @@ export default function PerfilGuia() {
               {acceptTerms && <Text style={{ color: "#fff", fontWeight: "800" as const }}>✓</Text>}
             </View>
 
-            <Text style={{ color: "#fff", flex: 1 }}>Acepto los términos y condiciones</Text>
+            <Text style={{ color: "#fff", flex: 1 }}>{t.accept}</Text>
           </Pressable>
 
           <Pressable onPress={handleSave} style={[btn, loading ? btnDisabled : null]} disabled={loading}>
-            <Text style={btnText}>{loading ? "Guardando..." : isExistingGuide ? "Guardar cambios" : "Guardar perfil"}</Text>
+            <Text style={btnText}>{t.save}</Text>
           </Pressable>
 
           <Pressable onPress={() => router.push("/reservas-guia")} style={secondaryBtn}>
-            <Text style={secondaryBtnText}>Mis reservas</Text>
+            <Text style={secondaryBtnText}>{t.bookings}</Text>
           </Pressable>
         </View>
       </ScrollView>

@@ -64,6 +64,7 @@ export default function ReservasGuia() {
   useFocusEffect(
     useCallback(() => {
       loadLang();
+      loadBookings();
     }, [loadLang])
   );
 
@@ -74,8 +75,13 @@ export default function ReservasGuia() {
       const token =
         (await AsyncStorage.getItem("iguideu_token")) || "";
 
+      if (!token) {
+        setBookings([]);
+        return;
+      }
+
       const response = await fetch(
-        `${API_BASE}/api/bookings`,
+        `${API_BASE}/api/bookings/guide/me`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -91,7 +97,21 @@ export default function ReservasGuia() {
         ? data
         : [];
 
-      setBookings(items);
+      const paidOnly = items.filter(
+        (item: any) =>
+          String(item?.status || "").toUpperCase() === "PAID"
+      );
+
+      console.log(
+        "GUIDE_BOOKINGS_GUIDE_ME",
+        JSON.stringify({
+          total: items.length,
+          paid: paidOnly.length,
+          sample: paidOnly.slice(0, 3),
+        })
+      );
+
+      setBookings(paidOnly);
     } catch (e) {
       console.log("GUIDE_BOOKINGS_ERROR", e);
     } finally {
