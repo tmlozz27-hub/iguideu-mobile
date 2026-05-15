@@ -220,8 +220,8 @@ export default function PerfilGuia() {
         body.password = cleanPassword;
       }
 
-      const response = await fetch(`${API_BASE}/api/guides`, {
-        method: "POST",
+      const response = await fetch(`${API_BASE}${isExistingGuide ? "/api/guides/me" : "/api/guides"}`, {
+        method: isExistingGuide ? "PATCH" : "POST",
         headers: {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {})
@@ -753,3 +753,4 @@ const removeBtnText = {
   fontSize: 12,
   fontWeight: "700" as const
 };
+
