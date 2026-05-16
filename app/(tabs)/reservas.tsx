@@ -292,41 +292,6 @@ export default function ReservasScreen() {
     }
   }
 
-
-  async function cancelBooking(bookingId: string) {
-    if (loading) return;
-
-    Alert.alert(
-      "Cancelar reserva",
-      "¿Querés cancelar esta reserva?",
-      [
-        { text: "No", style: "cancel" },
-        {
-          text: "Sí, cancelar",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              setLoading(true);
-              const headers = await getAuthHeaders();
-
-              await apiPost(
-                `/api/bookings/${bookingId}/cancel`,
-                { reason: "traveler_cancelled" },
-                headers
-              );
-
-              Alert.alert("Reserva cancelada", "La reserva fue cancelada correctamente.");
-              await loadBookings();
-            } catch (error: any) {
-              Alert.alert("Error", error?.message || "No se pudo cancelar la reserva.");
-            } finally {
-              setLoading(false);
-            }
-          }
-        }
-      ]
-    );
-  }
   const showReservationForm = !!selectedGuide;
 
   return (
@@ -639,27 +604,9 @@ export default function ReservasScreen() {
             <Text>Horas: {booking.hours ?? "-"}</Text>
             <Text>Monto: USD {Number(amount || 0).toFixed(2)}</Text>
             <Text>Estado: {booking.status || "-"}</Text>
-
-            <Pressable
-              onPress={() => cancelBooking(booking._id)}
-              disabled={loading}
-              style={{
-                backgroundColor: loading ? "#9ca3af" : "#dc2626",
-                paddingVertical: 14,
-                borderRadius: 14,
-                alignItems: "center",
-                justifyContent: "center",
-                marginTop: 10
-              }}
-            >
-              <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "700" }}>
-                CANCELAR RESERVA
-              </Text>
-            </Pressable>
           </View>
         );
       })}
     </ScrollView>
   );
 }
-
