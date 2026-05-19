@@ -8,6 +8,15 @@ export default {
     version: "1.0.0",
     orientation: "portrait",
     userInterfaceStyle: "automatic",
+
+    icon: "./assets/adaptive-icon.png",
+
+    splash: {
+      image: "./assets/splash.png",
+      resizeMode: "cover",
+      backgroundColor: "#020617"
+    },
+
     assetBundlePatterns: ["**/*"],
 
     ios: {
@@ -21,7 +30,20 @@ export default {
     android: {
       package: "com.auroragalactic.iguideu",
       usesCleartextTraffic: true,
+
+      splash: {
+        image: "./assets/splash.png",
+        resizeMode: "cover",
+        backgroundColor: "#020617"
+      },
+
+      adaptiveIcon: {
+        foregroundImage: "./assets/adaptive-icon.png",
+        backgroundColor: "#020617"
+      },
+
       permissions: ["ACCESS_FINE_LOCATION"],
+
       config: {
         googleMaps: {
           apiKey: "AIzaSyC-qFKhmFTQC1b1p7kd7CBLeDIYlrM1cAk"
@@ -44,15 +66,22 @@ export default {
       [
         "@react-native-google-signin/google-signin",
         {
-          iosUrlScheme: "com.googleusercontent.apps.661263042735-677bo9vuvgkds5g80h2phrn683rv3d88"
+          iosUrlScheme:
+            "com.googleusercontent.apps.661263042735-677bo9vuvgkds5g80h2phrn683rv3d88"
         }
       ]
     ],
 
     extra: {
-      stripePublishableKey: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
-      stripeMode: process.env.EXPO_PUBLIC_STRIPE_MODE || "test",
-      apiBase: process.env.EXPO_PUBLIC_API_BASE || "",
+      stripePublishableKey:
+        process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
+
+      stripeMode:
+        process.env.EXPO_PUBLIC_STRIPE_MODE || "test",
+
+      apiBase:
+        process.env.EXPO_PUBLIC_API_BASE || "",
+
       eas: {
         projectId: "2778ee41-357b-4816-80f0-73b958f93746"
       }

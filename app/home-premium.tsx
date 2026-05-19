@@ -7,7 +7,7 @@ export default function HomePremium() {
 
   return (
     <ImageBackground
-      source={require("../assets/home-premium-final.png")}
+      source={require("../assets/images/home-premium-final.png")}
       style={styles.container}
       resizeMode="cover"
     >
