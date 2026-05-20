@@ -1,5 +1,6 @@
 {
   "cli": {
+    "version": ">= 19.0.1",
     "appVersionSource": "remote"
   },
   "build": {
@@ -10,8 +11,12 @@
         "buildType": "apk"
       }
     },
+    "preview": {
+      "distribution": "internal"
+    },
     "production": {
       "distribution": "internal",
+      "image": "ubuntu-22.04-jdk-17-ndk-r26b",
       "android": {
         "buildType": "apk"
       }
