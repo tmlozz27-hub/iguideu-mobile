@@ -2,6 +2,8 @@ import "dotenv/config";
 
 export default {
   expo: {
+    owner: "auroragalactic",
+
     name: "I GUIDE U",
     slug: "iguideu",
     scheme: "iguideu",
@@ -32,8 +34,6 @@ export default {
       usesCleartextTraffic: true,
 
       splash: {
-        image: "./assets/splash.png",
-        resizeMode: "cover",
         backgroundColor: "#020617"
       },
 
@@ -77,13 +77,13 @@ export default {
         process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
 
       stripeMode:
-        process.env.EXPO_PUBLIC_STRIPE_MODE || "test",
+        process.env.EXPO_PUBLIC_STRIPE_MODE || "live",
 
       apiBase:
         process.env.EXPO_PUBLIC_API_BASE || "",
 
       eas: {
-        projectId: "2778ee41-357b-4816-80f0-73b958f93746"
+        projectId: "eb86ee2e-b0b4-47f8-b384-31ee5594ea8a"
       }
     }
   }
