@@ -3,7 +3,6 @@ import "dotenv/config";
 export default {
   expo: {
     owner: "auroragalactic",
-
     name: "I GUIDE U",
     slug: "iguideu",
     scheme: "iguideu",
@@ -14,8 +13,6 @@ export default {
     icon: "./assets/adaptive-icon.png",
 
     splash: {
-      image: "./assets/splash.png",
-      resizeMode: "cover",
       backgroundColor: "#020617"
     },
 
@@ -75,13 +72,10 @@ export default {
     extra: {
       stripePublishableKey:
         process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
-
       stripeMode:
         process.env.EXPO_PUBLIC_STRIPE_MODE || "live",
-
       apiBase:
         process.env.EXPO_PUBLIC_API_BASE || "",
-
       eas: {
         projectId: "eb86ee2e-b0b4-47f8-b384-31ee5594ea8a"
       }
