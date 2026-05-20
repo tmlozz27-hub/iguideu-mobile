@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ImageBackground, StyleSheet } from "react-native";
+import { Image, StyleSheet, View } from "react-native";
 import { Stack } from "expo-router";
 import { StripeProvider } from "@stripe/stripe-react-native";
 
@@ -14,7 +14,7 @@ export default function RootLayout() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowSplash(false);
-    }, 1800);
+    }, 1600);
 
     return () => clearTimeout(timer);
   }, []);
@@ -27,11 +27,13 @@ export default function RootLayout() {
   return (
     <StripeProvider publishableKey={publishableKey}>
       {showSplash ? (
-        <ImageBackground
-          source={require("../assets/splash.png")}
-          style={styles.splash}
-          resizeMode="cover"
-        />
+        <View style={styles.splashContainer}>
+          <Image
+            source={require("../assets/splash.png")}
+            style={styles.splashImage}
+            resizeMode="stretch"
+          />
+        </View>
       ) : (
         <Stack screenOptions={{ headerShown: false }} />
       )}
@@ -40,8 +42,13 @@ export default function RootLayout() {
 }
 
 const styles = StyleSheet.create({
-  splash: {
+  splashContainer: {
     flex: 1,
+    width: "100%",
+    height: "100%",
+    backgroundColor: "#020617"
+  },
+  splashImage: {
     width: "100%",
     height: "100%"
   }
