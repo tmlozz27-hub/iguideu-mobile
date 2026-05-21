@@ -2,7 +2,7 @@
   "expo": {
     "name": "I GUIDE U",
     "slug": "iguideu",
-    "owner": "tomloz",
+    "owner": "auroragalactic",
     "scheme": "iguideu",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -19,7 +19,9 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#001A33"
       },
-      "permissions": ["ACCESS_FINE_LOCATION"],
+      "permissions": [
+        "ACCESS_FINE_LOCATION"
+      ],
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyC-qFKhmFTQC1b1p7kd7CBLeDIYlrM1cAk"
