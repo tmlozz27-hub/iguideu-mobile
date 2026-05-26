@@ -1,10 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { Image, StyleSheet, View } from "react-native";
+import { Platform } from "react-native";
 import { Stack } from "expo-router";
 import { StripeProvider } from "@stripe/stripe-react-native";
 
 export default function RootLayout() {
   const [showSplash, setShowSplash] = useState(true);
+
+  const iosBackHeader = {
+    headerShown: Platform.OS === "ios",
+    headerTitle: "",
+    headerBackTitle: "Volver",
+    headerTintColor: "#15539A",
+    headerTransparent: true,
+    headerShadowVisible: false
+  };
 
   const publishableKey =
     process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ||
@@ -35,7 +45,16 @@ export default function RootLayout() {
           />
         </View>
       ) : (
-        <Stack screenOptions={{ headerShown: false }} />
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="guias-cercanos" options={iosBackHeader} />
+          <Stack.Screen name="guia-detalle" options={iosBackHeader} />
+          <Stack.Screen name="crear-reserva" options={iosBackHeader} />
+          <Stack.Screen name="chat" options={iosBackHeader} />
+          <Stack.Screen name="perfil-guia" options={iosBackHeader} />
+          <Stack.Screen name="reservas-guia" options={iosBackHeader} />
+          <Stack.Screen name="buscar-pais" options={iosBackHeader} />
+          <Stack.Screen name="guides-by-country" options={iosBackHeader} />
+        </Stack>
       )}
     </StripeProvider>
   );
