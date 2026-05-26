@@ -12,10 +12,6 @@ export default {
 
     icon: "./assets/adaptive-icon.png",
 
-    splash: {
-      backgroundColor: "#020617"
-    },
-
     assetBundlePatterns: ["**/*"],
 
     ios: {
@@ -29,10 +25,6 @@ export default {
     android: {
       package: "com.auroragalactic.iguideu",
       usesCleartextTraffic: true,
-
-      splash: {
-        backgroundColor: "#020617"
-      },
 
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
