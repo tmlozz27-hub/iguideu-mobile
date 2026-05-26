@@ -6,22 +6,29 @@
     "scheme": "iguideu",
     "version": "1.0.0",
     "orientation": "portrait",
+
     "icon": "./assets/adaptive-icon.png",
+
     "updates": {
       "enabled": false
     },
+
     "assetBundlePatterns": [
       "**/*"
     ],
+
     "android": {
       "package": "com.auroragalactic.iguideu",
+
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#001A33"
+        "backgroundColor": "#FFFFFF"
       },
+
       "permissions": [
         "ACCESS_FINE_LOCATION"
       ],
+
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyC-qFKhmFTQC1b1p7kd7CBLeDIYlrM1cAk"
