@@ -638,7 +638,7 @@ export default function CrearReservaScreen() {
               onChangeText={setTravelerEmail}
               autoCapitalize="none"
               keyboardType="email-address"
-              editable={false}
+              editable={!loading}
               style={{
                 borderWidth: 1,
                 borderColor: "rgba(255,255,255,0.16)",
