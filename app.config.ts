@@ -44,6 +44,7 @@ export default {
     },
 
     plugins: [
+      "expo-apple-authentication",
       [
         "@stripe/stripe-react-native",
         {

@@ -1,6 +1,7 @@
 import { apiGet, apiPost } from "@/config/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import * as AppleAuthentication from "expo-apple-authentication";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -175,6 +176,49 @@ export default function LoginScreen() {
     }
   };
 
+  const handleAppleLogin = async () => {
+    try {
+      setLoading(true);
+
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      const identityToken = credential?.identityToken;
+      const user = credential?.user;
+      const email = credential?.email;
+      const fullName = credential?.fullName
+        ? `${credential.fullName.givenName || ""} ${credential.fullName.familyName || ""}`.trim()
+        : null;
+
+      if (!identityToken) {
+        Alert.alert("Error", "Apple no devolvió token");
+        return;
+      }
+
+      const data = await apiPost("/api/auth/apple", {
+        identityToken,
+        user,
+        email,
+        fullName,
+      });
+
+      if (!data?.token) {
+        Alert.alert("Error", "Apple no validado por backend");
+        return;
+      }
+
+      await saveSession(data.token, email || undefined);
+    } catch (e: any) {
+      Alert.alert("Error Apple", e?.message || "No se pudo iniciar Apple");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogin = async () => {
     const emailClean = String(email || "").trim().toLowerCase();
     const passwordClean = String(password || "").trim();
@@ -323,9 +367,15 @@ export default function LoginScreen() {
                 <Text style={{ fontWeight: "700" }}>{t.google}</Text>
               </Pressable>
 
-              <Pressable style={{ marginTop: 10, backgroundColor: "#000", padding: 14, borderRadius: 20, alignItems: "center" }}>
-                <Text style={{ color: "#fff", fontWeight: "700" }}>{t.apple}</Text>
-              </Pressable>
+              {Platform.OS === "ios" ? (
+                <Pressable
+                  onPress={handleAppleLogin}
+                  disabled={loading}
+                  style={{ marginTop: 10, backgroundColor: "#000", padding: 14, borderRadius: 20, alignItems: "center" }}
+                >
+                  <Text style={{ color: "#fff", fontWeight: "700" }}>{t.apple}</Text>
+                </Pressable>
+              ) : null}
 
               <View style={{ alignItems: "center", marginTop: 14 }}>
                 <Text style={{ fontSize: 12 }}>
