@@ -10,12 +10,11 @@ export default {
     orientation: "portrait",
     userInterfaceStyle: "automatic",
 
-    icon: "./assets/adaptive-icon.png",
-
     assetBundlePatterns: ["**/*"],
 
     ios: {
       supportsTablet: true,
+      icon: "./assets/adaptive-icon.png",
       bundleIdentifier: "com.auroragalactic.iguideu",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false
