@@ -5,6 +5,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   ImageBackground,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -123,9 +124,34 @@ export default function GuiasScreen() {
       style={{ flex: 1, backgroundColor: "#76A9E8" }}
       resizeMode="cover"
     >
+      {Platform.OS === "ios" && (
+        <Pressable
+          onPress={() => router.replace("/(tabs)")}
+          hitSlop={12}
+          style={{
+            position: "absolute",
+            top: 54,
+            left: 16,
+            zIndex: 10,
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            backgroundColor: "rgba(255,255,255,0.72)",
+            alignItems: "center",
+            justifyContent: "center"
+          }}
+        >
+          <Text style={{ color: "#15539A", fontSize: 14, fontWeight: "800" }}>Home</Text>
+        </Pressable>
+      )}
+
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
+        contentContainerStyle={{
+          padding: 16,
+          paddingTop: Platform.OS === "ios" ? 104 : 16,
+          paddingBottom: 120
+        }}
         showsVerticalScrollIndicator={false}
       >
         <View
