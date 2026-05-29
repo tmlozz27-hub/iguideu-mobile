@@ -14,6 +14,7 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useStripe } from "@stripe/stripe-react-native";
 import { apiGet, apiPost } from "../config/api";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
@@ -238,6 +239,7 @@ async function getAuthHeaders() {
 export default function CrearReservaScreen() {
   const router = useRouter();
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ guideId?: string }>();
   const lockedGuideId = typeof params.guideId === "string" ? params.guideId : "";
 
@@ -580,7 +582,12 @@ export default function CrearReservaScreen() {
         showsVerticalScrollIndicator={false}
       >
         {Platform.OS === "ios" && (
-          <View style={{ alignItems: "flex-start" }}>
+          <View
+            style={{
+              alignItems: "flex-start",
+              marginTop: Math.max(insets.top - 4, 0)
+            }}
+          >
             <Pressable
               onPress={() => router.back()}
               style={{

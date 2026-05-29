@@ -10,7 +10,7 @@ import {
   TextInput,
   View
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter, useFocusEffect } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
@@ -90,6 +90,7 @@ const copy = {
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   const [lang, setLang] = useState<"es" | "en">("es");
   const t = copy[lang];
@@ -271,7 +272,13 @@ export default function ProfileScreen() {
         >
           <View style={{ paddingTop: 30, paddingHorizontal: 24, paddingBottom: 30 }}>
             {Platform.OS === "ios" && (
-              <View style={{ alignItems: "flex-start", marginBottom: 16 }}>
+              <View
+                style={{
+                  alignItems: "flex-start",
+                  marginTop: Math.max(insets.top - 18, 0),
+                  marginBottom: 16
+                }}
+              >
                 <Pressable
                   onPress={() => router.back()}
                   style={{

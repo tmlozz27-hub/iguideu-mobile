@@ -4,12 +4,14 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   ImageBackground,
+  Platform,
   Pressable,
   ScrollView,
   Text,
   View
 } from "react-native";
 import { apiGet, apiPost } from "../../config/api";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const TOKEN_KEY = "iguideu_token";
 const LANG_KEY = "iguideu_lang";
@@ -24,7 +26,8 @@ const copy = {
     amount: "Monto",
     status: "Estado",
     openChat: "ABRIR CHAT",
-    cancel: "CANCELAR RESERVA"
+    cancel: "CANCELAR RESERVA",
+    back: "Volver"
   },
   en: {
     title: "Bookings",
@@ -35,7 +38,8 @@ const copy = {
     amount: "Amount",
     status: "Status",
     openChat: "OPEN CHAT",
-    cancel: "CANCEL BOOKING"
+    cancel: "CANCEL BOOKING",
+    back: "Back"
   }
 };
 
@@ -66,6 +70,7 @@ async function getAuthHeaders() {
 
 export default function ReservasScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [lang, setLang] = useState<"es" | "en">("es");
@@ -187,6 +192,30 @@ export default function ReservasScreen() {
         }}
         showsVerticalScrollIndicator={false}
       >
+        {Platform.OS === "ios" && (
+          <View
+            style={{
+              alignItems: "flex-start",
+              marginTop: Math.max(insets.top - 8, 0),
+              marginBottom: 16
+            }}
+          >
+            <Pressable
+              onPress={() => router.back()}
+              style={{
+                backgroundColor: "rgba(255,255,255,0.14)",
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.20)",
+                paddingHorizontal: 16,
+                paddingVertical: 10,
+                borderRadius: 999
+              }}
+            >
+              <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>{t.back}</Text>
+            </Pressable>
+          </View>
+        )}
+
         <Text
           style={{
             fontSize: 30,
