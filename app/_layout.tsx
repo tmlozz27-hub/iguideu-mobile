@@ -46,14 +46,14 @@ export default function RootLayout() {
         </View>
       ) : (
         <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="guias-cercanos" options={iosBackHeader} />
-          <Stack.Screen name="guia-detalle" options={iosBackHeader} />
-          <Stack.Screen name="crear-reserva" options={iosBackHeader} />
-          <Stack.Screen name="chat" options={iosBackHeader} />
+          <Stack.Screen name="guias-cercanos" options={{ headerShown: false }} />
+          <Stack.Screen name="guia-detalle" options={{ headerShown: false }} />
+          <Stack.Screen name="crear-reserva" options={{ headerShown: false }} />
+          <Stack.Screen name="chat" options={{ headerShown: false }} />
           <Stack.Screen name="perfil-guia" options={iosBackHeader} />
           <Stack.Screen name="reservas-guia" options={iosBackHeader} />
-          <Stack.Screen name="buscar-pais" options={iosBackHeader} />
-          <Stack.Screen name="guides-by-country" options={iosBackHeader} />
+          <Stack.Screen name="buscar-pais" options={{ headerShown: false }} />
+          <Stack.Screen name="guides-by-country" options={{ headerShown: false }} />
         </Stack>
       )}
     </StripeProvider>
