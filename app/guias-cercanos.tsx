@@ -6,6 +6,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   ImageBackground,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -25,6 +26,7 @@ const copy = {
     guide: "Guía",
     emptyTitle: "No hay guías disponibles",
     emptySubtitle: "Probá nuevamente en unos minutos.",
+    back: "Volver"
   },
   en: {
     loading: "Loading nearby guides",
@@ -34,6 +36,7 @@ const copy = {
     guide: "Guide",
     emptyTitle: "No guides available",
     emptySubtitle: "Try again in a few minutes.",
+    back: "Back"
   },
 };
 
@@ -156,7 +159,7 @@ export default function GuiasCercanosScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={[]}>
+    <SafeAreaView style={{ flex: 1 }} edges={Platform.OS === "ios" ? ["top", "left", "right"] : []}>
       <ImageBackground
         source={{
           uri: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80"
@@ -165,6 +168,24 @@ export default function GuiasCercanosScreen() {
         resizeMode="cover"
       >
         <View style={{ flex: 1, paddingHorizontal: 14, paddingTop: 8, paddingBottom: 8 }}>
+          {Platform.OS === "ios" && (
+            <View style={{ alignItems: "flex-start", marginBottom: 12 }}>
+              <Pressable
+                onPress={() => router.back()}
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.14)",
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.20)",
+                  paddingHorizontal: 16,
+                  paddingVertical: 10,
+                  borderRadius: 999
+                }}
+              >
+                <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>{t.back}</Text>
+              </Pressable>
+            </View>
+          )}
+
           <View
             style={{
               backgroundColor: "rgba(255,255,255,0.42)",

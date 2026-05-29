@@ -5,6 +5,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   ImageBackground,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -181,7 +182,7 @@ export default function GuidesByCountryScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={[]}>
+    <SafeAreaView style={{ flex: 1 }} edges={Platform.OS === "ios" ? ["top", "left", "right"] : []}>
       <ImageBackground
         source={{
           uri: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80"
@@ -193,6 +194,24 @@ export default function GuidesByCountryScreen() {
           contentContainerStyle={{ padding: 20, paddingBottom: 28 }}
           showsVerticalScrollIndicator={false}
         >
+          {Platform.OS === "ios" && (
+            <View style={{ alignItems: "flex-start", marginBottom: 14 }}>
+              <Pressable
+                onPress={() => router.back()}
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.14)",
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.20)",
+                  paddingHorizontal: 16,
+                  paddingVertical: 10,
+                  borderRadius: 999
+                }}
+              >
+                <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>{t.back}</Text>
+              </Pressable>
+            </View>
+          )}
+
           <View
             style={{
               backgroundColor: "rgba(255,255,255,0.48)",
@@ -229,20 +248,6 @@ export default function GuidesByCountryScreen() {
               <Text style={{ marginTop: 8, fontSize: 14, color: "#173B6B" }}>
                 {t.totalLoaded}: {allGuidesCount}
               </Text>
-
-              <Pressable
-                onPress={() => router.back()}
-                style={{
-                  marginTop: 14,
-                  backgroundColor: "#1CC9B7",
-                  paddingVertical: 12,
-                  paddingHorizontal: 16,
-                  borderRadius: 14,
-                  alignSelf: "flex-start"
-                }}
-              >
-                <Text style={{ color: "#ffffff", fontWeight: "700" }}>{t.back}</Text>
-              </Pressable>
             </View>
           ) : null}
 

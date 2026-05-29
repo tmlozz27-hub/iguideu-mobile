@@ -3,6 +3,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
 import {
   ImageBackground,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -24,12 +25,14 @@ const copy = {
     subtitle: "Elegí un país para ver los guías disponibles.",
     placeholder: "Buscar país...",
     code: "Código",
+    back: "Volver",
   },
   en: {
     title: "Search guides by country",
     subtitle: "Choose a country to see available guides.",
     placeholder: "Search country...",
     code: "Code",
+    back: "Back",
   },
 };
 
@@ -257,7 +260,7 @@ export default function BuscarPaisScreen() {
   }, [query]);
 
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={[]}>
+    <SafeAreaView style={{ flex: 1 }} edges={Platform.OS === "ios" ? ["top", "left", "right"] : []}>
       <ImageBackground
         source={{
           uri: "https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&w=1600&q=80"
@@ -266,6 +269,24 @@ export default function BuscarPaisScreen() {
         resizeMode="cover"
       >
         <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12 }}>
+          {Platform.OS === "ios" && (
+            <View style={{ alignItems: "flex-start", marginBottom: 12 }}>
+              <Pressable
+                onPress={() => router.back()}
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.14)",
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.20)",
+                  paddingHorizontal: 16,
+                  paddingVertical: 10,
+                  borderRadius: 999
+                }}
+              >
+                <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>{t.back}</Text>
+              </Pressable>
+            </View>
+          )}
+
           <View style={{ backgroundColor: "rgba(255,255,255,0.60)", borderRadius: 24, padding: 18 }}>
             <Text style={{ fontSize: 28, fontWeight: "800", color: "#0B3C91" }}>
               {t.title}

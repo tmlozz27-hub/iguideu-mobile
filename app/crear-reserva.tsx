@@ -113,7 +113,8 @@ const copy = {
     ok: "OK",
     paymentSuccess: "Pago realizado correctamente.",
     createBookingError: "No se pudo crear la reserva.",
-    loadBookingsError: "No se pudieron cargar las reservas."
+    loadBookingsError: "No se pudieron cargar las reservas.",
+    back: "Volver"
   },
   en: {
     title: "Bookings",
@@ -176,7 +177,8 @@ const copy = {
     ok: "OK",
     paymentSuccess: "Payment completed successfully.",
     createBookingError: "Could not create the booking.",
-    loadBookingsError: "Could not load bookings."
+    loadBookingsError: "Could not load bookings.",
+    back: "Back"
   }
 };
 
@@ -577,6 +579,24 @@ export default function CrearReservaScreen() {
         contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
       >
+        {Platform.OS === "ios" && (
+          <View style={{ alignItems: "flex-start" }}>
+            <Pressable
+              onPress={() => router.back()}
+              style={{
+                backgroundColor: "rgba(255,255,255,0.14)",
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.20)",
+                paddingHorizontal: 16,
+                paddingVertical: 10,
+                borderRadius: 999
+              }}
+            >
+              <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>{t.back}</Text>
+            </Pressable>
+          </View>
+        )}
+
         <Text
           style={{
             fontSize: 28,

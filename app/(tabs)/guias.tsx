@@ -30,7 +30,8 @@ const copy = {
     day: "Jornada 8h",
     hour: "Por hora",
     defaultBio: "Guia local disponible para experiencias personalizadas.",
-    viewProfile: "Ver perfil"
+    viewProfile: "Ver perfil",
+    home: "Inicio"
   },
   en: {
     title: "Guides",
@@ -47,7 +48,8 @@ const copy = {
     day: "8h day",
     hour: "Per hour",
     defaultBio: "Local guide available for personalized experiences.",
-    viewProfile: "View profile"
+    viewProfile: "View profile",
+    home: "Home"
   }
 };
 
@@ -133,15 +135,15 @@ export default function GuiasScreen() {
             top: 54,
             left: 16,
             zIndex: 10,
-            width: 40,
-            height: 40,
-            borderRadius: 20,
-            backgroundColor: "rgba(255,255,255,0.72)",
-            alignItems: "center",
-            justifyContent: "center"
+            backgroundColor: "rgba(255,255,255,0.14)",
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.20)",
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+            borderRadius: 999
           }}
         >
-          <Text style={{ color: "#15539A", fontSize: 14, fontWeight: "800" }}>Home</Text>
+          <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>{t.home}</Text>
         </Pressable>
       )}
 

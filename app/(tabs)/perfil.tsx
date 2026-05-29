@@ -3,6 +3,7 @@ import {
   Alert,
   Image,
   ImageBackground,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -51,6 +52,7 @@ const copy = {
     logout: "Cerrar sesión",
     updated: "Perfil actualizado",
     saveError: "No se pudo guardar",
+    back: "Volver"
   },
   en: {
     title: "Traveler profile",
@@ -82,6 +84,7 @@ const copy = {
     logout: "Log out",
     updated: "Profile updated",
     saveError: "Could not save",
+    back: "Back"
   },
 };
 
@@ -267,6 +270,24 @@ export default function ProfileScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={{ paddingTop: 30, paddingHorizontal: 24, paddingBottom: 30 }}>
+            {Platform.OS === "ios" && (
+              <View style={{ alignItems: "flex-start", marginBottom: 16 }}>
+                <Pressable
+                  onPress={() => router.back()}
+                  style={{
+                    backgroundColor: "rgba(255,255,255,0.14)",
+                    borderWidth: 1,
+                    borderColor: "rgba(255,255,255,0.20)",
+                    paddingHorizontal: 16,
+                    paddingVertical: 10,
+                    borderRadius: 999
+                  }}
+                >
+                  <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>{t.back}</Text>
+                </Pressable>
+              </View>
+            )}
+
             <Text style={titleMain}>I GUIDE U</Text>
             <Text style={titleSub}>{t.title}</Text>
 
