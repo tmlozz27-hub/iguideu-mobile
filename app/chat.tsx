@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
@@ -29,7 +29,8 @@ const copy = {
     loading: "Cargando...",
     empty: "No hay mensajes",
     placeholder: "Escribir mensaje...",
-    send: "Enviar"
+    send: "Enviar",
+    back: "Volver"
   },
   en: {
     traveler: "Traveler",
@@ -40,7 +41,8 @@ const copy = {
     loading: "Loading...",
     empty: "No messages yet",
     placeholder: "Write a message...",
-    send: "Send"
+    send: "Send",
+    back: "Back"
   }
 };
 
@@ -60,6 +62,7 @@ type ChatMessage = {
 
 export default function ChatScreen() {
   const { bookingId } = useLocalSearchParams<{ bookingId?: string }>();
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const listRef = useRef<FlatList<ChatMessage>>(null);
 
@@ -219,6 +222,31 @@ export default function ChatScreen() {
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
+        {Platform.OS === "ios" && (
+          <View
+            style={{
+              alignItems: "flex-start",
+              paddingHorizontal: 16,
+              paddingTop: Math.max(insets.top, 16),
+              paddingBottom: 8
+            }}
+          >
+            <Pressable
+              onPress={() => router.back()}
+              style={{
+                backgroundColor: "rgba(255,255,255,0.14)",
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.20)",
+                paddingHorizontal: 16,
+                paddingVertical: 10,
+                borderRadius: 999
+              }}
+            >
+              <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>{t.back}</Text>
+            </Pressable>
+          </View>
+        )}
+
         <FlatList
           ref={listRef}
           data={messages}
