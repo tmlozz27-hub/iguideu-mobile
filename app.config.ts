@@ -16,6 +16,7 @@ export default {
       supportsTablet: true,
       icon: "./assets/adaptive-icon.png",
       bundleIdentifier: "com.auroragalactic.iguideu",
+      googleServicesFile: "./GoogleService-Info.plist",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false
       }
