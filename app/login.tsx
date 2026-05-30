@@ -86,7 +86,9 @@ export default function LoginScreen() {
   useEffect(() => {
     GoogleSignin.configure({
       webClientId:
-        "661263042735-677bo9vuvgkds5g80h2phrn683rv3d88.apps.googleusercontent.com",
+        Platform.OS === "ios"
+          ? "811938102755-r4acnclbtid8o2ac5jvvevh81dbt8rka.apps.googleusercontent.com"
+          : "661263042735-677bo9vuvgkds5g80h2phrn683rv3d88.apps.googleusercontent.com",
       iosClientId:
         "811938102755-n7q330oim2adrigorjubok482vqrf371.apps.googleusercontent.com",
       offlineAccess: false,
