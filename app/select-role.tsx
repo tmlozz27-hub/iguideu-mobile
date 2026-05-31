@@ -14,9 +14,9 @@ const LANG_KEY = "iguideu_lang";
 
 const copy = {
   es: {
-    title: "Elegi tu perfil",
+    title: "Elegí tu perfil",
     traveler: "Viajero",
-    guide: "Guia"
+    guide: "Guía"
   },
   en: {
     title: "Choose your profile",
@@ -97,7 +97,12 @@ export default function SelectRoleScreen() {
 
             <View style={{ gap: 20 }}>
               <Pressable
-                onPress={() => router.push("/perfil-viajero")}
+                onPress={() =>
+                  router.push({
+                    pathname: "/register",
+                    params: { role: "traveler" },
+                  })
+                }
                 style={{
                   backgroundColor: "rgba(255,255,255,0.18)",
                   paddingVertical: 24,
@@ -120,7 +125,12 @@ export default function SelectRoleScreen() {
               </Pressable>
 
               <Pressable
-                onPress={() => router.push("/perfil-guia")}
+                onPress={() =>
+                  router.push({
+                    pathname: "/register",
+                    params: { role: "guide" },
+                  })
+                }
                 style={{
                   backgroundColor: "rgba(255,255,255,0.18)",
                   paddingVertical: 24,
