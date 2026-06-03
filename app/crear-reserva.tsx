@@ -174,7 +174,7 @@ const copy = {
     paymentStartError: "Could not start payment.",
     paymentPrepareError: "Could not prepare payment.",
     paymentIncomplete: "Payment not completed",
-    paymentCancelled: "The payment was cancelled.",
+    paymentCancelled: "The payment has been canceled.",
     ok: "OK",
     paymentSuccess: "Payment completed successfully.",
     createBookingError: "Could not create the booking.",
@@ -198,6 +198,12 @@ function addDaysString(days: number) {
   const d = new Date();
   d.setDate(d.getDate() + days);
   return formatDateToString(d);
+}
+
+function todayMinimumDate() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
 }
 
 function parseDateString(value?: string) {
@@ -395,6 +401,10 @@ export default function CrearReservaScreen() {
     return Math.round(totalAmount * 100);
   }, [totalAmount]);
 
+  const minimumDate = useMemo(() => {
+    return todayMinimumDate();
+  }, []);
+
   function openDatePicker() {
     setPickerDate(parseDateString(date));
     setShowDatePicker(true);
@@ -518,7 +528,7 @@ export default function CrearReservaScreen() {
       const result = await presentPaymentSheet();
 
       if (result.error) {
-        Alert.alert(t.paymentIncomplete, result.error.message || t.paymentCancelled);
+        Alert.alert(t.paymentIncomplete, t.paymentCancelled);
         return;
       }
 
@@ -743,7 +753,7 @@ export default function CrearReservaScreen() {
                   value={pickerDate}
                   mode="date"
                   display={Platform.OS === "ios" ? "spinner" : "default"}
-                  minimumDate={new Date()}
+                  minimumDate={minimumDate}
                   onChange={onChangeDate}
                 />
 

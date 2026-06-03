@@ -33,7 +33,8 @@ const copy = {
     mismatch: "Las contrasenas no coinciden",
     registerError: "No se pudo registrar",
     created: "Cuenta creada",
-    connectError: "No se pudo conectar"
+    connectError: "No se pudo conectar",
+    back: "Volver"
   },
   en: {
     subtitle: "Your personal travel guide",
@@ -51,7 +52,8 @@ const copy = {
     mismatch: "Passwords do not match",
     registerError: "Could not register",
     created: "Account created",
-    connectError: "Could not connect"
+    connectError: "Could not connect",
+    back: "Back"
   }
 };
 
@@ -115,6 +117,29 @@ export default function RegisterScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#4B8FE8" }}>
+      {Platform.OS === "ios" && (
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={12}
+          style={{
+            position: "absolute",
+            top: 16,
+            left: 18,
+            zIndex: 10,
+            backgroundColor: "rgba(255,255,255,0.14)",
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.20)",
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+            borderRadius: 999
+          }}
+        >
+          <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>
+            {t.back}
+          </Text>
+        </Pressable>
+      )}
+
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}

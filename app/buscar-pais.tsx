@@ -233,6 +233,20 @@ const COUNTRIES: CountryItem[] = [
   { code: "ZW", name: "Zimbabwe" }
 ];
 
+const COUNTRY_NAMES_ES_BY_CODE: Record<string, string> = {
+  DE: "Alemania",
+  FR: "Francia",
+  IT: "Italia"
+};
+
+function normalizeCountrySearch(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
+}
+
 export default function BuscarPaisScreen() {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -250,14 +264,21 @@ export default function BuscarPaisScreen() {
   );
 
   const filteredCountries = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
+    const normalized = normalizeCountrySearch(query);
     if (!normalized) return COUNTRIES;
-    return COUNTRIES.filter(
-      (item) =>
-        item.name.toLowerCase().includes(normalized) ||
-        item.code.toLowerCase().includes(normalized)
-    );
-  }, [query]);
+
+    return COUNTRIES.filter((item) => {
+      const spanishName = COUNTRY_NAMES_ES_BY_CODE[item.code] || "";
+
+      return (
+        normalizeCountrySearch(item.name).includes(normalized) ||
+        normalizeCountrySearch(item.code).includes(normalized) ||
+        (Platform.OS === "ios" &&
+          lang === "es" &&
+          normalizeCountrySearch(spanishName).includes(normalized))
+      );
+    });
+  }, [lang, query]);
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={Platform.OS === "ios" ? ["top", "left", "right"] : []}>
@@ -314,30 +335,37 @@ export default function BuscarPaisScreen() {
         </View>
 
         <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 28 }}>
-          {filteredCountries.map((item) => (
-            <Pressable
-              key={item.code}
-              onPress={() =>
-                router.push({
-                  pathname: "/guides-by-country",
-                  params: { country: item.name, code: item.code }
-                })
-              }
-              style={{
-                backgroundColor: "rgba(255,255,255,0.60)",
-                borderRadius: 22,
-                padding: 18,
-                marginBottom: 12
-              }}
-            >
-              <Text style={{ fontSize: 18, fontWeight: "800", color: "#0B3C91" }}>
-                {item.name}
-              </Text>
-              <Text style={{ marginTop: 4, color: "#173B6B" }}>
-                {t.code}: {item.code}
-              </Text>
-            </Pressable>
-          ))}
+          {filteredCountries.map((item) => {
+            const displayName =
+              Platform.OS === "ios" && lang === "es"
+                ? COUNTRY_NAMES_ES_BY_CODE[item.code] || item.name
+                : item.name;
+
+            return (
+              <Pressable
+                key={item.code}
+                onPress={() =>
+                  router.push({
+                    pathname: "/guides-by-country",
+                    params: { country: item.name, code: item.code }
+                  })
+                }
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.60)",
+                  borderRadius: 22,
+                  padding: 18,
+                  marginBottom: 12
+                }}
+              >
+                <Text style={{ fontSize: 18, fontWeight: "800", color: "#0B3C91" }}>
+                  {displayName}
+                </Text>
+                <Text style={{ marginTop: 4, color: "#173B6B" }}>
+                  {t.code}: {item.code}
+                </Text>
+              </Pressable>
+            );
+          })}
         </ScrollView>
       </ImageBackground>
     </SafeAreaView>

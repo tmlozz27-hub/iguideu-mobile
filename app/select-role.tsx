@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ImageBackground,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -16,12 +17,14 @@ const copy = {
   es: {
     title: "Elegí tu perfil",
     traveler: "Viajero",
-    guide: "Guía"
+    guide: "Guía",
+    back: "Volver"
   },
   en: {
     title: "Choose your profile",
     traveler: "Traveler",
-    guide: "Guide"
+    guide: "Guide",
+    back: "Back"
   }
 };
 
@@ -57,6 +60,29 @@ export default function SelectRoleScreen() {
             backgroundColor: "rgba(11,62,145,0.42)",
           }}
         />
+
+        {Platform.OS === "ios" && (
+          <Pressable
+            onPress={() => router.back()}
+            hitSlop={12}
+            style={{
+              position: "absolute",
+              top: 54,
+              left: 24,
+              zIndex: 10,
+              backgroundColor: "rgba(255,255,255,0.14)",
+              borderWidth: 1,
+              borderColor: "rgba(255,255,255,0.20)",
+              paddingHorizontal: 16,
+              paddingVertical: 10,
+              borderRadius: 999
+            }}
+          >
+            <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>
+              {t.back}
+            </Text>
+          </Pressable>
+        )}
 
         <ScrollView
           style={{ flex: 1 }}
