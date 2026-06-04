@@ -123,12 +123,7 @@ export default function SelectRoleScreen() {
 
             <View style={{ gap: 20 }}>
               <Pressable
-                onPress={() =>
-                  router.push({
-                    pathname: "/register",
-                    params: { role: "traveler" },
-                  })
-                }
+                onPress={() => router.push("/perfil-viajero")}
                 style={{
                   backgroundColor: "rgba(255,255,255,0.18)",
                   paddingVertical: 24,
@@ -151,12 +146,7 @@ export default function SelectRoleScreen() {
               </Pressable>
 
               <Pressable
-                onPress={() =>
-                  router.push({
-                    pathname: "/register",
-                    params: { role: "guide" },
-                  })
-                }
+                onPress={() => router.push("/perfil-guia")}
                 style={{
                   backgroundColor: "rgba(255,255,255,0.18)",
                   paddingVertical: 24,
