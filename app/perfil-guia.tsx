@@ -46,6 +46,16 @@ export default function PerfilGuia() {
 
   const [language, setLanguage] = useState<"es" | "en">("es");
 
+  const handleLogout = async () => {
+    await AsyncStorage.multiRemove([
+      "iguideu_token",
+      "iguideu_user_email",
+      "iguideu_profile_cache"
+    ]);
+
+    router.replace("/login");
+  };
+
   useEffect(() => {
     loadGuideProfile();
   }, []);
@@ -298,7 +308,9 @@ export default function PerfilGuia() {
 
     accept: language === "en"
       ? "I accept the terms and conditions"
-      : "Acepto los términos y condiciones"
+      : "Acepto los términos y condiciones",
+
+    logout: language === "en" ? "Log out" : "Cerrar sesión"
   };
 
   return (
@@ -495,6 +507,10 @@ export default function PerfilGuia() {
           <Pressable onPress={() => router.push("/reservas-guia")} style={secondaryBtn}>
             <Text style={secondaryBtnText}>{t.bookings}</Text>
           </Pressable>
+
+          <Pressable onPress={handleLogout} style={logoutBtn}>
+            <Text style={logoutBtnText}>{t.logout}</Text>
+          </Pressable>
         </View>
       </ScrollView>
     </ImageBackground>
@@ -658,6 +674,20 @@ const secondaryBtnText = {
   fontSize: 16
 };
 
+const logoutBtn = {
+  backgroundColor: "#dc2626",
+  padding: 16,
+  borderRadius: 14,
+  marginTop: 12,
+  alignItems: "center" as const
+};
+
+const logoutBtnText = {
+  color: "#fff",
+  fontWeight: "800" as const,
+  fontSize: 16
+};
+
 const row = {
   paddingRight: 10
 };
@@ -753,4 +783,5 @@ const removeBtnText = {
   fontSize: 12,
   fontWeight: "700" as const
 };
+
 
