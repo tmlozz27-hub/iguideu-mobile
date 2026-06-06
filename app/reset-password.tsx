@@ -132,8 +132,17 @@ export default function ResetPasswordScreen() {
           onPress: () => router.replace("/login")
         }
       ]);
-    } catch {
-      Alert.alert(t.error, t.serverError);
+    } catch (err: any) {
+      console.log("RESET_PASSWORD_ERROR", err);
+
+      Alert.alert(
+        t.error,
+        String(
+          err?.message ||
+          JSON.stringify(err) ||
+          "UNKNOWN"
+        )
+      );
     } finally {
       setLoading(false);
     }
