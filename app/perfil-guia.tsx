@@ -327,7 +327,7 @@ export default function PerfilGuia() {
 
       <View style={{ position: "absolute", bottom: 140, left: -40, width: 180, height: 180, borderRadius: 90, backgroundColor: "rgba(18,184,166,0.10)" }} />
 
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingBottom: 140 }} showsVerticalScrollIndicator={false}>
         <Text style={title}>{t.title}</Text>
 
         <Pressable
@@ -783,5 +783,8 @@ const removeBtnText = {
   fontSize: 12,
   fontWeight: "700" as const
 };
+
+
+
 
 
