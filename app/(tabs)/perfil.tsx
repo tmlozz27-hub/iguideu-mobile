@@ -353,7 +353,41 @@ export default function ProfileScreen() {
             <Pressable onPress={handleSave} disabled={saving} style={[buttonPrimary, { backgroundColor: saving ? "#5a6b85" : saved ? "#16a34a" : "#173B6B" }]}>
               <Text style={buttonPrimaryText}>{saving ? t.saving : saved ? t.saved : t.save}</Text>
             </Pressable>
+<Pressable
+  onPress={() =>
+    Alert.alert(
+      "Soporte",
+      "¿Necesitas ayuda?\n\ncontact@i-guide-u.com"
+    )
+  }
+  style={{
+    backgroundColor: "#2563eb",
+    padding: 16,
+    borderRadius: 16,
+    alignItems: "center",
+    marginTop: 12
+  }}
+>
+  <Text style={buttonPrimaryText}>Soporte</Text>
+</Pressable>
 
+<Pressable
+  onPress={() =>
+    Alert.alert(
+      "Eliminar cuenta",
+      "Esta función estará disponible próximamente.\n\nSi deseas eliminar tu cuenta, contacta al soporte de I GUIDE U."
+    )
+  }
+  style={{
+    backgroundColor: "#6b7280",
+    padding: 16,
+    borderRadius: 16,
+    alignItems: "center",
+    marginTop: 12
+  }}
+>
+  <Text style={buttonPrimaryText}>Eliminar cuenta</Text>
+</Pressable>
             <Pressable onPress={handleLogout} style={buttonDanger}>
               <Text style={buttonDangerText}>{t.logout}</Text>
             </Pressable>
