@@ -388,6 +388,31 @@ export default function ProfileScreen() {
 >
   <Text style={buttonPrimaryText}>Eliminar cuenta</Text>
 </Pressable>
+<Pressable
+  onPress={() => router.push("/legal/terms")}
+  style={{
+    backgroundColor: "#173B6B",
+    padding: 16,
+    borderRadius: 16,
+    alignItems: "center",
+    marginTop: 12
+  }}
+>
+  <Text style={buttonPrimaryText}>Términos y condiciones</Text>
+</Pressable>
+
+<Pressable
+  onPress={() => router.push("/legal/privacy")}
+  style={{
+    backgroundColor: "#173B6B",
+    padding: 16,
+    borderRadius: 16,
+    alignItems: "center",
+    marginTop: 12
+  }}
+>
+  <Text style={buttonPrimaryText}>Política de privacidad</Text>
+</Pressable>
             <Pressable onPress={handleLogout} style={buttonDanger}>
               <Text style={buttonDangerText}>{t.logout}</Text>
             </Pressable>
