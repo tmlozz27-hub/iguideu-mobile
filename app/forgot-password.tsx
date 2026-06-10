@@ -98,7 +98,7 @@ export default function ForgotPasswordScreen() {
         }
       );
 
-      if (data?.ok && data?.token) {
+      if (data?.ok) {
         Alert.alert(
           "OK",
           t.tokenOk,
