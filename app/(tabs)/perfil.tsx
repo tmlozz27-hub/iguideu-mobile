@@ -50,9 +50,20 @@ const copy = {
     saved: "✓ Perfil guardado",
     save: "Guardar",
     logout: "Cerrar sesión",
+    logoutTitle: "Cerrar sesión",
+    logoutMessage: "¿Seguro que querés cerrar sesión?",
+    cancel: "Cancelar",
+    confirmLogout: "Cerrar sesión",
     updated: "Perfil actualizado",
     saveError: "No se pudo guardar",
-    back: "Volver"
+    back: "Volver",
+    support: "Soporte",
+    supportMessage: "¿Necesitas ayuda?\n\ncontact@i-guide-u.com",
+    deleteAccount: "Eliminar cuenta",
+    deleteAccountMessage:
+      "Esta función estará disponible próximamente.\n\nSi deseas eliminar tu cuenta, contacta al soporte de I GUIDE U.",
+    terms: "Términos y condiciones",
+    privacy: "Política de privacidad"
   },
   en: {
     title: "Traveler profile",
@@ -82,9 +93,20 @@ const copy = {
     saved: "✓ Profile saved",
     save: "Save",
     logout: "Log out",
+    logoutTitle: "Log out",
+    logoutMessage: "Are you sure you want to log out?",
+    cancel: "Cancel",
+    confirmLogout: "Log out",
     updated: "Profile updated",
     saveError: "Could not save",
-    back: "Back"
+    back: "Back",
+    support: "Support",
+    supportMessage: "Need help?\n\ncontact@i-guide-u.com",
+    deleteAccount: "Delete account",
+    deleteAccountMessage:
+      "This feature will be available soon.\n\nIf you want to delete your account, please contact I GUIDE U support.",
+    terms: "Terms and conditions",
+    privacy: "Privacy policy"
   },
 };
 
@@ -251,9 +273,20 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleLogout = async () => {
+  const doLogout = async () => {
     await AsyncStorage.multiRemove([TOKEN_KEY, USER_EMAIL_KEY, PROFILE_CACHE_KEY]);
     router.replace("/login");
+  };
+
+  const handleLogout = () => {
+    Alert.alert(
+      t.logoutTitle,
+      t.logoutMessage,
+      [
+        { text: t.cancel, style: "cancel" },
+        { text: t.confirmLogout, style: "destructive", onPress: doLogout }
+      ]
+    );
   };
 
   return (
@@ -353,66 +386,59 @@ export default function ProfileScreen() {
             <Pressable onPress={handleSave} disabled={saving} style={[buttonPrimary, { backgroundColor: saving ? "#5a6b85" : saved ? "#16a34a" : "#173B6B" }]}>
               <Text style={buttonPrimaryText}>{saving ? t.saving : saved ? t.saved : t.save}</Text>
             </Pressable>
-<Pressable
-  onPress={() =>
-    Alert.alert(
-      "Soporte",
-      "¿Necesitas ayuda?\n\ncontact@i-guide-u.com"
-    )
-  }
-  style={{
-    backgroundColor: "#2563eb",
-    padding: 16,
-    borderRadius: 16,
-    alignItems: "center",
-    marginTop: 12
-  }}
->
-  <Text style={buttonPrimaryText}>Soporte</Text>
-</Pressable>
 
-<Pressable
-  onPress={() =>
-    Alert.alert(
-      "Eliminar cuenta",
-      "Esta función estará disponible próximamente.\n\nSi deseas eliminar tu cuenta, contacta al soporte de I GUIDE U."
-    )
-  }
-  style={{
-    backgroundColor: "#6b7280",
-    padding: 16,
-    borderRadius: 16,
-    alignItems: "center",
-    marginTop: 12
-  }}
->
-  <Text style={buttonPrimaryText}>Eliminar cuenta</Text>
-</Pressable>
-<Pressable
-  onPress={() => router.push("/legal/terms")}
-  style={{
-    backgroundColor: "#173B6B",
-    padding: 16,
-    borderRadius: 16,
-    alignItems: "center",
-    marginTop: 12
-  }}
->
-  <Text style={buttonPrimaryText}>Términos y condiciones</Text>
-</Pressable>
+            <Pressable
+              onPress={() => Alert.alert(t.support, t.supportMessage)}
+              style={{
+                backgroundColor: "#2563eb",
+                padding: 16,
+                borderRadius: 16,
+                alignItems: "center",
+                marginTop: 12
+              }}
+            >
+              <Text style={buttonPrimaryText}>{t.support}</Text>
+            </Pressable>
 
-<Pressable
-  onPress={() => router.push("/legal/privacy")}
-  style={{
-    backgroundColor: "#173B6B",
-    padding: 16,
-    borderRadius: 16,
-    alignItems: "center",
-    marginTop: 12
-  }}
->
-  <Text style={buttonPrimaryText}>Política de privacidad</Text>
-</Pressable>
+            <Pressable
+              onPress={() => Alert.alert(t.deleteAccount, t.deleteAccountMessage)}
+              style={{
+                backgroundColor: "#6b7280",
+                padding: 16,
+                borderRadius: 16,
+                alignItems: "center",
+                marginTop: 12
+              }}
+            >
+              <Text style={buttonPrimaryText}>{t.deleteAccount}</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => router.push("/legal/terms")}
+              style={{
+                backgroundColor: "#173B6B",
+                padding: 16,
+                borderRadius: 16,
+                alignItems: "center",
+                marginTop: 12
+              }}
+            >
+              <Text style={buttonPrimaryText}>{t.terms}</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => router.push("/legal/privacy")}
+              style={{
+                backgroundColor: "#173B6B",
+                padding: 16,
+                borderRadius: 16,
+                alignItems: "center",
+                marginTop: 12
+              }}
+            >
+              <Text style={buttonPrimaryText}>{t.privacy}</Text>
+            </Pressable>
+
             <Pressable onPress={handleLogout} style={buttonDanger}>
               <Text style={buttonDangerText}>{t.logout}</Text>
             </Pressable>
