@@ -7,7 +7,8 @@ import {
   Text,
   TextInput,
   View,
-  ImageBackground
+  ImageBackground,
+  Platform
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
@@ -164,6 +165,28 @@ export default function PerfilViajero() {
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={["left", "right"]}>
+{Platform.OS === "ios" && (
+  <Pressable
+    onPress={() => router.back()}
+    hitSlop={12}
+    style={{
+      position: "absolute",
+      top: 16,
+      left: 18,
+      zIndex: 50,
+      backgroundColor: "rgba(255,255,255,0.14)",
+      borderWidth: 1,
+      borderColor: "rgba(255,255,255,0.20)",
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      borderRadius: 999
+    }}
+  >
+    <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>
+      Volver
+    </Text>
+  </Pressable>
+)}
       <ImageBackground
         source={{
           uri: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80"
