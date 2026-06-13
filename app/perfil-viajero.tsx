@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Alert,
   Image,
@@ -7,7 +7,8 @@ import {
   Text,
   TextInput,
   View,
-  ImageBackground
+  ImageBackground,
+  Platform
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
@@ -18,6 +19,7 @@ import { apiPost, apiPut } from "@/config/api";
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
 const PROFILE_CACHE_KEY = "iguideu_profile_cache";
+const LANG_KEY = "iguideu_lang";
 
 type PickedMedia = {
   uri: string;
@@ -42,6 +44,57 @@ export default function PerfilViajero() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [lang, setLang] = useState<"es" | "en">("es");
+
+  useEffect(() => {
+    const loadLang = async () => {
+      try {
+        const savedLang = await AsyncStorage.getItem(LANG_KEY);
+        if (savedLang === "en" || savedLang === "es") {
+          setLang(savedLang);
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    };
+    loadLang();
+  }, []);
+
+  const t = {
+    back: lang === "en" ? "Back" : "Volver",
+    profileTitle: lang === "en" ? "Traveler profile" : "Perfil de viajero",
+    addPhoto: lang === "en" ? "Add photo" : "Agregar foto",
+    personalInfo: lang === "en" ? "Personal information" : "Información personal",
+    placeholderName: lang === "en" ? "Name" : "Nombre",
+    placeholderEmail: lang === "en" ? "Email" : "Email",
+    placeholderPhone: lang === "en" ? "Phone" : "Teléfono",
+    placeholderCountry: lang === "en" ? "Country" : "País",
+    placeholderCity: lang === "en" ? "City" : "Ciudad",
+    placeholderLanguage: lang === "en" ? "Language" : "Idioma",
+    placeholderTravelStyle: lang === "en" ? "Travel style" : "Tipo de viaje",
+    placeholderInterests: lang === "en" ? "Interests" : "Intereses",
+    placeholderAbout: lang === "en" ? "About you" : "Sobre vos",
+    placeholderPassword: lang === "en" ? "Password" : "Contraseña",
+    placeholderConfirmPassword: lang === "en" ? "Confirm password" : "Confirmar contraseña",
+    hide: lang === "en" ? "Hide" : "Ocultar",
+    show: lang === "en" ? "Show" : "Ver",
+    accept: lang === "en" ? "I accept the terms" : "Acepto términos",
+    savingBtn: lang === "en" ? "SAVING..." : "GUARDANDO...",
+    saveBtn: lang === "en" ? "SAVE PROFILE" : "GUARDAR PERFIL",
+    alertErr: lang === "en" ? "Error" : "Error",
+    alertName: lang === "en" ? "Please enter your name" : "Ingresá tu nombre",
+    alertEmail: lang === "en" ? "Please enter your email" : "Ingresá tu email",
+    alertPhone: lang === "en" ? "Please enter your phone number" : "Ingresá tu teléfono",
+    alertTerms: lang === "en" ? "You must accept the terms" : "Debes aceptar los términos",
+    alertPass: lang === "en" ? "Please enter a password" : "Ingresá una contraseña",
+    alertMatch: lang === "en" ? "Passwords do not match" : "Las contraseñas no coinciden",
+    alertCreateErr: lang === "en" ? "Could not create account" : "No se pudo crear la cuenta",
+    alertLoginErr: lang === "en" ? "Could not log in automatically" : "No se pudo iniciar sesión automáticamente",
+    alertSuccessTitle: lang === "en" ? "Profile ready" : "Perfil listo",
+    alertSuccessMsg: lang === "en" ? "Saved successfully" : "Guardado correctamente",
+    alertExists: lang === "en" ? "That email is already registered" : "Ese email ya está registrado",
+    alertSaveErr: lang === "en" ? "Could not save profile" : "No se pudo guardar el perfil"
+  };
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -70,14 +123,14 @@ export default function PerfilViajero() {
     const cleanAbout = String(about || "").trim();
     const cleanPhoto = mainPhoto?.uri || "";
 
-    if (!cleanName) return Alert.alert("Error", "Ingresá tu nombre");
-    if (!cleanEmail) return Alert.alert("Error", "Ingresá tu email");
-    if (!cleanPhone) return Alert.alert("Error", "Ingresá tu teléfono");
-    if (!acceptTerms) return Alert.alert("Error", "Debes aceptar los términos");
-    if (!password.trim()) return Alert.alert("Error", "Ingresá una contraseña");
+    if (!cleanName) return Alert.alert(t.alertErr, t.alertName);
+    if (!cleanEmail) return Alert.alert(t.alertErr, t.alertEmail);
+    if (!cleanPhone) return Alert.alert(t.alertErr, t.alertPhone);
+    if (!acceptTerms) return Alert.alert(t.alertErr, t.alertTerms);
+    if (!password.trim()) return Alert.alert(t.alertErr, t.alertPass);
 
     if (password !== confirmPassword) {
-      return Alert.alert("Error", "Las contraseñas no coinciden");
+      return Alert.alert(t.alertErr, t.alertMatch);
     }
 
     try {
@@ -91,7 +144,7 @@ export default function PerfilViajero() {
       });
 
       if (!registerData?.ok) {
-        Alert.alert("Error", registerData?.message || "No se pudo crear la cuenta");
+        Alert.alert(t.alertErr, registerData?.message || t.alertCreateErr);
         return;
       }
 
@@ -103,7 +156,7 @@ export default function PerfilViajero() {
       const token = String(loginData?.token || "").trim();
 
       if (!token) {
-        Alert.alert("Error", "No se pudo iniciar sesión automáticamente");
+        Alert.alert(t.alertErr, t.alertLoginErr);
         return;
       }
 
@@ -142,7 +195,7 @@ export default function PerfilViajero() {
         })
       );
 
-      Alert.alert("Perfil listo", "Guardado correctamente", [
+      Alert.alert(t.alertSuccessTitle, t.alertSuccessMsg, [
         { text: "OK", onPress: () => router.replace("/(tabs)") }
       ]);
     } catch (error: any) {
@@ -153,9 +206,9 @@ export default function PerfilViajero() {
         msg.toLowerCase().includes("exists") ||
         msg.toLowerCase().includes("existe")
       ) {
-        Alert.alert("Error", "Ese email ya está registrado");
+        Alert.alert(t.alertErr, t.alertExists);
       } else {
-        Alert.alert("Error", msg || "No se pudo guardar el perfil");
+        Alert.alert(t.alertErr, msg || t.alertSaveErr);
       }
     } finally {
       setSaving(false);
@@ -164,6 +217,29 @@ export default function PerfilViajero() {
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={["left", "right"]}>
+      {Platform.OS === "ios" && (
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={12}
+          style={{
+            position: "absolute",
+            top: 60,
+            left: 18,
+            zIndex: 999,
+            backgroundColor: "rgba(255,255,255,0.14)",
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.20)",
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+            borderRadius: 999
+          }}
+        >
+          <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>
+            {t.back}
+          </Text>
+        </Pressable>
+      )}
+
       <ImageBackground
         source={{
           uri: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80"
@@ -178,26 +254,26 @@ export default function PerfilViajero() {
         >
           <View style={{ paddingTop: 48, paddingHorizontal: 24, paddingBottom: 34 }}>
             <Text style={titleMain}>I GUIDE U</Text>
-            <Text style={titleSub}>Perfil de viajero</Text>
+            <Text style={titleSub}>{t.profileTitle}</Text>
 
             <Pressable onPress={pickImage} style={photoBox}>
               {mainPhoto ? (
                 <Image source={{ uri: mainPhoto.uri }} style={{ width: "100%", height: "100%" }} />
               ) : (
                 <Text style={{ color: "#173B6B", fontWeight: "800" as const }}>
-                  Agregar foto
+                  {t.addPhoto}
                 </Text>
               )}
             </Pressable>
           </View>
 
           <View style={card}>
-            <Text style={section}>Información personal</Text>
+            <Text style={section}>{t.personalInfo}</Text>
 
             <TextInput
               value={name}
               onChangeText={setName}
-              placeholder="Nombre"
+              placeholder={t.placeholderName}
               placeholderTextColor="#6b7280"
               style={input}
               editable={!saving}
@@ -206,7 +282,7 @@ export default function PerfilViajero() {
             <TextInput
               value={email}
               onChangeText={setEmail}
-              placeholder="Email"
+              placeholder={t.placeholderEmail}
               placeholderTextColor="#6b7280"
               autoCapitalize="none"
               keyboardType="email-address"
@@ -217,7 +293,7 @@ export default function PerfilViajero() {
             <TextInput
               value={phone}
               onChangeText={setPhone}
-              placeholder="Teléfono"
+              placeholder={t.placeholderPhone}
               placeholderTextColor="#6b7280"
               style={input}
               editable={!saving}
@@ -226,7 +302,7 @@ export default function PerfilViajero() {
             <TextInput
               value={country}
               onChangeText={setCountry}
-              placeholder="País"
+              placeholder={t.placeholderCountry}
               placeholderTextColor="#6b7280"
               style={input}
               editable={!saving}
@@ -235,7 +311,7 @@ export default function PerfilViajero() {
             <TextInput
               value={city}
               onChangeText={setCity}
-              placeholder="Ciudad"
+              placeholder={t.placeholderCity}
               placeholderTextColor="#6b7280"
               style={input}
               editable={!saving}
@@ -244,7 +320,7 @@ export default function PerfilViajero() {
             <TextInput
               value={language}
               onChangeText={setLanguage}
-              placeholder="Idioma"
+              placeholder={t.placeholderLanguage}
               placeholderTextColor="#6b7280"
               style={input}
               editable={!saving}
@@ -253,7 +329,7 @@ export default function PerfilViajero() {
             <TextInput
               value={travelStyle}
               onChangeText={setTravelStyle}
-              placeholder="Tipo de viaje"
+              placeholder={t.placeholderTravelStyle}
               placeholderTextColor="#6b7280"
               style={input}
               editable={!saving}
@@ -262,7 +338,7 @@ export default function PerfilViajero() {
             <TextInput
               value={interests}
               onChangeText={setInterests}
-              placeholder="Intereses"
+              placeholder={t.placeholderInterests}
               placeholderTextColor="#6b7280"
               style={input}
               editable={!saving}
@@ -271,7 +347,7 @@ export default function PerfilViajero() {
             <TextInput
               value={about}
               onChangeText={setAbout}
-              placeholder="Sobre vos"
+              placeholder={t.placeholderAbout}
               placeholderTextColor="#6b7280"
               multiline
               style={[input, { minHeight: 100 }]}
@@ -282,7 +358,7 @@ export default function PerfilViajero() {
               <TextInput
                 value={password}
                 onChangeText={setPassword}
-                placeholder="Contraseña"
+                placeholder={t.placeholderPassword}
                 placeholderTextColor="#6b7280"
                 secureTextEntry={!showPassword}
                 style={[input, { paddingRight: 84 }]}
@@ -294,7 +370,7 @@ export default function PerfilViajero() {
                 style={{ position: "absolute" as const, right: 14, top: 14 }}
               >
                 <Text style={{ color: "#173B6B", fontWeight: "800" as const }}>
-                  {showPassword ? "Ocultar" : "Ver"}
+                  {showPassword ? t.hide : t.show}
                 </Text>
               </Pressable>
             </View>
@@ -303,7 +379,7 @@ export default function PerfilViajero() {
               <TextInput
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
-                placeholder="Confirmar contraseña"
+                placeholder={t.placeholderConfirmPassword}
                 placeholderTextColor="#6b7280"
                 secureTextEntry={!showConfirmPassword}
                 style={[input, { paddingRight: 84 }]}
@@ -315,7 +391,7 @@ export default function PerfilViajero() {
                 style={{ position: "absolute" as const, right: 14, top: 14 }}
               >
                 <Text style={{ color: "#173B6B", fontWeight: "800" as const }}>
-                  {showConfirmPassword ? "Ocultar" : "Ver"}
+                  {showConfirmPassword ? t.hide : t.show}
                 </Text>
               </Pressable>
             </View>
@@ -344,7 +420,7 @@ export default function PerfilViajero() {
                 {acceptTerms && <Text style={{ color: "#fff" }}>✓</Text>}
               </View>
 
-              <Text>Acepto términos</Text>
+              <Text>{t.accept}</Text>
             </Pressable>
 
             <Pressable
@@ -353,7 +429,7 @@ export default function PerfilViajero() {
               disabled={saving}
             >
               <Text style={{ color: "#fff", fontWeight: "800" as const }}>
-                {saving ? "GUARDANDO..." : "GUARDAR PERFIL"}
+                {saving ? t.savingBtn : t.saveBtn}
               </Text>
             </Pressable>
           </View>

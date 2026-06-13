@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Image,
@@ -7,7 +7,8 @@ import {
   ScrollView,
   Text,
   TextInput,
-  View
+  View,
+  Platform
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
@@ -151,6 +152,74 @@ export default function PerfilGuia() {
     }
   };
 
+  const t = {
+    back: language === "en" ? "Back" : "Volver",
+    title: language === "en"
+      ? (isExistingGuide ? "Edit profile" : "Complete profile")
+      : (isExistingGuide ? "Editar perfil" : "Completar perfil"),
+    mainPhoto: language === "en" ? "Main photo" : "Foto principal",
+    mainPhotoHint: language === "en"
+      ? "Tap to upload your main image"
+      : "Tocá para cargar tu imagen principal",
+    certified: language === "en" ? "Certified" : "Certificado",
+    freelance: language === "en" ? "Freelance" : "Freelance",
+    freelanceHint: language === "en" ? "no official degree" : "sin título oficial",
+    placeholderName: language === "en" ? "Full name" : "Nombre completo",
+    placeholderEmail: language === "en" ? "Email" : "Email",
+    placeholderPhone: language === "en" ? "Phone" : "Teléfono",
+    placeholderCity: language === "en" ? "City" : "Ciudad",
+    placeholderCountry: language === "en" ? "Country" : "País",
+    photosVideo: language === "en" ? "Photos + Video" : "Fotos + Video",
+    photoIndex: language === "en" ? "Photo" : "Foto",
+    videoText: language === "en" ? "Video" : "Video",
+    removeText: language === "en" ? "Remove" : "Quitar",
+    placeholderLanguages: language === "en" ? "Languages" : "Idiomas",
+    placeholderBio: language === "en" ? "Bio" : "Bio",
+    rates: language === "en" ? "Rates" : "Tarifas",
+    placeholderPriceHour: language === "en" ? "Price per hour" : "Precio por hora",
+    placeholderPriceDay: language === "en" ? "Price per day" : "Precio jornada",
+    placeholderPrice24h: language === "en" ? "Price 24h" : "Precio 24h",
+    rulesTitle: language === "en" ? "Before offering your service" : "Antes de ofrecer tu servicio",
+    rule1: language === "en" ? "• Your rates must correspond to the indicated service." : "• Tus tarifas deben corresponder al servicio indicado.",
+    rule2: language === "en" ? "• Meals, transportation, or tickets are not included unless expressly stated." : "• Comidas, transporte o entradas no están incluidas salvo que lo aclares expresamente.",
+    rule3: language === "en" ? "• If the tour involves shared expenses, they must be clear before confirming." : "• Si el recorrido implica gastos compartidos, deben quedar claros antes de confirmar.",
+    rule4: language === "en" ? "• Keep your information, languages, and prices always updated." : "• Mantené tu información, idiomas y precios siempre actualizados.",
+    rule5: language === "en" ? "• Upon accepting a request, the service is registered within the platform." : "• Al aceptar una solicitud, el servicio queda registrado dentro de la plataforma.",
+    passwordSection: language === "en"
+      ? (isExistingGuide ? "Optional password change" : "Create password")
+      : (isExistingGuide ? "Cambiar contraseña opcional" : "Crear contraseña"),
+    placeholderPass: language === "en"
+      ? (isExistingGuide ? "Optional new password" : "Password")
+      : (isExistingGuide ? "Nueva contraseña opcional" : "Contraseña"),
+    placeholderConfirmPass: language === "en"
+      ? (isExistingGuide ? "Confirm new password" : "Confirm password")
+      : (isExistingGuide ? "Confirmar nueva contraseña" : "Confirmar contraseña"),
+    show: language === "en" ? "Show" : "Ver",
+    hide: language === "en" ? "Hide" : "Ocultar",
+    accept: language === "en" ? "I accept the terms and conditions" : "Acepto los términos y condiciones",
+    save: language === "en"
+      ? (loading ? "Saving..." : isExistingGuide ? "Save changes" : "Save profile")
+      : (loading ? "Guardando..." : isExistingGuide ? "Guardar cambios" : "Guardar perfil"),
+    bookings: language === "en" ? "My bookings" : "Mis reservas",
+    logout: language === "en" ? "Log out" : "Cerrar sesión",
+    alertMissingTitle: language === "en" ? "Missing information" : "Faltan datos",
+    alertMissingMain: language === "en" ? "Please complete name and email." : "Completá nombre y email.",
+    alertMissingFull: language === "en" ? "Please complete name, email, phone, city, and country." : "Completá nombre, email, teléfono, ciudad y país.",
+    alertErrorTitle: language === "en" ? "Error" : "Error",
+    alertPassLength: language === "en" ? "The password must be at least 6 characters long" : "La contraseña debe tener al menos 6 caracteres",
+    alertPassNewLength: language === "en" ? "The new password must be at least 6 characters long" : "La nueva contraseña debe tener al menos 6 caracteres",
+    alertPassMatch: language === "en" ? "Passwords do not match" : "Las contraseñas no coinciden",
+    alertAcceptTerms: language === "en" ? "You must accept the terms and conditions" : "Debes aceptar los términos y condiciones",
+    alertServerErrTitle: language === "en" ? "Server error" : "Error servidor",
+    alertServerErrJSON: language === "en" ? "The backend did not respond with JSON. Check endpoint." : "El backend no respondió JSON. Revisar endpoint.",
+    alertSaveErr: language === "en" ? "Could not save profile." : "No se pudo guardar el perfil.",
+    alertConnectErr: language === "en" ? "Could not connect to the server." : "No se pudo conectar con el servidor.",
+    alertSuccessUpdatedTitle: language === "en" ? "Profile updated" : "Perfil actualizado",
+    alertSuccessCreatedTitle: language === "en" ? "Profile created" : "Perfil creado",
+    alertSuccessUpdatedMsg: language === "en" ? "Your changes were saved successfully." : "Tus cambios fueron guardados correctamente.",
+    alertSuccessCreatedMsg: language === "en" ? "Your guide profile is now active." : "Tu perfil de guía ya está activo."
+  };
+
   const handleSave = async () => {
     const cleanName = name.trim();
     const cleanEmail = email.trim().toLowerCase();
@@ -163,40 +232,40 @@ export default function PerfilGuia() {
     const cleanConfirmPassword = confirmPassword.trim();
 
     if (!cleanName || !cleanEmail) {
-      Alert.alert("Faltan datos", "Completá nombre y email.");
+      Alert.alert(t.alertMissingTitle, t.alertMissingMain);
       return;
     }
 
     if (!isExistingGuide && (!cleanPhone || !cleanCity || !cleanCountry)) {
-      Alert.alert("Faltan datos", "Completá nombre, email, teléfono, ciudad y país.");
+      Alert.alert(t.alertMissingTitle, t.alertMissingFull);
       return;
     }
 
     if (!isExistingGuide) {
       if (!cleanPassword || cleanPassword.length < 6) {
-        Alert.alert("Error", "La contraseña debe tener al menos 6 caracteres");
+        Alert.alert(t.alertErrorTitle, t.alertPassLength);
         return;
       }
 
       if (cleanPassword !== cleanConfirmPassword) {
-        Alert.alert("Error", "Las contraseñas no coinciden");
+        Alert.alert(t.alertErrorTitle, t.alertPassMatch);
         return;
       }
 
       if (!acceptTerms) {
-        Alert.alert("Error", "Debes aceptar los términos y condiciones");
+        Alert.alert(t.alertErrorTitle, t.alertAcceptTerms);
         return;
       }
     }
 
     if (isExistingGuide && cleanPassword) {
       if (cleanPassword.length < 6) {
-        Alert.alert("Error", "La nueva contraseña debe tener al menos 6 caracteres");
+        Alert.alert(t.alertErrorTitle, t.alertPassNewLength);
         return;
       }
 
       if (cleanPassword !== cleanConfirmPassword) {
-        Alert.alert("Error", "Las contraseñas no coinciden");
+        Alert.alert(t.alertErrorTitle, t.alertPassMatch);
         return;
       }
     }
@@ -245,12 +314,12 @@ export default function PerfilGuia() {
       try {
         data = JSON.parse(text);
       } catch {
-        Alert.alert("Error servidor", "El backend no respondió JSON. Revisar endpoint.");
+        Alert.alert(t.alertServerErrTitle, t.alertServerErrJSON);
         return;
       }
 
       if (!response.ok || !data?.ok) {
-        Alert.alert("Error", data?.error || "No se pudo guardar el perfil.");
+        Alert.alert(t.alertErrorTitle, data?.error || t.alertSaveErr);
         return;
       }
 
@@ -260,260 +329,242 @@ export default function PerfilGuia() {
       setConfirmPassword("");
 
       Alert.alert(
-        isExistingGuide ? "Perfil actualizado" : "Perfil creado",
-        isExistingGuide ? "Tus cambios fueron guardados correctamente." : "Tu perfil de guía ya está activo."
+        isExistingGuide ? t.alertSuccessUpdatedTitle : t.alertSuccessCreatedTitle,
+        isExistingGuide ? t.alertSuccessUpdatedMsg : t.alertSuccessCreatedMsg
       );
     } catch (error: any) {
-      Alert.alert("Error", error?.message || "No se pudo conectar con el servidor.");
+      Alert.alert(t.alertErrorTitle, error?.message || t.alertConnectErr);
     } finally {
       setLoading(false);
     }
   };
 
-  const t = {
-    title: language === "en"
-      ? (isExistingGuide ? "Edit profile" : "Complete profile")
-      : (isExistingGuide ? "Editar perfil" : "Completar perfil"),
-
-    mainPhoto: language === "en" ? "Main photo" : "Foto principal",
-
-    mainPhotoHint: language === "en"
-      ? "Tap to upload your main image"
-      : "Tocá para cargar tu imagen principal",
-
-    certified: language === "en" ? "Certified" : "Certificado",
-
-    photosVideo: language === "en"
-      ? "Photos + Video"
-      : "Fotos + Video",
-
-    rates: language === "en" ? "Rates" : "Tarifas",
-
-    rulesTitle: language === "en"
-      ? "Before offering your service"
-      : "Antes de ofrecer tu servicio",
-
-    passwordSection: language === "en"
-      ? (isExistingGuide ? "Optional password change" : "Create password")
-      : (isExistingGuide ? "Cambiar contraseña opcional" : "Crear contraseña"),
-
-    save: language === "en"
-      ? (loading ? "Saving..." : isExistingGuide ? "Save changes" : "Save profile")
-      : (loading ? "Guardando..." : isExistingGuide ? "Guardar cambios" : "Guardar perfil"),
-
-    bookings: language === "en" ? "My bookings" : "Mis reservas",
-
-    show: language === "en" ? "Show" : "Ver",
-    hide: language === "en" ? "Hide" : "Ocultar",
-
-    accept: language === "en"
-      ? "I accept the terms and conditions"
-      : "Acepto los términos y condiciones",
-
-    logout: language === "en" ? "Log out" : "Cerrar sesión"
-  };
-
   return (
-    <ImageBackground
-      source={{
-        uri: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80"
-      }}
-      style={{ flex: 1, backgroundColor: "#0B3E91" }}
-      resizeMode="cover"
-    >
-      <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(11,62,145,0.74)" }} />
-
-      <View style={{ position: "absolute", top: -40, right: -20, width: 220, height: 220, borderRadius: 110, backgroundColor: "rgba(88,196,255,0.14)" }} />
-
-      <View style={{ position: "absolute", bottom: 140, left: -40, width: 180, height: 180, borderRadius: 90, backgroundColor: "rgba(18,184,166,0.10)" }} />
-
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingBottom: 140 }} showsVerticalScrollIndicator={false}>
-        <Text style={title}>{t.title}</Text>
-
+    <>
+      {Platform.OS === "ios" && (
         <Pressable
-          style={mainBox}
-          onPress={async () => {
-            if (loading) return;
-            const img = await pickImage();
-            if (img) setMainPhoto(img);
+          onPress={() => router.back()}
+          hitSlop={12}
+          style={{
+            position: "absolute",
+            top: 60,
+            left: 18,
+            zIndex: 999,
+            backgroundColor: "rgba(255,255,255,0.14)",
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.20)",
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+            borderRadius: 999
           }}
         >
-          {mainPhoto ? (
-            <Image source={{ uri: mainPhoto.uri }} style={mainImg} />
-          ) : (
-            <View style={mainPlaceholder}>
-              <Text style={mainPlaceholderTitle}>{t.mainPhoto}</Text>
-              <Text style={mainPlaceholderSubtitle}>{t.mainPhotoHint}</Text>
-            </View>
-          )}
+          <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>
+            {t.back}
+          </Text>
         </Pressable>
+      )}
 
-        <View style={typeSection}>
-          <Pressable onPress={() => setGuideType("certified")} style={[typeButton, guideType === "certified" ? typeButtonActive : null]}>
-            <Text style={typeButtonText}>{t.certified}</Text>
+      <ImageBackground
+        source={{
+          uri: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80"
+        }}
+        style={{ flex: 1, backgroundColor: "#0B3E91" }}
+        resizeMode="cover"
+      >
+        <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(11,62,145,0.74)" }} />
+
+        <View style={{ position: "absolute", top: -40, right: -20, width: 220, height: 220, borderRadius: 110, backgroundColor: "rgba(88,196,255,0.14)" }} />
+
+        <View style={{ position: "absolute", bottom: 140, left: -40, width: 180, height: 180, borderRadius: 90, backgroundColor: "rgba(18,184,166,0.10)" }} />
+
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingBottom: 140 }} showsVerticalScrollIndicator={false}>
+          <Text style={title}>{t.title}</Text>
+
+          <Pressable
+            style={mainBox}
+            onPress={async () => {
+              if (loading) return;
+              const img = await pickImage();
+              if (img) setMainPhoto(img);
+            }}
+          >
+            {mainPhoto ? (
+              <Image source={{ uri: mainPhoto.uri }} style={mainImg} />
+            ) : (
+              <View style={mainPlaceholder}>
+                <Text style={mainPlaceholderTitle}>{t.mainPhoto}</Text>
+                <Text style={mainPlaceholderSubtitle}>{t.mainPhotoHint}</Text>
+              </View>
+            )}
           </Pressable>
 
-          <Pressable onPress={() => setGuideType("freelance")} style={[typeButton, guideType === "freelance" ? typeButtonActive : null]}>
-            <Text style={typeButtonText}>Freelance</Text>
-            <Text style={typeHint}>sin título oficial</Text>
-          </Pressable>
-        </View>
+          <View style={typeSection}>
+            <Pressable onPress={() => setGuideType("certified")} style={[typeButton, guideType === "certified" ? typeButtonActive : null]}>
+              <Text style={typeButtonText}>{t.certified}</Text>
+            </Pressable>
 
-        <View style={glassCard}>
-          <TextInput placeholder="Nombre completo" placeholderTextColor="#6b7280" value={name} onChangeText={setName} style={input} editable={!loading} />
-
-          <TextInput placeholder="Email" placeholderTextColor="#6b7280" value={email} onChangeText={setEmail} style={input} editable={!loading} autoCapitalize="none" keyboardType="email-address" />
-
-          <TextInput placeholder="Teléfono" placeholderTextColor="#6b7280" value={phone} onChangeText={setPhone} style={input} editable={!loading} />
-
-          <View style={rowFields}>
-            <TextInput placeholder="Ciudad" placeholderTextColor="#6b7280" value={city} onChangeText={setCity} style={[input, halfInput]} editable={!loading} />
-
-            <TextInput placeholder="País" placeholderTextColor="#6b7280" value={country} onChangeText={setCountry} style={[input, halfInput]} editable={!loading} />
+            <Pressable onPress={() => setGuideType("freelance")} style={[typeButton, guideType === "freelance" ? typeButtonActive : null]}>
+              <Text style={typeButtonText}>{t.freelance}</Text>
+              <Text style={typeHint}>{t.freelanceHint}</Text>
+            </Pressable>
           </View>
 
-          <Text style={section}>{t.photosVideo}</Text>
+          <View style={glassCard}>
+            <TextInput placeholder={t.placeholderName} placeholderTextColor="#6b7280" value={name} onChangeText={setName} style={input} editable={!loading} />
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={row}>
-            {gallerySlots.map((item, i) => (
-              <View key={i} style={card}>
-                {item ? (
-                  <Pressable
-                    onPress={() => {
-                      if (loading) return;
-                      const copy = [...galleryPhotos];
-                      copy.splice(i, 1);
-                      setGalleryPhotos(copy);
-                    }}
-                  >
-                    <Image source={{ uri: item.uri }} style={img} />
-                  </Pressable>
-                ) : (
-                  <Pressable
-                    onPress={async () => {
-                      if (loading) return;
-                      const picked = await pickImage();
-                      if (picked) {
+            <TextInput placeholder={t.placeholderEmail} placeholderTextColor="#6b7280" value={email} onChangeText={setEmail} style={input} editable={!loading} autoCapitalize="none" keyboardType="email-address" />
+
+            <TextInput placeholder={t.placeholderPhone} placeholderTextColor="#6b7280" value={phone} onChangeText={setPhone} style={input} editable={!loading} />
+
+            <View style={rowFields}>
+              <TextInput placeholder={t.placeholderCity} placeholderTextColor="#6b7280" value={city} onChangeText={setCity} style={[input, halfInput]} editable={!loading} />
+
+              <TextInput placeholder={t.placeholderCountry} placeholderTextColor="#6b7280" value={country} onChangeText={setCountry} style={[input, halfInput]} editable={!loading} />
+            </View>
+
+            <Text style={section}>{t.photosVideo}</Text>
+
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={row}>
+              {gallerySlots.map((item, i) => (
+                <View key={i} style={card}>
+                  {item ? (
+                    <Pressable
+                      onPress={() => {
+                        if (loading) return;
                         const copy = [...galleryPhotos];
-                        copy[i] = picked;
+                        copy.splice(i, 1);
                         setGalleryPhotos(copy);
-                      }
-                    }}
-                    style={cardInner}
-                  >
-                    <Text style={cardText}>Foto {i + 1}</Text>
+                      }}
+                    >
+                      <Image source={{ uri: item.uri }} style={img} />
+                    </Pressable>
+                  ) : (
+                    <Pressable
+                      onPress={async () => {
+                        if (loading) return;
+                        const picked = await pickImage();
+                        if (picked) {
+                          const copy = [...galleryPhotos];
+                          copy[i] = picked;
+                          setGalleryPhotos(copy);
+                        }
+                      }}
+                      style={cardInner}
+                    >
+                      <Text style={cardText}>{t.photoIndex} {i + 1}</Text>
+                    </Pressable>
+                  )}
+                </View>
+              ))}
+
+              <View style={card}>
+                {video ? (
+                  <View style={cardInner}>
+                    <Text style={videoEmoji}>🎬</Text>
+                    <Text style={videoText}>{t.videoText}</Text>
+
+                    <Pressable onPress={() => setVideo(null)} style={removeBtn}>
+                      <Text style={removeBtnText}>{t.removeText}</Text>
+                    </Pressable>
+                  </View>
+                ) : (
+                  <Pressable onPress={pickVideo} style={cardInner}>
+                    <Text style={cardText}>{t.videoText}</Text>
                   </Pressable>
                 )}
               </View>
-            ))}
+            </ScrollView>
 
-            <View style={card}>
-              {video ? (
-                <View style={cardInner}>
-                  <Text style={videoEmoji}>🎬</Text>
-                  <Text style={videoText}>Video</Text>
+            <TextInput placeholder={t.placeholderLanguages} placeholderTextColor="#6b7280" value={languages} onChangeText={setLanguages} style={input} editable={!loading} />
 
-                  <Pressable onPress={() => setVideo(null)} style={removeBtn}>
-                    <Text style={removeBtnText}>Quitar</Text>
-                  </Pressable>
-                </View>
-              ) : (
-                <Pressable onPress={pickVideo} style={cardInner}>
-                  <Text style={cardText}>Video</Text>
-                </Pressable>
-              )}
-            </View>
-          </ScrollView>
+            <TextInput placeholder={t.placeholderBio} placeholderTextColor="#6b7280" value={bio} onChangeText={setBio} style={[input, bioInput]} editable={!loading} multiline textAlignVertical="top" />
 
-          <TextInput placeholder="Idiomas" placeholderTextColor="#6b7280" value={languages} onChangeText={setLanguages} style={input} editable={!loading} />
+            <Text style={section}>{t.rates}</Text>
 
-          <TextInput placeholder="Bio" placeholderTextColor="#6b7280" value={bio} onChangeText={setBio} style={[input, bioInput]} editable={!loading} multiline textAlignVertical="top" />
+            <TextInput placeholder={t.placeholderPriceHour} placeholderTextColor="#6b7280" value={priceHour} onChangeText={setPriceHour} style={input} editable={!loading} keyboardType="numeric" />
 
-          <Text style={section}>{t.rates}</Text>
+            <TextInput placeholder={t.placeholderPriceDay} placeholderTextColor="#6b7280" value={priceDay} onChangeText={setPriceDay} style={input} editable={!loading} keyboardType="numeric" />
 
-          <TextInput placeholder="Precio por hora" placeholderTextColor="#6b7280" value={priceHour} onChangeText={setPriceHour} style={input} editable={!loading} keyboardType="numeric" />
+            <TextInput placeholder={t.placeholderPrice24h} placeholderTextColor="#6b7280" value={price24h} onChangeText={setPrice24h} style={input} editable={!loading} keyboardType="numeric" />
 
-          <TextInput placeholder="Precio jornada" placeholderTextColor="#6b7280" value={priceDay} onChangeText={setPriceDay} style={input} editable={!loading} keyboardType="numeric" />
-
-          <TextInput placeholder="Precio 24h" placeholderTextColor="#6b7280" value={price24h} onChangeText={setPrice24h} style={input} editable={!loading} keyboardType="numeric" />
-
-          <View style={rulesBox}>
-            <Text style={rulesTitle}>{t.rulesTitle}</Text>
-            <Text style={ruleLine}>• Tus tarifas deben corresponder al servicio indicado.</Text>
-            <Text style={ruleLine}>• Comidas, transporte o entradas no están incluidas salvo que lo aclares expresamente.</Text>
-            <Text style={ruleLine}>• Si el recorrido implica gastos compartidos, deben quedar claros antes de confirmar.</Text>
-            <Text style={ruleLine}>• Mantené tu información, idiomas y precios siempre actualizados.</Text>
-            <Text style={ruleLine}>• Al aceptar una solicitud, el servicio queda registrado dentro de la plataforma.</Text>
-          </View>
-
-          <Text style={section}>{t.passwordSection}</Text>
-
-          <View style={passwordRow}>
-            <TextInput
-              placeholder={isExistingGuide ? "Nueva contraseña opcional" : "Contraseña"}
-              placeholderTextColor="#6b7280"
-              value={password}
-              onChangeText={setPassword}
-              style={passwordInput}
-              secureTextEntry={!showPassword}
-              editable={!loading}
-            />
-
-            <Pressable onPress={() => setShowPassword((prev) => !prev)} style={showButton} disabled={loading}>
-              <Text style={showButtonText}>{showPassword ? t.hide : t.show}</Text>
-            </Pressable>
-          </View>
-
-          <View style={passwordRow}>
-            <TextInput
-              placeholder={isExistingGuide ? "Confirmar nueva contraseña" : "Confirmar contraseña"}
-              placeholderTextColor="#6b7280"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              style={passwordInput}
-              secureTextEntry={!showConfirmPassword}
-              editable={!loading}
-            />
-
-            <Pressable onPress={() => setShowConfirmPassword((prev) => !prev)} style={showButton} disabled={loading}>
-              <Text style={showButtonText}>{showConfirmPassword ? t.hide : t.show}</Text>
-            </Pressable>
-          </View>
-
-          <Pressable onPress={() => setAcceptTerms((prev) => !prev)} style={{ flexDirection: "row", alignItems: "center", marginTop: 10 }}>
-            <View
-              style={{
-                width: 22,
-                height: 22,
-                borderRadius: 6,
-                borderWidth: 1,
-                borderColor: "#fff",
-                backgroundColor: acceptTerms ? "#12b8a6" : "transparent",
-                alignItems: "center",
-                justifyContent: "center",
-                marginRight: 10
-              }}
-            >
-              {acceptTerms && <Text style={{ color: "#fff", fontWeight: "800" as const }}>✓</Text>}
+            <View style={rulesBox}>
+              <Text style={rulesTitle}>{t.rulesTitle}</Text>
+              <Text style={ruleLine}>{t.rule1}</Text>
+              <Text style={ruleLine}>{t.rule2}</Text>
+              <Text style={ruleLine}>{t.rule3}</Text>
+              <Text style={ruleLine}>{t.rule4}</Text>
+              <Text style={ruleLine}>{t.rule5}</Text>
             </View>
 
-            <Text style={{ color: "#fff", flex: 1 }}>{t.accept}</Text>
-          </Pressable>
+            <Text style={section}>{t.passwordSection}</Text>
 
-          <Pressable onPress={handleSave} style={[btn, loading ? btnDisabled : null]} disabled={loading}>
-            <Text style={btnText}>{t.save}</Text>
-          </Pressable>
+            <View style={passwordRow}>
+              <TextInput
+                placeholder={t.placeholderPass}
+                placeholderTextColor="#6b7280"
+                value={password}
+                onChangeText={setPassword}
+                style={passwordInput}
+                secureTextEntry={!showPassword}
+                editable={!loading}
+              />
 
-          <Pressable onPress={() => router.push("/reservas-guia")} style={secondaryBtn}>
-            <Text style={secondaryBtnText}>{t.bookings}</Text>
-          </Pressable>
+              <Pressable onPress={() => setShowPassword((prev) => !prev)} style={showButton} disabled={loading}>
+                <Text style={showButtonText}>{showPassword ? t.hide : t.show}</Text>
+              </Pressable>
+            </View>
 
-          <Pressable onPress={handleLogout} style={logoutBtn}>
-            <Text style={logoutBtnText}>{t.logout}</Text>
-          </Pressable>
-        </View>
-      </ScrollView>
-    </ImageBackground>
+            <View style={passwordRow}>
+              <TextInput
+                placeholder={t.placeholderConfirmPass}
+                placeholderTextColor="#6b7280"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                style={passwordInput}
+                secureTextEntry={!showConfirmPassword}
+                editable={!loading}
+              />
+
+              <Pressable onPress={() => setShowConfirmPassword((prev) => !prev)} style={showButton} disabled={loading}>
+                <Text style={showButtonText}>{showConfirmPassword ? t.hide : t.show}</Text>
+              </Pressable>
+            </View>
+
+            <Pressable onPress={() => setAcceptTerms((prev) => !prev)} style={{ flexDirection: "row", alignItems: "center", marginTop: 10 }}>
+              <View
+                style={{
+                  width: 22,
+                  height: 22,
+                  borderRadius: 6,
+                  borderWidth: 1,
+                  borderColor: "#fff",
+                  backgroundColor: acceptTerms ? "#12b8a6" : "transparent",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginRight: 10
+                }}
+              >
+                {acceptTerms && <Text style={{ color: "#fff", fontWeight: "800" }}>✓</Text>}
+              </View>
+
+              <Text style={{ color: "#fff", flex: 1 }}>{t.accept}</Text>
+            </Pressable>
+
+            <Pressable onPress={handleSave} style={[btn, loading ? btnDisabled : null]} disabled={loading}>
+              <Text style={btnText}>{t.save}</Text>
+            </Pressable>
+
+            <Pressable onPress={() => router.push("/reservas-guia")} style={secondaryBtn}>
+              <Text style={secondaryBtnText}>{t.bookings}</Text>
+            </Pressable>
+
+            <Pressable onPress={handleLogout} style={logoutBtn}>
+              <Text style={logoutBtnText}>{t.logout}</Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      </ImageBackground>
+    </>
   );
 }
 
@@ -783,8 +834,3 @@ const removeBtnText = {
   fontSize: 12,
   fontWeight: "700" as const
 };
-
-
-
-
-
