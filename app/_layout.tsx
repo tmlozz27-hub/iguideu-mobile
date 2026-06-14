@@ -50,7 +50,7 @@ export default function RootLayout() {
           <Stack.Screen name="guia-detalle" options={{ headerShown: false }} />
           <Stack.Screen name="crear-reserva" options={{ headerShown: false }} />
           <Stack.Screen name="chat" options={{ headerShown: false }} />
-          <Stack.Screen name="perfil-guia" options={iosBackHeader} />
+          <Stack.Screen name="perfil-guia" options={{ headerShown: false }} />
           <Stack.Screen name="reservas-guia" options={iosBackHeader} />
           <Stack.Screen name="buscar-pais" options={{ headerShown: false }} />
           <Stack.Screen name="guides-by-country" options={{ headerShown: false }} />
