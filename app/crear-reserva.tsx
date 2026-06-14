@@ -749,13 +749,14 @@ export default function CrearReservaScreen() {
                   backgroundColor: "rgba(255,255,255,0.96)"
                 }}
               >
-                <DateTimePicker
-                  value={pickerDate}
-                  mode="date"
-                  display={Platform.OS === "ios" ? "spinner" : "default"}
-                  minimumDate={minimumDate}
-                  onChange={onChangeDate}
-                />
+            <DateTimePicker
+  value={pickerDate}
+  mode="date"
+  display={Platform.OS === "ios" ? "spinner" : "default"}
+  minimumDate={minimumDate}
+  onChange={onChangeDate}
+  themeVariant="light"
+/>
 
                 {Platform.OS === "ios" ? (
                   <Pressable
