@@ -58,6 +58,15 @@ export default function PerfilGuia() {
   };
 
   useEffect(() => {
+    const loadSavedLanguage = async () => {
+      const savedLang = await AsyncStorage.getItem("iguideu_lang");
+
+      if (savedLang === "en" || savedLang === "es") {
+        setLanguage(savedLang);
+      }
+    };
+
+    loadSavedLanguage();
     loadGuideProfile();
   }, []);
 
@@ -66,12 +75,6 @@ export default function PerfilGuia() {
       const token = (await AsyncStorage.getItem("iguideu_token")) || "";
 
       if (!token) return;
-
-      const savedLang = await AsyncStorage.getItem("iguideu_lang");
-
-      if (savedLang === "en" || savedLang === "es") {
-        setLanguage(savedLang);
-      }
 
       const response = await fetch(`${API_BASE}/api/guides/me`, {
         headers: {
