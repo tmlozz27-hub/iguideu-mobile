@@ -47,7 +47,7 @@ export default function PerfilGuia() {
 
   const [language, setLanguage] = useState<"es" | "en">("es");
 
-  const handleLogout = async () => {
+  const doLogout = async () => {
     await AsyncStorage.multiRemove([
       "iguideu_token",
       "iguideu_user_email",
@@ -55,6 +55,28 @@ export default function PerfilGuia() {
     ]);
 
     router.replace("/login");
+  };
+
+  const handleLogout = () => {
+    Alert.alert(
+      language === "en" ? "Log out" : "Cerrar sesión",
+      language === "en"
+        ? "Are you sure you want to log out?"
+        : "¿Seguro que querés cerrar sesión?",
+      [
+        {
+          text: language === "en" ? "Cancel" : "Cancelar",
+          style: "cancel"
+        },
+        {
+          text: language === "en" ? "Log out" : "Cerrar sesión",
+          style: "destructive",
+          onPress: () => {
+            doLogout();
+          }
+        }
+      ]
+    );
   };
 
   useEffect(() => {
