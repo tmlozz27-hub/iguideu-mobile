@@ -84,6 +84,7 @@ export default function PerfilViajero() {
     alertErr: lang === "en" ? "Error" : "Error",
     alertName: lang === "en" ? "Please enter your name" : "Ingresá tu nombre",
     alertEmail: lang === "en" ? "Please enter your email" : "Ingresá tu email",
+    alertInvalidEmail: lang === "en" ? "Please enter a valid email" : "Ingresá un email válido",
     alertPhone: lang === "en" ? "Please enter your phone number" : "Ingresá tu teléfono",
     alertTerms: lang === "en" ? "You must accept the terms" : "Debes aceptar los términos",
     alertPass: lang === "en" ? "Please enter a password" : "Ingresá una contraseña",
@@ -124,7 +125,16 @@ export default function PerfilViajero() {
     const cleanPhoto = mainPhoto?.uri || "";
 
     if (!cleanName) return Alert.alert(t.alertErr, t.alertName);
+    
+    // --- VALIDACIÓN DE EMAIL MODIFICADA ---
     if (!cleanEmail) return Alert.alert(t.alertErr, t.alertEmail);
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      return Alert.alert(t.alertErr, t.alertInvalidEmail);
+    }
+    // --------------------------------------
+
     if (!cleanPhone) return Alert.alert(t.alertErr, t.alertPhone);
     if (!acceptTerms) return Alert.alert(t.alertErr, t.alertTerms);
     if (!password.trim()) return Alert.alert(t.alertErr, t.alertPass);
