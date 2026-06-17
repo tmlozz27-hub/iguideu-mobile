@@ -26,6 +26,9 @@ const copy = {
     chatError: "Error chat",
     missingBooking: "Falta bookingId del chat.",
     sendError: "No se pudo enviar",
+    chatClosedTitle: "Chat cerrado",
+    chatClosedMessage:
+      "Este chat ya no está disponible porque el servicio finalizó hace más de 48 horas. Puedes consultar los mensajes anteriores, pero no enviar nuevos mensajes.",
     loading: "Cargando...",
     empty: "No hay mensajes",
     placeholder: "Escribir mensaje...",
@@ -38,6 +41,9 @@ const copy = {
     chatError: "Chat error",
     missingBooking: "Missing chat bookingId.",
     sendError: "Message could not be sent",
+    chatClosedTitle: "Chat closed",
+    chatClosedMessage:
+      "This chat is no longer available because the service ended more than 48 hours ago. Previous messages remain visible, but new messages cannot be sent.",
     loading: "Loading...",
     empty: "No messages yet",
     placeholder: "Write a message...",
@@ -100,13 +106,9 @@ export default function ChatScreen() {
         String(user?._id || user?.id || savedEmail || "traveler").trim()
       );
 
-      setSenderName(
-        String(user?.name || t.traveler).trim()
-      );
+      setSenderName(String(user?.name || t.traveler).trim());
 
-      setSenderEmail(
-        String(user?.email || savedEmail).trim().toLowerCase()
-      );
+      setSenderEmail(String(user?.email || savedEmail).trim().toLowerCase());
     } catch {
       setSenderId(savedEmail || "traveler");
       setSenderName(t.traveler);
@@ -117,9 +119,7 @@ export default function ChatScreen() {
   async function loadMessages() {
     if (!bookingId) return;
 
-    const data = await apiGet(
-      `/api/chat/messages?bookingId=${bookingId}`
-    );
+    const data = await apiGet(`/api/chat/messages?bookingId=${bookingId}`);
 
     const list = Array.isArray(data)
       ? data
@@ -160,9 +160,7 @@ export default function ChatScreen() {
       return;
     }
 
-    const finalSenderId = String(
-      senderId || senderEmail || "traveler"
-    ).trim();
+    const finalSenderId = String(senderId || senderEmail || "traveler").trim();
 
     const finalSenderEmail = String(senderEmail || "")
       .trim()
@@ -197,6 +195,13 @@ export default function ChatScreen() {
         listRef.current?.scrollToEnd({ animated: true });
       }, 120);
     } catch (e: any) {
+      const rawError = String(e?.message || "");
+
+      if (rawError.includes("CHAT_CLOSED_AFTER_SERVICE")) {
+        Alert.alert(t.chatClosedTitle, t.chatClosedMessage);
+        return;
+      }
+
       Alert.alert(t.error, e?.message || t.sendError);
     }
   }
@@ -218,155 +223,164 @@ export default function ChatScreen() {
       style={{ flex: 1 }}
       resizeMode="cover"
     >
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "rgba(2,6,23,0.42)"
+        }}
       >
-        {Platform.OS === "ios" && (
-          <View
-            style={{
-              alignItems: "flex-start",
-              paddingHorizontal: 16,
-              paddingTop: Math.max(insets.top, 16),
-              paddingBottom: 8
-            }}
-          >
-            <Pressable
-              onPress={() => router.back()}
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+          {Platform.OS === "ios" && (
+            <View
               style={{
-                backgroundColor: "rgba(255,255,255,0.14)",
-                borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.20)",
+                alignItems: "flex-start",
                 paddingHorizontal: 16,
-                paddingVertical: 10,
-                borderRadius: 999
+                paddingTop: Math.max(insets.top, 16),
+                paddingBottom: 8
               }}
             >
-              <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>{t.back}</Text>
-            </Pressable>
-          </View>
-        )}
-
-        <FlatList
-          ref={listRef}
-          data={messages}
-          keyExtractor={(item, i) =>
-            item._id || item.id || String(i)
-          }
-          contentContainerStyle={{
-            padding: 16,
-            paddingBottom: 20
-          }}
-          renderItem={({ item }) => {
-            const body =
-              item.text ||
-              item.message ||
-              item.body ||
-              item.content ||
-              "";
-
-            const mine =
-              String(item.senderId || "") ===
-              String(senderId || "");
-
-            return (
-              <View
+              <Pressable
+                onPress={() => router.back()}
                 style={{
-                  marginBottom: 10,
-                  alignItems: mine ? "flex-end" : "flex-start"
+                  backgroundColor: "rgba(15,23,42,0.82)",
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.28)",
+                  paddingHorizontal: 16,
+                  paddingVertical: 10,
+                  borderRadius: 999
                 }}
               >
+                <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>
+                  {t.back}
+                </Text>
+              </Pressable>
+            </View>
+          )}
+
+          <FlatList
+            ref={listRef}
+            data={messages}
+            keyExtractor={(item, i) => item._id || item.id || String(i)}
+            contentContainerStyle={{
+              padding: 16,
+              paddingBottom: 20
+            }}
+            renderItem={({ item }) => {
+              const body =
+                item.text || item.message || item.body || item.content || "";
+
+              const mine = String(item.senderId || "") === String(senderId || "");
+
+              return (
                 <View
                   style={{
-                    maxWidth: "80%",
-                    borderRadius: 18,
-                    padding: 14,
-                    backgroundColor: mine
-                      ? "#12b8a6"
-                      : "rgba(255,255,255,0.20)",
-                    borderWidth: 1,
-                    borderColor: mine
-                      ? "#12b8a6"
-                      : "rgba(255,255,255,0.30)"
+                    marginBottom: 10,
+                    alignItems: mine ? "flex-end" : "flex-start"
                   }}
                 >
-                  <Text
+                  <View
                     style={{
-                      color: "#fff",
-                      fontSize: 16
+                      maxWidth: "80%",
+                      borderRadius: 18,
+                      padding: 14,
+                      backgroundColor: mine
+                        ? "#0f766e"
+                        : "rgba(15,23,42,0.88)",
+                      borderWidth: 1,
+                      borderColor: mine
+                        ? "#5eead4"
+                        : "rgba(255,255,255,0.28)"
                     }}
                   >
-                    {body}
-                  </Text>
+                    <Text
+                      style={{
+                        color: "#ffffff",
+                        fontSize: 16,
+                        lineHeight: 21,
+                        fontWeight: "600"
+                      }}
+                    >
+                      {body}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-            );
-          }}
-          ListEmptyComponent={
-            <Text
-              style={{
-                color: "#fff",
-                textAlign: "center",
-                marginTop: 40
-              }}
-            >
-              {loading ? t.loading : t.empty}
-            </Text>
-          }
-        />
-
-        <View
-          style={{
-            paddingHorizontal: 14,
-            paddingBottom: bottomGap,
-            paddingTop: 8
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              backgroundColor: "rgba(255,255,255,0.18)",
-              borderRadius: 24,
-              paddingHorizontal: 10,
-              paddingVertical: 6
+              );
             }}
-          >
-            <TextInput
-              value={text}
-              onChangeText={setText}
-              placeholder={t.placeholder}
-              placeholderTextColor="#d1d5db"
-              style={{
-                flex: 1,
-                color: "#fff",
-                fontSize: 16,
-                paddingHorizontal: 10,
-                paddingVertical: 10
-              }}
-            />
-
-            <Pressable
-              onPress={sendMessage}
-              style={{
-                backgroundColor: "#12b8a6",
-                borderRadius: 20,
-                paddingHorizontal: 16,
-                paddingVertical: 10
-              }}
-            >
+            ListEmptyComponent={
               <Text
                 style={{
-                  color: "#fff",
-                  fontWeight: "800"
+                  color: "#ffffff",
+                  textAlign: "center",
+                  marginTop: 40,
+                  fontWeight: "700"
                 }}
               >
-                {t.send}
+                {loading ? t.loading : t.empty}
               </Text>
-            </Pressable>
+            }
+          />
+
+          <View
+            style={{
+              paddingHorizontal: 14,
+              paddingBottom: bottomGap,
+              paddingTop: 8
+            }}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                backgroundColor: "rgba(15,23,42,0.92)",
+                borderRadius: 24,
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.24)"
+              }}
+            >
+              <TextInput
+                value={text}
+                onChangeText={setText}
+                placeholder={t.placeholder}
+                placeholderTextColor="#cbd5e1"
+                style={{
+                  flex: 1,
+                  color: "#ffffff",
+                  fontSize: 16,
+                  paddingHorizontal: 10,
+                  paddingVertical: 10,
+                  fontWeight: "600"
+                }}
+              />
+
+              <Pressable
+                onPress={sendMessage}
+                style={{
+                  backgroundColor: "#0f766e",
+                  borderRadius: 20,
+                  paddingHorizontal: 16,
+                  paddingVertical: 10,
+                  borderWidth: 1,
+                  borderColor: "#5eead4"
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#ffffff",
+                    fontWeight: "900"
+                  }}
+                >
+                  {t.send}
+                </Text>
+              </Pressable>
+            </View>
           </View>
-        </View>
-      </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      </View>
     </ImageBackground>
   );
 }
