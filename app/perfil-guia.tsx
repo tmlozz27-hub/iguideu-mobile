@@ -368,7 +368,7 @@ export default function PerfilGuia() {
     <>
       {Platform.OS === "ios" && (
         <Pressable
-        onPress={() => router.replace("/(tabs)/perfil")}
+        onPress={() => router.replace("/perfil-guia")}
           hitSlop={12}
           style={{
             position: "absolute",
