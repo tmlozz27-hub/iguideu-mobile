@@ -10,6 +10,7 @@ import {
 } from "react-native";
 
 const LANG_KEY = "iguideu_lang";
+const USER_ROLE_KEY = "iguideu_user_role";
 
 const copy = {
   es: {
@@ -24,7 +25,7 @@ const copy = {
     bookingsTitle: "Mis reservas",
     bookingsSub: "Tu actividad",
     profileTitle: "Mi perfil",
-    profileSub: "Administra tu cuenta e informacion"
+    profileSub: "Administra tu cuenta e informacion",
   },
   en: {
     subtitle: "Your experience starts here",
@@ -38,8 +39,8 @@ const copy = {
     bookingsTitle: "My bookings",
     bookingsSub: "Your activity",
     profileTitle: "My profile",
-    profileSub: "Manage your account and information"
-  }
+    profileSub: "Manage your account and information",
+  },
 };
 
 function Card({
@@ -48,6 +49,12 @@ function Card({
   emoji,
   onPress,
   wide = false,
+}: {
+  title: string;
+  subtitle: string;
+  emoji: string;
+  onPress: () => void | Promise<void>;
+  wide?: boolean;
 }) {
   return (
     <Pressable
@@ -114,6 +121,14 @@ export default function HomeTabScreen() {
       };
     }, [])
   );
+
+  async function openProfile() {
+    const role = String((await AsyncStorage.getItem(USER_ROLE_KEY)) || "")
+      .trim()
+      .toLowerCase();
+
+    router.push(role === "guide" ? "/perfil-guia" : "/perfil");
+  }
 
   return (
     <ImageBackground
@@ -234,7 +249,7 @@ export default function HomeTabScreen() {
             subtitle={t.profileSub}
             emoji="👤"
             wide
-            onPress={() => router.push("/perfil")}
+            onPress={openProfile}
           />
         </View>
       </ScrollView>
