@@ -3,7 +3,6 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ImageBackground,
-  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -17,14 +16,12 @@ const copy = {
   es: {
     title: "Elegí tu perfil",
     traveler: "Viajero",
-    guide: "Guía",
-    back: "Volver"
+    guide: "Guía"
   },
   en: {
     title: "Choose your profile",
     traveler: "Traveler",
-    guide: "Guide",
-    back: "Back"
+    guide: "Guide"
   }
 };
 
@@ -60,29 +57,6 @@ export default function SelectRoleScreen() {
             backgroundColor: "rgba(11,62,145,0.42)",
           }}
         />
-
-        {Platform.OS === "ios" && (
-          <Pressable
-            onPress={() => router.back()}
-            hitSlop={12}
-            style={{
-              position: "absolute",
-              top: 54,
-              left: 24,
-              zIndex: 10,
-              backgroundColor: "rgba(255,255,255,0.14)",
-              borderWidth: 1,
-              borderColor: "rgba(255,255,255,0.20)",
-              paddingHorizontal: 16,
-              paddingVertical: 10,
-              borderRadius: 999
-            }}
-          >
-            <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>
-              {t.back}
-            </Text>
-          </Pressable>
-        )}
 
         <ScrollView
           style={{ flex: 1 }}
@@ -123,7 +97,12 @@ export default function SelectRoleScreen() {
 
             <View style={{ gap: 20 }}>
               <Pressable
-                onPress={() => router.push("/perfil-viajero")}
+                onPress={() =>
+                  router.push({
+                    pathname: "/register",
+                    params: { role: "traveler" },
+                  })
+                }
                 style={{
                   backgroundColor: "rgba(255,255,255,0.18)",
                   paddingVertical: 24,
@@ -146,7 +125,12 @@ export default function SelectRoleScreen() {
               </Pressable>
 
               <Pressable
-                onPress={() => router.push("/perfil-guia")}
+                onPress={() =>
+                  router.push({
+                    pathname: "/register",
+                    params: { role: "guide" },
+                  })
+                }
                 style={{
                   backgroundColor: "rgba(255,255,255,0.18)",
                   paddingVertical: 24,
