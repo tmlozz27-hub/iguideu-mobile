@@ -48,12 +48,12 @@ export default function PerfilGuia() {
   const [language, setLanguage] = useState<"es" | "en">("es");
 
   const doLogout = async () => {
-    await AsyncStorage.multiRemove([
-      "iguideu_token",
-      "iguideu_user_email",
-      "iguideu_profile_cache"
-    ]);
-
+   await AsyncStorage.multiRemove([
+  "iguideu_token",
+  "iguideu_user_email",
+  "iguideu_profile_cache",
+  "iguideu_user_role"
+]);
     router.replace("/login");
   };
 
@@ -348,12 +348,14 @@ export default function PerfilGuia() {
         return;
       }
 
-      setIsExistingGuide(true);
-      setAcceptTerms(true);
-      setPassword("");
-      setConfirmPassword("");
+    setIsExistingGuide(true);
+setAcceptTerms(true);
+setPassword("");
+setConfirmPassword("");
 
-      Alert.alert(
+await AsyncStorage.setItem("iguideu_user_role", "guide");
+
+Alert.alert(
         isExistingGuide ? t.alertSuccessUpdatedTitle : t.alertSuccessCreatedTitle,
         isExistingGuide ? t.alertSuccessUpdatedMsg : t.alertSuccessCreatedMsg
       );
