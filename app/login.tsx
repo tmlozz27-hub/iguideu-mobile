@@ -117,20 +117,24 @@ export default function LoginScreen() {
     }
 
     try {
-      const me = await apiGet("/api/auth/me");
-      const role = me?.user?.role;
+  const me = await apiGet("/api/auth/me");
+  const role = me?.user?.role;
 
-      if (role === "guide") {
-        router.replace("/perfil-guia");
-        return;
-      }
+  await AsyncStorage.setItem(
+    "iguideu_user_role",
+    role === "guide" ? "guide" : "traveler"
+  );
 
-      router.replace("/(tabs)");
-    } catch {
-      router.replace("/(tabs)");
-    }
+  if (role === "guide") {
+    router.replace("/perfil-guia");
+    return;
+  }
+
+  router.replace("/(tabs)");
+} catch {
+  router.replace("/(tabs)");
+}
   };
-
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
