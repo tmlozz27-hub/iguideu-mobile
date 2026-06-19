@@ -15,6 +15,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { apiPost } from "@/config/api";
 
 const LANG_KEY = "iguideu_lang";
+const TOKEN_KEY = "iguideu_token";
+const USER_EMAIL_KEY = "iguideu_user_email";
+const USER_ROLE_KEY = "iguideu_user_role";
 
 const copy = {
   es: {
@@ -61,8 +64,9 @@ export default function RegisterScreen() {
   const router = useRouter();
   const { role } = useLocalSearchParams();
 
-  const [lang, setLang] = useState<"es" | "en">("es");
+  const userRole = role === "guide" ? "guide" : "traveler";
 
+  const [lang, setLang] = useState<"es" | "en">("es");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -80,7 +84,9 @@ export default function RegisterScreen() {
   }, []);
 
   const handleRegister = async () => {
-    if (!name || !email || !password || !confirm) {
+    const cleanEmail = String(email || "").trim().toLowerCase();
+
+    if (!name || !cleanEmail || !password || !confirm) {
       Alert.alert(t.error, t.fields);
       return;
     }
@@ -95,9 +101,9 @@ export default function RegisterScreen() {
 
       const data = await apiPost("/api/auth/register", {
         name,
-        email,
+        email: cleanEmail,
         password,
-        role: role || "traveler",
+        role: userRole,
       });
 
       if (!data?.ok) {
@@ -105,9 +111,27 @@ export default function RegisterScreen() {
         return;
       }
 
+      const loginData = await apiPost("/api/auth/login", {
+        email: cleanEmail,
+        password,
+      });
+
+      const token = String(loginData?.token || "").trim();
+
+      if (token) {
+        await AsyncStorage.setItem(TOKEN_KEY, token);
+        await AsyncStorage.setItem(USER_EMAIL_KEY, cleanEmail);
+        await AsyncStorage.setItem(USER_ROLE_KEY, userRole);
+      }
+
       Alert.alert("OK", t.created);
 
-      router.replace("/login");
+      if (userRole === "guide") {
+        router.replace("/perfil-guia");
+        return;
+      }
+
+      router.replace("/(tabs)");
     } catch {
       Alert.alert(t.error, t.connectError);
     } finally {
@@ -156,19 +180,11 @@ export default function RegisterScreen() {
             <View style={{ alignItems: "center", marginBottom: 24 }}>
               <Text style={{ fontSize: 28 }}>📍</Text>
 
-              <Text
-                style={{
-                  color: "#fff",
-                  fontSize: 38,
-                  fontWeight: "800",
-                }}
-              >
+              <Text style={{ color: "#fff", fontSize: 38, fontWeight: "800" }}>
                 I GUIDE U
               </Text>
 
-              <Text style={{ color: "#fff" }}>
-                {t.subtitle}
-              </Text>
+              <Text style={{ color: "#fff" }}>{t.subtitle}</Text>
             </View>
 
             <View
@@ -179,58 +195,22 @@ export default function RegisterScreen() {
                 padding: 20,
               }}
             >
-              <Text
-                style={{
-                  fontSize: 28,
-                  fontWeight: "800",
-                  textAlign: "center",
-                }}
-              >
+              <Text style={{ fontSize: 28, fontWeight: "800", textAlign: "center" }}>
                 {t.create}
               </Text>
 
-              <Text
-                style={{
-                  textAlign: "center",
-                  marginBottom: 20,
-                  color: "#666",
-                }}
-              >
+              <Text style={{ textAlign: "center", marginBottom: 20, color: "#666" }}>
                 {t.complete}
               </Text>
 
-              <TextInput
-                placeholder={t.name}
-                value={name}
-                onChangeText={setName}
-                style={input}
-              />
-
-              <TextInput
-                placeholder={t.email}
-                value={email}
-                onChangeText={setEmail}
-                style={input}
-              />
-
-              <TextInput
-                placeholder={t.password}
-                secureTextEntry
-                value={password}
-                onChangeText={setPassword}
-                style={input}
-              />
-
-              <TextInput
-                placeholder={t.confirm}
-                secureTextEntry
-                value={confirm}
-                onChangeText={setConfirm}
-                style={input}
-              />
+              <TextInput placeholder={t.name} value={name} onChangeText={setName} style={input} />
+              <TextInput placeholder={t.email} value={email} onChangeText={setEmail} style={input} autoCapitalize="none" keyboardType="email-address" />
+              <TextInput placeholder={t.password} secureTextEntry value={password} onChangeText={setPassword} style={input} />
+              <TextInput placeholder={t.confirm} secureTextEntry value={confirm} onChangeText={setConfirm} style={input} />
 
               <Pressable
                 onPress={handleRegister}
+                disabled={loading}
                 style={{
                   backgroundColor: "#F4C63D",
                   padding: 18,
@@ -238,25 +218,13 @@ export default function RegisterScreen() {
                   marginTop: 10,
                 }}
               >
-                <Text
-                  style={{
-                    textAlign: "center",
-                    fontWeight: "800",
-                    fontSize: 20,
-                    color: "#fff",
-                  }}
-                >
+                <Text style={{ textAlign: "center", fontWeight: "800", fontSize: 20, color: "#fff" }}>
                   {loading ? t.creating : t.createBtn}
                 </Text>
               </Pressable>
 
-              <Pressable
-                onPress={() => router.replace("/login")}
-                style={{ marginTop: 16 }}
-              >
-                <Text style={{ textAlign: "center" }}>
-                  {t.already}
-                </Text>
+              <Pressable onPress={() => router.replace("/login")} style={{ marginTop: 16 }}>
+                <Text style={{ textAlign: "center" }}>{t.already}</Text>
               </Pressable>
             </View>
           </View>
