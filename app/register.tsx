@@ -143,7 +143,7 @@ export default function RegisterScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: "#4B8FE8" }}>
       {Platform.OS === "ios" && (
         <Pressable
-          onPress={() => router.back()}
+          onPress={() => router.replace("/select-role")}
           hitSlop={12}
           style={{
             position: "absolute",
@@ -203,10 +203,10 @@ export default function RegisterScreen() {
                 {t.complete}
               </Text>
 
-              <TextInput placeholder={t.name} value={name} onChangeText={setName} style={input} />
-              <TextInput placeholder={t.email} value={email} onChangeText={setEmail} style={input} autoCapitalize="none" keyboardType="email-address" />
-              <TextInput placeholder={t.password} secureTextEntry value={password} onChangeText={setPassword} style={input} />
-              <TextInput placeholder={t.confirm} secureTextEntry value={confirm} onChangeText={setConfirm} style={input} />
+              <TextInput placeholder={t.name} placeholderTextColor="#374151" value={name} onChangeText={setName} style={input} />
+              <TextInput placeholder={t.email} placeholderTextColor="#374151" value={email} onChangeText={setEmail} style={input} autoCapitalize="none" keyboardType="email-address" />
+              <TextInput placeholder={t.password} placeholderTextColor="#374151" secureTextEntry value={password} onChangeText={setPassword} style={input} />
+              <TextInput placeholder={t.confirm} placeholderTextColor="#374151" secureTextEntry value={confirm} onChangeText={setConfirm} style={input} />
 
               <Pressable
                 onPress={handleRegister}
