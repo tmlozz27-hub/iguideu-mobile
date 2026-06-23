@@ -147,7 +147,7 @@ export default function RegisterScreen() {
           hitSlop={12}
           style={{
             position: "absolute",
-            top: 16,
+            top: 44,
             left: 18,
             zIndex: 10,
             backgroundColor: "rgba(255,255,255,0.14)",
