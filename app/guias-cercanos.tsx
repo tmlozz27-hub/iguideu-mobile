@@ -159,7 +159,7 @@ export default function GuiasCercanosScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={Platform.OS === "ios" ? ["top", "left", "right"] : []}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#76A9E8" }} edges={["left", "right"]}>
       <ImageBackground
         source={{
           uri: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80"
