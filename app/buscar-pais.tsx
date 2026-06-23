@@ -290,24 +290,28 @@ export default function BuscarPaisScreen() {
         resizeMode="cover"
       >
         <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12 }}>
-          {Platform.OS === "ios" && (
-            <View style={{ alignItems: "flex-start", marginBottom: 12 }}>
-              <Pressable
-                onPress={() => router.back()}
-                style={{
-                  backgroundColor: "rgba(255,255,255,0.14)",
-                  borderWidth: 1,
-                  borderColor: "rgba(255,255,255,0.20)",
-                  paddingHorizontal: 16,
-                  paddingVertical: 10,
-                  borderRadius: 999
-                }}
-              >
-                <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>{t.back}</Text>
-              </Pressable>
-            </View>
-          )}
-
+         {Platform.OS === "ios" && (
+  <View style={{ alignItems: "flex-start", marginTop: 18, marginBottom: 12 }}>
+    <Pressable
+      onPress={() => router.back()}
+      hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+      style={{
+        backgroundColor: "rgba(255,255,255,0.18)",
+        borderWidth: 1,
+        borderColor: "rgba(255,255,255,0.25)",
+        paddingHorizontal: 18,
+        paddingVertical: 11,
+        borderRadius: 999,
+        minWidth: 82,
+        alignItems: "center"
+      }}
+    >
+      <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>
+        {t.back}
+      </Text>
+    </Pressable>
+  </View>
+)}
           <View style={{ backgroundColor: "rgba(255,255,255,0.60)", borderRadius: 24, padding: 18 }}>
             <Text style={{ fontSize: 28, fontWeight: "800", color: "#0B3C91" }}>
               {t.title}
