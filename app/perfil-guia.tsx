@@ -48,12 +48,12 @@ export default function PerfilGuia() {
   const [language, setLanguage] = useState<"es" | "en">("es");
 
   const doLogout = async () => {
-   await AsyncStorage.multiRemove([
-  "iguideu_token",
-  "iguideu_user_email",
-  "iguideu_profile_cache",
-  "iguideu_user_role"
-]);
+    await AsyncStorage.multiRemove([
+      "iguideu_token",
+      "iguideu_user_email",
+      "iguideu_profile_cache",
+      "iguideu_user_role"
+    ]);
     router.replace("/login");
   };
 
@@ -315,7 +315,9 @@ export default function PerfilGuia() {
         active: true,
         mediaDraft: {
           mainPhoto: mainPhoto ? { uri: mainPhoto.uri } : null,
-          galleryPhotos: galleryPhotos.map((item) => ({ uri: item.uri })),
+          galleryPhotos: galleryPhotos
+            .filter((item) => item?.uri)
+            .map((item) => ({ uri: item.uri })),
           video: video ? { uri: video.uri } : null
         }
       };
@@ -348,14 +350,14 @@ export default function PerfilGuia() {
         return;
       }
 
-    setIsExistingGuide(true);
-setAcceptTerms(true);
-setPassword("");
-setConfirmPassword("");
+      setIsExistingGuide(true);
+      setAcceptTerms(true);
+      setPassword("");
+      setConfirmPassword("");
 
-await AsyncStorage.setItem("iguideu_user_role", "guide");
+      await AsyncStorage.setItem("iguideu_user_role", "guide");
 
-Alert.alert(
+      Alert.alert(
         isExistingGuide ? t.alertSuccessUpdatedTitle : t.alertSuccessCreatedTitle,
         isExistingGuide ? t.alertSuccessUpdatedMsg : t.alertSuccessCreatedMsg
       );
@@ -370,7 +372,7 @@ Alert.alert(
     <>
       {Platform.OS === "ios" && (
         <Pressable
-        onPress={() => router.replace("/(tabs)")}
+          onPress={() => router.replace("/(tabs)")}
           hitSlop={12}
           style={{
             position: "absolute",
