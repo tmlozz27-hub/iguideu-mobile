@@ -1,4 +1,4 @@
-﻿import AsyncStorage from "@react-native-async-storage/async-storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Modal, Pressable, ScrollView, Text, View, ImageBackground } from "react-native";
@@ -88,6 +88,11 @@ type Guide = {
   bio?: string;
   avatarUrl?: string;
   guideType?: string;
+  mediaDraft?: {
+    mainPhoto?: { uri?: string } | null;
+    galleryPhotos?: Array<{ uri?: string; slot?: number } | null>;
+    video?: { uri?: string } | null;
+  };
 };
 
 type GalleryItem = {
@@ -163,21 +168,30 @@ export default function GuiaDetalleScreen() {
       try {
         setLoading(true);
 
-        const data = await apiGet("/api/guides");
-        const list = Array.isArray(data)
-          ? data
-          : Array.isArray((data as any)?.items)
-            ? (data as any).items
-            : Array.isArray((data as any)?.guides)
-              ? (data as any).guides
-              : Array.isArray((data as any)?.value)
-                ? (data as any).value
-                : [];
+        let found: any = null;
 
-        const found =
-          list.find((g: any) => String(g?._id || "") === guideId) ||
-          list.find((g: any) => String(g?.id || "") === guideId) ||
-          null;
+        try {
+          const detail = await apiGet(`/api/guides/${guideId}`);
+          found = (detail as any)?.item || (detail as any)?.guide || detail;
+        } catch {}
+
+        if (!found) {
+          const data = await apiGet("/api/guides");
+          const list = Array.isArray(data)
+            ? data
+            : Array.isArray((data as any)?.items)
+              ? (data as any).items
+              : Array.isArray((data as any)?.guides)
+                ? (data as any).guides
+                : Array.isArray((data as any)?.value)
+                  ? (data as any).value
+                  : [];
+
+          found =
+            list.find((g: any) => String(g?._id || "") === guideId) ||
+            list.find((g: any) => String(g?.id || "") === guideId) ||
+            null;
+        }
 
         if (!active) return;
 
@@ -210,37 +224,29 @@ export default function GuiaDetalleScreen() {
     return "CERTIFIED";
   }, [guide]);
 
-  const galleryItems = useMemo<GalleryItem[]>(
-    () => [
-      {
-        key: "photo-1",
-        label: t.islands,
-        image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
-      },
-      {
-        key: "photo-2",
-        label: t.beach,
-        image: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80",
-      },
-      {
-        key: "photo-3",
-        label: t.forest,
-        image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=80",
-      },
-      {
-        key: "photo-4",
-        label: t.mountain,
-        image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80",
-      },
-      {
-        key: "video-45s",
-        label: t.video45,
-        image: "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=1200&q=80",
-        isVideo: true,
-      },
-    ],
-    [t]
-  );
+  const galleryItems = useMemo<GalleryItem[]>(() => {
+    const media = guide?.mediaDraft;
+
+    const realPhotos =
+      media?.galleryPhotos
+        ?.filter((item: any) => item?.uri)
+        .map((item: any, index: number) => ({
+          key: `photo-${index + 1}`,
+          label: `${t.gallery} ${index + 1}`,
+          image: item.uri,
+        })) || [];
+
+    const realVideo = media?.video?.uri
+      ? [{
+          key: "video-45s",
+          label: t.video45,
+          image: media.video.uri,
+          isVideo: true,
+        }]
+      : [];
+
+    return [...realPhotos, ...realVideo];
+  }, [guide, t]);
 
   const guideName = String(guide?.name || t.guideDefault).trim();
   const guideLocation = [guide?.city, guide?.country].filter(Boolean).join(", ") || "-";
@@ -806,5 +812,3 @@ export default function GuiaDetalleScreen() {
     </ImageBackground>
   );
 }
-
-

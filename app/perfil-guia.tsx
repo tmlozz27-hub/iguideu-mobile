@@ -313,6 +313,7 @@ export default function PerfilGuia() {
         price24h: Number(price24h) || 0,
         guideType,
         active: true,
+        avatarUrl: mainPhoto?.uri || "",
         mediaDraft: {
           mainPhoto: mainPhoto ? { uri: mainPhoto.uri } : null,
           galleryPhotos: galleryPhotos
