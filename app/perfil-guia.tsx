@@ -177,6 +177,40 @@ export default function PerfilGuia() {
     }
   };
 
+  const uploadMedia = async (item: PickedMedia | null, token: string) => {
+    if (!item?.uri) return null;
+
+    if (item.uri.startsWith("http://") || item.uri.startsWith("https://")) {
+      return { uri: item.uri };
+    }
+
+    const formData = new FormData();
+
+    const isVideo = item.uri.toLowerCase().includes(".mp4") || item.uri.toLowerCase().includes("video");
+
+    formData.append("file", {
+      uri: item.uri,
+      name: isVideo ? "guide-video.mp4" : "guide-photo.jpg",
+      type: isVideo ? "video/mp4" : "image/jpeg"
+    } as any);
+
+    const response = await fetch(`${API_BASE}/api/upload/media`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      body: formData
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data?.ok || !data?.url) {
+      throw new Error(data?.error || "UPLOAD_FAILED");
+    }
+
+    return { uri: data.url };
+  };
+
   const t = {
     back: language === "en" ? "Back" : "Volver",
     title: language === "en"
@@ -300,6 +334,14 @@ export default function PerfilGuia() {
 
       const token = (await AsyncStorage.getItem("iguideu_token")) || "";
 
+      const uploadedMainPhoto = await uploadMedia(mainPhoto, token);
+      const uploadedGalleryPhotos = await Promise.all(
+        galleryPhotos
+          .filter((item) => item?.uri)
+          .map((item) => uploadMedia(item, token))
+      );
+      const uploadedVideo = await uploadMedia(video, token);
+
       const body: any = {
         name: cleanName,
         email: cleanEmail,
@@ -313,13 +355,11 @@ export default function PerfilGuia() {
         price24h: Number(price24h) || 0,
         guideType,
         active: true,
-        avatarUrl: mainPhoto?.uri || "",
+        avatarUrl: uploadedMainPhoto?.uri || "",
         mediaDraft: {
-          mainPhoto: mainPhoto ? { uri: mainPhoto.uri } : null,
-          galleryPhotos: galleryPhotos
-            .filter((item) => item?.uri)
-            .map((item) => ({ uri: item.uri })),
-          video: video ? { uri: video.uri } : null
+          mainPhoto: uploadedMainPhoto,
+          galleryPhotos: uploadedGalleryPhotos.filter(Boolean),
+          video: uploadedVideo
         }
       };
 
