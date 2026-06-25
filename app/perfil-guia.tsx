@@ -194,6 +194,8 @@ export default function PerfilGuia() {
       type: isVideo ? "video/mp4" : "image/jpeg"
     } as any);
 
+    console.log("UPLOAD_MEDIA_CLIENT_START", item.uri, `${API_BASE}/api/upload/media`);
+
     const response = await fetch(`${API_BASE}/api/upload/media`, {
       method: "POST",
       headers: {
@@ -202,7 +204,17 @@ export default function PerfilGuia() {
       body: formData
     });
 
-    const data = await response.json();
+    console.log("UPLOAD_MEDIA_CLIENT_STATUS", response.status);
+
+    const text = await response.text();
+
+    let data: any = null;
+
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error(text || "UPLOAD_NON_JSON_RESPONSE");
+    }
 
     if (!response.ok || !data?.ok || !data?.url) {
       throw new Error(data?.error || "UPLOAD_FAILED");
