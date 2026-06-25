@@ -240,10 +240,14 @@ export default function PerfilGuia() {
         }
       };
 
-      xhr.onerror = () => {
-        reject(new Error("NETWORK_ERROR_AT_NATIVE_BRIDGE"));
-      };
-
+     xhr.onerror = () => {
+  console.log("XHR ERROR");
+  console.log("RAW URI:", item.uri);
+  console.log("NATIVE URI:", nativeUri);
+  console.log("TYPE:", finalType);
+  console.log("NAME:", finalName);
+  reject(new Error("NETWORK_ERROR_AT_NATIVE_BRIDGE"));
+};
       const formData = new FormData();
       const isVideo = item.uri.toLowerCase().includes(".mp4") || item.uri.toLowerCase().includes("video");
       const finalType = item.mimeType || (isVideo ? "video/mp4" : "image/jpeg");
@@ -261,7 +265,10 @@ export default function PerfilGuia() {
         name: finalName,
         type: finalType
       } as any);
-
+console.log("RAW URI:", item.uri);
+console.log("NATIVE URI:", nativeUri);
+console.log("MIME:", finalType);
+console.log("NAME:", finalName);
       console.log("UPLOAD_MEDIA_NATIVE_XHR_START -> URI SANITIZADA:", nativeUri);
       xhr.send(formData);
     });
