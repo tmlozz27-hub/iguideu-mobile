@@ -255,7 +255,7 @@ export default function PerfilGuia() {
     placeholderPhone: language === "en" ? "Phone" : "Teléfono",
     placeholderCity: language === "en" ? "City" : "Ciudad",
     placeholderCountry: language === "en" ? "Country" : "País",
-    photosVideo: language === "en" ? "Photos + Video" : "Fotos + Video",
+    photosVideo: language === "en" ? "Photos + Video" : "Photos + Video",
     photoIndex: language === "en" ? "Photo" : "Foto",
     videoText: language === "en" ? "Video" : "Video",
     removeText: language === "en" ? "Remove" : "Quitar",
@@ -567,7 +567,7 @@ export default function PerfilGuia() {
                 ) : (
                   <Pressable onPress={pickVideo} style={cardInner}>
                     <Text style={cardText}>{t.videoText}</Text>
-                  </</Pressable>
+                  </Pressable>
                 )}
               </View>
             </ScrollView>
