@@ -17,6 +17,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type PickedMedia = {
   uri: string;
+  mimeType?: string;
+  fileName?: string;
 };
 
 export default function PerfilGuia() {
@@ -160,7 +162,12 @@ export default function PerfilGuia() {
     });
 
     if (!result.canceled) {
-      return { uri: result.assets[0].uri };
+      const asset = result.assets[0];
+      return { 
+        uri: asset.uri,
+        mimeType: asset.mimeType || "image/jpeg",
+        fileName: asset.fileName || "guide-photo.jpg"
+      };
     }
 
     return null;
@@ -173,54 +180,62 @@ export default function PerfilGuia() {
     });
 
     if (!result.canceled) {
-      setVideo({ uri: result.assets[0].uri });
+      const asset = result.assets[0];
+      setVideo({ 
+        uri: asset.uri,
+        mimeType: asset.mimeType || "video/mp4",
+        fileName: asset.fileName || "guide-video.mp4"
+      });
     }
   };
 
-  const uploadMedia = async (item: PickedMedia | null, token: string) => {
+  const uploadMedia = async (item: PickedMedia | null, token: string): Promise<{ uri: string } | null> => {
     if (!item?.uri) return null;
 
     if (item.uri.startsWith("http://") || item.uri.startsWith("https://")) {
       return { uri: item.uri };
     }
 
-    const formData = new FormData();
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", `${API_BASE}/api/upload/media`);
+      xhr.setRequestHeader("Authorization", `Bearer ${token}`);
 
-    const isVideo = item.uri.toLowerCase().includes(".mp4") || item.uri.toLowerCase().includes("video");
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const data = JSON.parse(xhr.responseText);
+            if (data?.ok && data?.url) {
+              resolve({ uri: data.url });
+            } else {
+              reject(new Error(data?.error || "UPLOAD_FAILED"));
+            }
+          } catch {
+            reject(new Error("UPLOAD_NON_JSON_RESPONSE"));
+          }
+        } else {
+          reject(new Error(`SERVER_ERROR_STATUS_${xhr.status}`));
+        }
+      };
 
-    formData.append("file", {
-      uri: item.uri,
-      name: isVideo ? "guide-video.mp4" : "guide-photo.jpg",
-      type: isVideo ? "video/mp4" : "image/jpeg"
-    } as any);
+      xhr.onerror = () => {
+        reject(new Error("NETWORK_ERROR_AT_NATIVE_BRIDGE"));
+      };
 
-    console.log("UPLOAD_MEDIA_CLIENT_START", item.uri, `${API_BASE}/api/upload/media`);
+      const formData = new FormData();
+      const isVideo = item.uri.toLowerCase().includes(".mp4") || item.uri.toLowerCase().includes("video");
+      const finalType = item.mimeType || (isVideo ? "video/mp4" : "image/jpeg");
+      const finalName = item.fileName || (isVideo ? "guide-video.mp4" : "guide-photo.jpg");
 
-    const response = await fetch(`${API_BASE}/api/upload/media`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`
-      },
-      body: formData
+      formData.append("file", {
+        uri: item.uri,
+        name: finalName,
+        type: finalType
+      } as any);
+
+      console.log("UPLOAD_MEDIA_NATIVE_XHR_START", item.uri);
+      xhr.send(formData);
     });
-
-    console.log("UPLOAD_MEDIA_CLIENT_STATUS", response.status);
-
-    const text = await response.text();
-
-    let data: any = null;
-
-    try {
-      data = JSON.parse(text);
-    } catch {
-      throw new Error(text || "UPLOAD_NON_JSON_RESPONSE");
-    }
-
-    if (!response.ok || !data?.ok || !data?.url) {
-      throw new Error(data?.error || "UPLOAD_FAILED");
-    }
-
-    return { uri: data.url };
   };
 
   const t = {
@@ -552,7 +567,7 @@ export default function PerfilGuia() {
                 ) : (
                   <Pressable onPress={pickVideo} style={cardInner}>
                     <Text style={cardText}>{t.videoText}</Text>
-                  </Pressable>
+                  </</Pressable>
                 )}
               </View>
             </ScrollView>
