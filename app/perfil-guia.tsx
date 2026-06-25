@@ -156,8 +156,19 @@ export default function PerfilGuia() {
   }, [galleryPhotos]);
 
   const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        language === "en" ? "Permissions required" : "Permisos requeridos",
+        language === "en" 
+          ? "We need access to your gallery to upload photos." 
+          : "Necesitamos acceso a tu galería para subir fotos."
+      );
+      return null;
+    }
+
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8
     });
 
@@ -174,8 +185,19 @@ export default function PerfilGuia() {
   };
 
   const pickVideo = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        language === "en" ? "Permissions required" : "Permisos requeridos",
+        language === "en" 
+          ? "We need access to your gallery to upload videos." 
+          : "Necesitamos acceso a tu galería para subir videos."
+      );
+      return;
+    }
+
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["videos"],
+      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
       videoMaxDuration: 45
     });
 
@@ -227,13 +249,20 @@ export default function PerfilGuia() {
       const finalType = item.mimeType || (isVideo ? "video/mp4" : "image/jpeg");
       const finalName = item.fileName || (isVideo ? "guide-video.mp4" : "guide-photo.jpg");
 
+      let nativeUri = item.uri;
+      if (Platform.OS === "android" && !nativeUri.startsWith("content://") && !nativeUri.startsWith("file://")) {
+        nativeUri = `file://${nativeUri}`;
+      } else if (Platform.OS === "ios" && !nativeUri.startsWith("file://") && !nativeUri.startsWith("assets-library://")) {
+        nativeUri = `file://${nativeUri}`;
+      }
+
       formData.append("file", {
-        uri: item.uri,
+        uri: nativeUri,
         name: finalName,
         type: finalType
       } as any);
 
-      console.log("UPLOAD_MEDIA_NATIVE_XHR_START", item.uri);
+      console.log("UPLOAD_MEDIA_NATIVE_XHR_START -> URI SANITIZADA:", nativeUri);
       xhr.send(formData);
     });
   };
