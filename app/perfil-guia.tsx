@@ -446,7 +446,17 @@ export default function PerfilGuia() {
         Alert.alert(t.alertErrorTitle, data?.error || t.alertSaveErr);
         return;
       }
+if (uploadedMainPhoto) {
+  setMainPhoto(uploadedMainPhoto);
+}
 
+if (uploadedGalleryPhotos.length > 0) {
+  setGalleryPhotos(uploadedGalleryPhotos.filter(Boolean) as PickedMedia[]);
+}
+
+if (uploadedVideo) {
+  setVideo(uploadedVideo);
+}
       setIsExistingGuide(true);
       setAcceptTerms(true);
       setPassword("");
