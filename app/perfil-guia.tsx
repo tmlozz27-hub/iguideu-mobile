@@ -199,7 +199,8 @@ export default function PerfilGuia() {
     const response = await fetch(`${API_BASE}/api/upload/media`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data"
       },
       body: formData
     });
