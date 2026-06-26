@@ -11,6 +11,7 @@ import {
   Platform
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system/legacy";
 import { useRouter } from "expo-router";
 import { API_BASE } from "@/config/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -218,60 +219,39 @@ export default function PerfilGuia() {
       return { uri: item.uri };
     }
 
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open("POST", `${API_BASE}/api/upload/media`);
-      xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+    const isVideo =
+      item.mimeType?.startsWith("video/") ||
+      item.uri.toLowerCase().includes(".mp4") ||
+      item.uri.toLowerCase().includes("video");
 
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          try {
-            const data = JSON.parse(xhr.responseText);
-            if (data?.ok && data?.url) {
-              resolve({ uri: data.url });
-            } else {
-              reject(new Error(data?.error || "UPLOAD_FAILED"));
-            }
-          } catch {
-            reject(new Error("UPLOAD_NON_JSON_RESPONSE"));
-          }
-        } else {
-          reject(new Error(`SERVER_ERROR_STATUS_${xhr.status}`));
-        }
-      };
+    const finalType = item.mimeType || (isVideo ? "video/mp4" : "image/jpeg");
 
-     xhr.onerror = () => {
-  console.log("XHR ERROR");
-  console.log("RAW URI:", item.uri);
-  console.log("NATIVE URI:", nativeUri);
-  console.log("TYPE:", finalType);
-  console.log("NAME:", finalName);
-  reject(new Error("NETWORK_ERROR_AT_NATIVE_BRIDGE"));
-};
-      const formData = new FormData();
-      const isVideo = item.uri.toLowerCase().includes(".mp4") || item.uri.toLowerCase().includes("video");
-      const finalType = item.mimeType || (isVideo ? "video/mp4" : "image/jpeg");
-      const finalName = item.fileName || (isVideo ? "guide-video.mp4" : "guide-photo.jpg");
+    console.log("[NATIVE_UPLOAD] START", item.uri, finalType);
 
-      let nativeUri = item.uri;
-      if (Platform.OS === "android" && !nativeUri.startsWith("content://") && !nativeUri.startsWith("file://")) {
-        nativeUri = `file://${nativeUri}`;
-      } else if (Platform.OS === "ios" && !nativeUri.startsWith("file://") && !nativeUri.startsWith("assets-library://")) {
-        nativeUri = `file://${nativeUri}`;
+    const response = await FileSystem.uploadAsync(`${API_BASE}/api/upload/media`, item.uri, {
+      httpMethod: "POST",
+      uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+      fieldName: "file",
+      mimeType: finalType,
+      headers: {
+        Authorization: `Bearer ${token}`
       }
-
-      formData.append("file", {
-        uri: nativeUri,
-        name: finalName,
-        type: finalType
-      } as any);
-console.log("RAW URI:", item.uri);
-console.log("NATIVE URI:", nativeUri);
-console.log("MIME:", finalType);
-console.log("NAME:", finalName);
-      console.log("UPLOAD_MEDIA_NATIVE_XHR_START -> URI SANITIZADA:", nativeUri);
-      xhr.send(formData);
     });
+
+    console.log("[NATIVE_UPLOAD] RESPONSE", response.status, response.body);
+
+    let data: any = null;
+    try {
+      data = JSON.parse(response.body);
+    } catch {
+      throw new Error("UPLOAD_NON_JSON_RESPONSE");
+    }
+
+    if (response.status < 200 || response.status >= 300 || !data?.ok || !data?.url) {
+      throw new Error(data?.error || `UPLOAD_FAILED_STATUS_${response.status}`);
+    }
+
+    return { uri: data.url };
   };
 
   const t = {
