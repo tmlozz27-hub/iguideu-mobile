@@ -128,25 +128,31 @@ export default function PerfilGuia() {
         setGuideType(guide.guideType);
       }
 
-      setPriceHour(guide.priceHour ? String(guide.priceHour) : "");
-      setPriceDay(guide.priceDay ? String(guide.priceDay) : "");
-      setPrice24h(guide.price24h ? String(guide.price24h) : "");
+setPriceHour(guide.priceHour ? String(guide.priceHour) : "");
+setPriceDay(guide.priceDay ? String(guide.priceDay) : "");
+setPrice24h(guide.price24h ? String(guide.price24h) : "");
 
-      if (guide?.mediaDraft?.mainPhoto?.uri) {
-        setMainPhoto({ uri: guide.mediaDraft.mainPhoto.uri });
-      }
+if (guide?.mediaDraft?.mainPhoto?.uri?.startsWith("http")) {
+  setMainPhoto({ uri: guide.mediaDraft.mainPhoto.uri });
+} else {
+  setMainPhoto(null);
+}
 
-      if (Array.isArray(guide?.mediaDraft?.galleryPhotos)) {
-        setGalleryPhotos(
-          guide.mediaDraft.galleryPhotos
-            .filter((item: any) => item?.uri)
-            .map((item: any) => ({ uri: item.uri }))
-        );
-      }
+if (Array.isArray(guide?.mediaDraft?.galleryPhotos)) {
+  setGalleryPhotos(
+    guide.mediaDraft.galleryPhotos
+      .filter((item: any) => item?.uri?.startsWith("http"))
+      .map((item: any) => ({ uri: item.uri }))
+  );
+} else {
+  setGalleryPhotos([]);
+}
 
-      if (guide?.mediaDraft?.video?.uri) {
-        setVideo({ uri: guide.mediaDraft.video.uri });
-      }
+if (guide?.mediaDraft?.video?.uri?.startsWith("http")) {
+  setVideo({ uri: guide.mediaDraft.video.uri });
+} else {
+  setVideo(null);
+}
     } catch (e) {
       console.log("GUIDE_PROFILE_LOAD_ERROR", e);
     }
