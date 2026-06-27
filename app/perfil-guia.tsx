@@ -175,11 +175,19 @@ export default function PerfilGuia() {
 
     if (!result.canceled) {
       const asset = result.assets[0];
-      return { 
-        uri: asset.uri,
-        mimeType: asset.mimeType || "image/jpeg",
-        fileName: asset.fileName || "guide-photo.jpg"
-      };
+const fileName = asset.fileName || `guide-photo-${Date.now()}.jpg`;
+const stableUri = `${FileSystem.documentDirectory}${fileName}`;
+
+await FileSystem.copyAsync({
+  from: asset.uri,
+  to: stableUri,
+});
+
+return {
+  uri: stableUri,
+  mimeType: asset.mimeType || "image/jpeg",
+  fileName,
+};
     }
 
     return null;
@@ -202,16 +210,24 @@ export default function PerfilGuia() {
       videoMaxDuration: 45
     });
 
-    if (!result.canceled) {
-      const asset = result.assets[0];
-      setVideo({ 
-        uri: asset.uri,
-        mimeType: asset.mimeType || "video/mp4",
-        fileName: asset.fileName || "guide-video.mp4"
-      });
-    }
-  };
+  if (!result.canceled) {
+  const asset = result.assets[0];
 
+  const fileName = asset.fileName || `guide-video-${Date.now()}.mp4`;
+  const stableUri = `${FileSystem.documentDirectory}${fileName}`;
+
+  await FileSystem.copyAsync({
+    from: asset.uri,
+    to: stableUri,
+  });
+
+  setVideo({
+    uri: stableUri,
+    mimeType: asset.mimeType || "video/mp4",
+    fileName,
+  });
+}
+};
   const uploadMedia = async (item: PickedMedia | null, token: string): Promise<{ uri: string } | null> => {
     if (!item?.uri) return null;
 
