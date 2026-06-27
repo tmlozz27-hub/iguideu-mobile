@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Modal, Pressable, ScrollView, Text, View, ImageBackground } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { apiGet } from "../config/api";
+import { ResizeMode, Video } from "expo-av";
 
 const LANG_KEY = "iguideu_lang";
 
@@ -741,70 +742,62 @@ export default function GuiaDetalleScreen() {
                   top: 56,
                   right: 24,
                   zIndex: 2,
-                  backgroundColor: "rgba(255,255,255,0.15)",
+                  backgroundColor: "rgba(255,255,255,0.12)",
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.20)",
                   paddingHorizontal: 16,
                   paddingVertical: 10,
                   borderRadius: 999,
                 }}
               >
-                <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "800" }}>
-                  {t.close}
-                </Text>
+                <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>{t.close}</Text>
               </Pressable>
 
               <View
                 style={{
                   width: "100%",
-                  maxWidth: 390,
-                  borderRadius: 28,
+                  maxWidth: 640,
+                  aspectRatio: 1,
+                  borderRadius: 32,
                   overflow: "hidden",
+                  backgroundColor: "rgba(255,255,255,0.04)",
                   borderWidth: 1,
-                  borderColor: "rgba(255,255,255,0.18)",
+                  borderColor: "rgba(255,255,255,0.14)",
                 }}
               >
-                <ImageBackground
-                  source={{ uri: selectedMedia?.image }}
-                  style={{
-                    width: "100%",
-                    aspectRatio: 1,
-                    justifyContent: "flex-end",
-                  }}
-                  resizeMode="cover"
-                >
-                  <View
-                    style={{
-                      backgroundColor: "rgba(4,22,44,0.56)",
-                      paddingHorizontal: 20,
-                      paddingVertical: 18,
-                      alignItems: "center",
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: "#ffffff",
-                        fontSize: 28,
-                        fontWeight: "900",
-                        textAlign: "center",
-                      }}
-                    >
-                      {selectedMedia?.label || ""}
-                    </Text>
-
-                    {!!selectedMedia?.isVideo && (
-                      <Text
-                        style={{
-                          color: "#dbeafe",
-                          fontSize: 15,
-                          textAlign: "center",
-                          marginTop: 10,
-                        }}
-                      >
-                        {t.videoPreview}
-                      </Text>
-                    )}
+                {selectedMedia?.isVideo ? (
+                  <View style={{ flex: 1, justifyContent: "center", backgroundColor: "#000000" }}>
+                    <Video
+                      source={{ uri: selectedMedia.image }}
+                      style={{ width: "100%", height: "100%" }}
+                      useNativeControls
+                      resizeMode={ResizeMode.CONTAIN}
+                      isLooping
+                      shouldPlay
+                    />
                   </View>
-                </ImageBackground>
+                ) : (
+                  <ImageBackground
+                    source={{ uri: selectedMedia?.image }}
+                    style={{ flex: 1 }}
+                    resizeMode="cover"
+                  />
+                )}
               </View>
+
+              {selectedMedia?.isVideo && (
+                <Text
+                  style={{
+                    color: "#93c5fd",
+                    fontSize: 14,
+                    fontWeight: "600",
+                    marginTop: 16,
+                    textAlign: "center",
+                  }}
+                >
+                  {t.videoPreview}
+                </Text>
+              )}
             </View>
           </Modal>
         </SafeAreaView>
