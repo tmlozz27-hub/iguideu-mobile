@@ -784,20 +784,6 @@ export default function GuiaDetalleScreen() {
                   />
                 )}
               </View>
-
-              {selectedMedia?.isVideo && (
-                <Text
-                  style={{
-                    color: "#93c5fd",
-                    fontSize: 14,
-                    fontWeight: "600",
-                    marginTop: 16,
-                    textAlign: "center",
-                  }}
-                >
-                  {t.videoPreview}
-                </Text>
-              )}
             </View>
           </Modal>
         </SafeAreaView>
