@@ -555,7 +555,7 @@ if (uploadedVideo) {
     <>
       {Platform.OS === "ios" && (
         <Pressable
-          onPress={() => router.replace("/(tabs)")}
+          onPress={() => router.replace("/perfil-guia")}
           hitSlop={12}
           style={{
             position: "absolute",
