@@ -12,13 +12,14 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiPost, apiPut } from "@/config/api";
 
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
 const PROFILE_CACHE_KEY = "iguideu_profile_cache";
+const USER_ROLE_KEY = "iguideu_user_role";
 const LANG_KEY = "iguideu_lang";
 
 type PickedMedia = {
@@ -27,6 +28,7 @@ type PickedMedia = {
 
 export default function PerfilViajero() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   const [mainPhoto, setMainPhoto] = useState<PickedMedia | null>(null);
   const [name, setName] = useState("");
@@ -172,6 +174,7 @@ export default function PerfilViajero() {
 
       await AsyncStorage.setItem(TOKEN_KEY, token);
       await AsyncStorage.setItem(USER_EMAIL_KEY, cleanEmail);
+      await AsyncStorage.setItem(USER_ROLE_KEY, "traveler");
 
       const profilePayload = {
         name: cleanName,
@@ -227,29 +230,6 @@ export default function PerfilViajero() {
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={["left", "right"]}>
-      {Platform.OS === "ios" && (
-        <Pressable
-          onPress={() => router.back()}
-          hitSlop={12}
-          style={{
-            position: "absolute",
-            top: 60,
-            left: 18,
-            zIndex: 999,
-            backgroundColor: "rgba(255,255,255,0.14)",
-            borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.20)",
-            paddingHorizontal: 16,
-            paddingVertical: 10,
-            borderRadius: 999
-          }}
-        >
-          <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>
-            {t.back}
-          </Text>
-        </Pressable>
-      )}
-
       <ImageBackground
         source={{
           uri: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80"
@@ -262,7 +242,31 @@ export default function PerfilViajero() {
           contentContainerStyle={{ paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
-          <View style={{ paddingTop: 48, paddingHorizontal: 24, paddingBottom: 34 }}>
+          <View style={{ paddingTop: 30, paddingHorizontal: 24, paddingBottom: 30 }}>
+            {Platform.OS === "ios" && (
+              <View
+                style={{
+                  alignItems: "flex-start",
+                  marginTop: Math.max(insets.top - 18, 0),
+                  marginBottom: 16
+                }}
+              >
+                <Pressable
+                  onPress={() => router.back()}
+                  style={{
+                    backgroundColor: "rgba(255,255,255,0.14)",
+                    borderWidth: 1,
+                    borderColor: "rgba(255,255,255,0.20)",
+                    paddingHorizontal: 16,
+                    paddingVertical: 10,
+                    borderRadius: 999
+                  }}
+                >
+                  <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "800" }}>{t.back}</Text>
+                </Pressable>
+              </View>
+            )}
+
             <Text style={titleMain}>I GUIDE U</Text>
             <Text style={titleSub}>{t.profileTitle}</Text>
 
@@ -270,7 +274,7 @@ export default function PerfilViajero() {
               {mainPhoto ? (
                 <Image source={{ uri: mainPhoto.uri }} style={{ width: "100%", height: "100%" }} />
               ) : (
-                <Text style={{ color: "#173B6B", fontWeight: "800" as const }}>
+                <Text style={{ color: "#173B6B", fontWeight: "800", fontSize: 15 }}>
                   {t.addPhoto}
                 </Text>
               )}
@@ -280,15 +284,7 @@ export default function PerfilViajero() {
           <View style={card}>
             <Text style={section}>{t.personalInfo}</Text>
 
-            <TextInput
-              value={name}
-              onChangeText={setName}
-              placeholder={t.placeholderName}
-              placeholderTextColor="#6b7280"
-              style={input}
-              editable={!saving}
-            />
-
+            <Text style={label}>{t.placeholderEmail}</Text>
             <TextInput
               value={email}
               onChangeText={setEmail}
@@ -300,15 +296,17 @@ export default function PerfilViajero() {
               editable={!saving}
             />
 
+            <Text style={label}>{t.placeholderName}</Text>
             <TextInput
-              value={phone}
-              onChangeText={setPhone}
-              placeholder={t.placeholderPhone}
+              value={name}
+              onChangeText={setName}
+              placeholder={t.placeholderName}
               placeholderTextColor="#6b7280"
               style={input}
               editable={!saving}
             />
 
+            <Text style={label}>{t.placeholderCountry}</Text>
             <TextInput
               value={country}
               onChangeText={setCountry}
@@ -318,6 +316,7 @@ export default function PerfilViajero() {
               editable={!saving}
             />
 
+            <Text style={label}>{t.placeholderCity}</Text>
             <TextInput
               value={city}
               onChangeText={setCity}
@@ -327,6 +326,7 @@ export default function PerfilViajero() {
               editable={!saving}
             />
 
+            <Text style={label}>{t.placeholderLanguage}</Text>
             <TextInput
               value={language}
               onChangeText={setLanguage}
@@ -336,6 +336,17 @@ export default function PerfilViajero() {
               editable={!saving}
             />
 
+            <Text style={label}>{t.placeholderPhone}</Text>
+            <TextInput
+              value={phone}
+              onChangeText={setPhone}
+              placeholder={t.placeholderPhone}
+              placeholderTextColor="#6b7280"
+              style={input}
+              editable={!saving}
+            />
+
+            <Text style={label}>{t.placeholderTravelStyle}</Text>
             <TextInput
               value={travelStyle}
               onChangeText={setTravelStyle}
@@ -345,6 +356,7 @@ export default function PerfilViajero() {
               editable={!saving}
             />
 
+            <Text style={label}>{t.placeholderInterests}</Text>
             <TextInput
               value={interests}
               onChangeText={setInterests}
@@ -354,16 +366,20 @@ export default function PerfilViajero() {
               editable={!saving}
             />
 
+            <Text style={label}>{t.placeholderAbout}</Text>
             <TextInput
               value={about}
               onChangeText={setAbout}
               placeholder={t.placeholderAbout}
               placeholderTextColor="#6b7280"
               multiline
-              style={[input, { minHeight: 100 }]}
+              numberOfLines={4}
+              textAlignVertical="top"
+              style={[input, { minHeight: 120, paddingTop: 14 }]}
               editable={!saving}
             />
 
+            <Text style={label}>{t.placeholderPassword}</Text>
             <View style={{ position: "relative" as const }}>
               <TextInput
                 value={password}
@@ -385,6 +401,7 @@ export default function PerfilViajero() {
               </Pressable>
             </View>
 
+            <Text style={label}>{t.placeholderConfirmPassword}</Text>
             <View style={{ position: "relative" as const }}>
               <TextInput
                 value={confirmPassword}
@@ -430,15 +447,15 @@ export default function PerfilViajero() {
                 {acceptTerms && <Text style={{ color: "#fff" }}>✓</Text>}
               </View>
 
-              <Text>{t.accept}</Text>
+              <Text style={{ color: "#111827", flex: 1 }}>{t.accept}</Text>
             </Pressable>
 
             <Pressable
               onPress={handleSave}
-              style={[button, saving ? { opacity: 0.7 } : null]}
+              style={[buttonPrimary, { backgroundColor: saving ? "#5a6b85" : "#173B6B" }]}
               disabled={saving}
             >
-              <Text style={{ color: "#fff", fontWeight: "800" as const }}>
+              <Text style={buttonPrimaryText}>
                 {saving ? t.savingBtn : t.saveBtn}
               </Text>
             </Pressable>
@@ -457,7 +474,7 @@ const titleMain = {
 };
 
 const titleSub = {
-  color: "#fff",
+  color: "#173B6B",
   fontSize: 26,
   fontWeight: "800" as const,
   textAlign: "center" as const,
@@ -473,7 +490,7 @@ const photoBox = {
   overflow: "hidden" as const,
   backgroundColor: "rgba(255,255,255,0.25)",
   borderWidth: 3,
-  borderColor: "#fff",
+  borderColor: "#ffffff",
   justifyContent: "center" as const,
   alignItems: "center" as const
 };
@@ -490,21 +507,34 @@ const card = {
 const section = {
   fontSize: 22,
   fontWeight: "800" as const,
-  marginBottom: 20,
+  marginBottom: 18,
   color: "#173B6B"
+};
+
+const label = {
+  fontSize: 14,
+  fontWeight: "700" as const,
+  marginBottom: 6,
+  color: "#374151"
 };
 
 const input = {
   backgroundColor: "rgba(255,255,255,0.6)",
   borderRadius: 16,
   padding: 14,
-  marginBottom: 12
+  marginBottom: 12,
+  color: "#173B6B"
 };
 
-const button = {
-  backgroundColor: "#173B6B",
+const buttonPrimary = {
   padding: 16,
   borderRadius: 16,
   alignItems: "center" as const,
   marginTop: 12
+};
+
+const buttonPrimaryText = {
+  color: "#ffffff",
+  fontWeight: "800" as const,
+  fontSize: 16
 };

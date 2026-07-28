@@ -397,7 +397,74 @@ return {
     try {
       setLoading(true);
 
-      const token = (await AsyncStorage.getItem("iguideu_token")) || "";
+      let token = (await AsyncStorage.getItem("iguideu_token")) || "";
+
+      if (!isExistingGuide && !token) {
+        const registerResponse = await fetch(`${API_BASE}/api/auth/register`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            name: cleanName,
+            email: cleanEmail,
+            password: cleanPassword,
+            role: "guide"
+          })
+        });
+
+        const registerText = await registerResponse.text();
+
+        let registerData: any = null;
+        try {
+          registerData = JSON.parse(registerText);
+        } catch {
+          Alert.alert(t.alertServerErrTitle, t.alertServerErrJSON);
+          return;
+        }
+
+        if (!registerResponse.ok || !registerData?.ok) {
+          Alert.alert(t.alertErrorTitle, registerData?.message || registerData?.error || t.alertSaveErr);
+          return;
+        }
+
+        const loginResponse = await fetch(`${API_BASE}/api/auth/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            email: cleanEmail,
+            password: cleanPassword
+          })
+        });
+
+        const loginText = await loginResponse.text();
+
+        let loginData: any = null;
+        try {
+          loginData = JSON.parse(loginText);
+        } catch {
+          Alert.alert(t.alertServerErrTitle, t.alertServerErrJSON);
+          return;
+        }
+
+        if (!loginResponse.ok) {
+          Alert.alert(t.alertErrorTitle, loginData?.message || loginData?.error || t.alertConnectErr);
+          return;
+        }
+
+        token = String(loginData?.token || "").trim();
+
+        if (!token) {
+          Alert.alert(t.alertErrorTitle, t.alertConnectErr);
+          return;
+        }
+
+        await AsyncStorage.setItem("iguideu_token", token);
+        await AsyncStorage.setItem("iguideu_user_email", cleanEmail);
+        await AsyncStorage.setItem("iguideu_user_role", "guide");
+      }
 
       const uploadedMainPhoto = await uploadMedia(mainPhoto, token);
       const uploadedGalleryPhotos = await Promise.all(

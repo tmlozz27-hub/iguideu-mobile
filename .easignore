@@ -1,40 +1,7 @@
-﻿AppData/
-ChromeTempIguideu/
-3D Objects/
-Contacts/
-Cookies/
-Configuración local/
-Datos de programa/
-Entorno de red/
-Impresoras/
-Menú Inicio/
-Mis documentos/
-Plantillas/
-Reciente/
-SendTo/
-Alias/
-
+﻿node_modules/
 .expo/
-.expo-shared/
-.cache/
-**/Cache/
-**/Code Cache/
-**/GrShaderCache/
-**/Temp/
-*.tmp
-*.log
-
-.android/
-.cloudflared/
-.config/
-.gradle/
-.pm2/
-.node_repl_history
-.npmrc
-.gitconfig
-.idlerc
-.lesshst
-
-node_modules/
+.git/
 android/
 ios/
+*.log
+*.tmp
