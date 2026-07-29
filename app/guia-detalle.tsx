@@ -524,16 +524,42 @@ export default function GuiaDetalleScreen() {
                           paddingVertical: 8,
                         }}
                       >
-                        <Text
-                          style={{
-                            color: "#ffffff",
-                            fontWeight: "800",
-                            textAlign: "center",
-                            fontSize: 13,
-                          }}
-                        >
-                          {item.label}
-                        </Text>
+                       {item.isVideo ? (
+  <View style={{ alignItems: "center" }}>
+    <Text
+      style={{
+        color: "#58C4FF",
+        fontSize: 42,
+        fontWeight: "900",
+        textAlign: "center",
+      }}
+    >
+      ▶
+    </Text>
+
+    <Text
+      style={{
+        color: "#ffffff",
+        fontWeight: "800",
+        textAlign: "center",
+        fontSize: 13,
+      }}
+    >
+      VIDEO
+    </Text>
+  </View>
+) : (
+  <Text
+    style={{
+      color: "#ffffff",
+      fontWeight: "800",
+      textAlign: "center",
+      fontSize: 13,
+    }}
+  >
+    {item.label}
+  </Text>
+)}
                       </View>
                     </ImageBackground>
                   </Pressable>

@@ -672,7 +672,7 @@ if (uploadedVideo) {
               <View style={card}>
                 {video ? (
                   <View style={cardInner}>
-                    <Text style={videoEmoji}>🎬</Text>
+                    <Text style={videoPlay}>▶</Text>
                     <Text style={videoText}>{t.videoText}</Text>
 
                     <Pressable onPress={() => setVideo(null)} style={removeBtn}>
@@ -1023,8 +1023,10 @@ const mainPlaceholderSubtitle = {
   textAlign: "center" as const
 };
 
-const videoEmoji = {
-  fontSize: 24,
+const videoPlay = {
+  color: "#58C4FF",
+  fontSize: 42,
+  fontWeight: "900" as const,
   marginBottom: 4
 };
 
