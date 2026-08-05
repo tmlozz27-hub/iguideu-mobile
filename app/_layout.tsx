@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { Image, StyleSheet, View } from "react-native";
-import { Platform } from "react-native";
+import { Image, Platform, StyleSheet, View } from "react-native";
 import { Stack } from "expo-router";
 import { StripeProvider } from "@stripe/stripe-react-native";
+import * as Sentry from "@sentry/react-native";
 
-export default function RootLayout() {
+Sentry.init({
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN || "",
+  enabled: Boolean(process.env.EXPO_PUBLIC_SENTRY_DSN)
+});
+
+function RootLayout() {
   const [showSplash, setShowSplash] = useState(true);
 
   const iosBackHeader = {
@@ -53,12 +58,17 @@ export default function RootLayout() {
           <Stack.Screen name="perfil-guia" options={{ headerShown: false }} />
           <Stack.Screen name="reservas-guia" options={iosBackHeader} />
           <Stack.Screen name="buscar-pais" options={{ headerShown: false }} />
-          <Stack.Screen name="guides-by-country" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="guides-by-country"
+            options={{ headerShown: false }}
+          />
         </Stack>
       )}
     </StripeProvider>
   );
 }
+
+export default Sentry.wrap(RootLayout);
 
 const styles = StyleSheet.create({
   splashContainer: {
