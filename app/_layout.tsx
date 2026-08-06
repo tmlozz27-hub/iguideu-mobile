@@ -27,12 +27,13 @@ function RootLayout() {
     "";
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-    }, 1600);
 
-    return () => clearTimeout(timer);
-  }, []);
+  const timer = setTimeout(() => {
+    setShowSplash(false);
+  }, 1600);
+
+  return () => clearTimeout(timer);
+}, []);
 
   console.log(
     "STRIPE_PK_PREFIX_RUNTIME",
