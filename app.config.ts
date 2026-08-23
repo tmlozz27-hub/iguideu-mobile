@@ -23,7 +23,7 @@ export default {
     },
 
     android: {
-      package: "com.auroragalactic.iguideu",
+      package: "com.iguideu",
       usesCleartextTraffic: true,
 
       adaptiveIcon: {
