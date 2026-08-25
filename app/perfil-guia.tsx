@@ -11,6 +11,7 @@ import {
   Platform
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import * as Location from "expo-location";
 import * as FileSystem from "expo-file-system/legacy";
 import { useRouter } from "expo-router";
 import { API_BASE } from "@/config/api";
@@ -396,6 +397,29 @@ return {
 
     try {
       setLoading(true);
+      let guideLocation: { lat: number; lng: number } | null = null;
+
+      if (!isExistingGuide) {
+        const permission = await Location.requestForegroundPermissionsAsync();
+
+        if (permission.status !== "granted") {
+          Alert.alert(
+            t.alertErrorTitle,
+            language === "en"
+              ? "Location permission is required so nearby travelers can find your guide profile."
+              : "El permiso de ubicación es necesario para que los viajeros cercanos puedan encontrar tu perfil de guía."
+          );
+          return;
+        }
+
+        const loc = await Location.getCurrentPositionAsync({});
+
+        guideLocation = {
+          lat: loc.coords.latitude,
+          lng: loc.coords.longitude
+        };
+      }
+
 
       let token = (await AsyncStorage.getItem("iguideu_token")) || "";
 
@@ -487,6 +511,7 @@ return {
         price24h: Number(price24h) || 0,
         guideType,
         active: true,
+        ...(guideLocation ? { lat: guideLocation.lat, lng: guideLocation.lng } : {}),
         avatarUrl: uploadedMainPhoto?.uri || "",
         mediaDraft: {
           mainPhoto: uploadedMainPhoto,
