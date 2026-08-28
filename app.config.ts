@@ -18,7 +18,9 @@ export default {
       bundleIdentifier: "com.auroragalactic.iguideu",
       googleServicesFile: "./GoogleService-Info.plist",
       infoPlist: {
-        ITSAppUsesNonExemptEncryption: false
+        ITSAppUsesNonExemptEncryption: false,
+        NSLocationWhenInUseUsageDescription:
+          "I GUIDE U uses your location to show nearby local guides and, if you register as a guide, to help travelers discover your profile in nearby search results. For example, a traveler can use their current location to find guides available nearby."
       }
     },
 
