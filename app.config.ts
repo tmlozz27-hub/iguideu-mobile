@@ -7,7 +7,7 @@ export default {
     slug: "iguideu",
     scheme: "iguideu",
     version: "1.0.0",
-    orientation: "portrait",
+    orientation: "default",
     userInterfaceStyle: "automatic",
 
     assetBundlePatterns: ["**/*"],
@@ -46,7 +46,18 @@ export default {
 
     plugins: [
       "expo-apple-authentication",
-  "@sentry/react-native",
+      "@sentry/react-native",
+
+      [
+        "expo-build-properties",
+        {
+          android: {
+            compileSdkVersion: 36,
+            targetSdkVersion: 36
+          }
+        }
+      ],
+
       [
         "@stripe/stripe-react-native",
         {
@@ -54,6 +65,7 @@ export default {
           enableGooglePay: true
         }
       ],
+
       [
         "@react-native-google-signin/google-signin",
         {
@@ -61,6 +73,7 @@ export default {
             "com.googleusercontent.apps.661263042735-677bo9vuvgkds5g80h2phrn683rv3d88"
         }
       ],
+
       "./plugins/withIosStaticPodsFix"
     ],
 

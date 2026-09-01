@@ -21,3 +21,6 @@ yarn-error.log*
 android/
 
 ios/
+
+upload-keystore.jks
+upload_certificate.pem
