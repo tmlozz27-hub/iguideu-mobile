@@ -1,3 +1,4 @@
+import { requestAccountDeletion } from "@/config/deleteAccount";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
@@ -51,6 +52,7 @@ export default function PerfilGuia() {
 
   const [language, setLanguage] = useState<"es" | "en">("es");
 
+  const handleDeleteAccount = () => { Alert.alert(language === "en" ? "Delete account" : "Eliminar cuenta", language === "en" ? "Request account deletion? You will be logged out." : "¿Solicitar la eliminación de tu cuenta? Se cerrará tu sesión.", [{ text: language === "en" ? "Cancel" : "Cancelar", style: "cancel" }, { text: language === "en" ? "Delete account" : "Eliminar cuenta", style: "destructive", onPress: async () => { try { await requestAccountDeletion(); await doLogout(); } catch { Alert.alert("Error", language === "en" ? "Could not request deletion." : "No se pudo solicitar la eliminación."); } } }]); };
   const doLogout = async () => {
     await AsyncStorage.multiRemove([
       "iguideu_token",
@@ -890,6 +892,7 @@ if (uploadedVideo) {
               <Text style={secondaryBtnText}>{t.bookings}</Text>
             </Pressable>
 
+            <Pressable onPress={handleDeleteAccount} style={logoutBtn}><Text style={logoutBtnText}>{language === "en" ? "Delete account" : "Eliminar cuenta"}</Text></Pressable>
             <Pressable onPress={handleLogout} style={logoutBtn}>
               <Text style={logoutBtnText}>{t.logout}</Text>
             </Pressable>
