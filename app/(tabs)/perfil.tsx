@@ -15,6 +15,7 @@ import { useRouter, useFocusEffect } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import { apiGet, apiPut } from "@/config/api";
+import { requestAccountDeletion } from "@/config/deleteAccount";
 
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
@@ -278,6 +279,24 @@ export default function ProfileScreen() {
     router.replace("/login");
   };
 
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      t.deleteAccount,
+      lang === "es" ? "¿Querés solicitar la eliminación de tu cuenta? Se cerrará tu sesión." : "Request account deletion? You will be logged out.",
+      [
+        { text: t.cancel, style: "cancel" },
+        { text: t.deleteAccount, style: "destructive", onPress: async () => {
+          try {
+            await requestAccountDeletion();
+            Alert.alert(t.deleteAccount, lang === "es" ? "Solicitud recibida. Tu sesión se cerrará." : "Request received. You will be logged out.");
+            await doLogout();
+          } catch (error) {
+            Alert.alert(lang === "es" ? "Error" : "Error", lang === "es" ? "No se pudo solicitar la eliminación. Intentá nuevamente." : "Could not request deletion. Please try again.");
+          }
+        }}
+      ]
+    );
+  };
   const handleLogout = () => {
     Alert.alert(
       t.logoutTitle,
@@ -401,7 +420,7 @@ export default function ProfileScreen() {
             </Pressable>
 
             <Pressable
-              onPress={() => Alert.alert(t.deleteAccount, t.deleteAccountMessage)}
+              onPress={handleDeleteAccount}
               style={{
                 backgroundColor: "#6b7280",
                 padding: 16,
