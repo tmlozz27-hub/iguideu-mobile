@@ -794,7 +794,66 @@ if (uploadedVideo) {
             <Pressable onPress={() => router.push("/reservas-guia")} style={secondaryBtn}>
               <Text style={secondaryBtnText}>{t.bookings}</Text>
             </Pressable>
+            <Pressable
+              disabled={loading || !isExistingGuide}
+              onPress={() => {
+                Alert.alert(
+                  language === "en" ? "Delete account" : "Eliminar cuenta",
+                  language === "en"
+                    ? "Are you sure you want to permanently delete your account?"
+                    : "¿Seguro que querés eliminar definitivamente tu cuenta?",
+                  [
+                    {
+                      text: language === "en" ? "Cancel" : "Cancelar",
+                      style: "cancel",
+                    },
+                    {
+                      text: language === "en" ? "Delete" : "Eliminar",
+                      style: "destructive",
+                      onPress: async () => {
+                        try {
+                          const token = await AsyncStorage.getItem("iguideu_token");
+                          if (!token) {
+                            Alert.alert("Error", "Sesión no válida.");
+                            return;
+                          }
 
+                          const response = await fetch(`${API_BASE}/api/auth/me`, {
+                            method: "DELETE",
+                            headers: {
+                              Authorization: `Bearer ${token}`,
+                              "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                              confirmation: "DELETE MY ACCOUNT",
+                            }),
+                          });
+
+                          if (!response.ok) {
+                            Alert.alert(
+                              "Error",
+                              response.status === 409
+                                ? "No se puede eliminar la cuenta porque tiene reservas asociadas."
+                                : "No se pudo eliminar la cuenta."
+                            );
+                            return;
+                          }
+
+                          await doLogout();
+                        } catch {
+                          Alert.alert("Error", "No se pudo eliminar la cuenta.");
+                        }
+                      },
+                    },
+                  ]
+                );
+              }}
+              style={[logoutBtn, { backgroundColor: "#991B1B", marginBottom: 12 }]}
+            >
+              <Text style={logoutBtnText}>
+                {language === "en" ? "Delete account" : "Eliminar cuenta"}
+              </Text>
+            </Pressable>
             <Pressable onPress={handleLogout} style={logoutBtn}>
               <Text style={logoutBtnText}>{t.logout}</Text>
             </Pressable>

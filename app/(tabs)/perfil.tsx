@@ -401,7 +401,68 @@ export default function ProfileScreen() {
             </Pressable>
 
             <Pressable
-              onPress={() => Alert.alert(t.deleteAccount, t.deleteAccountMessage)}
+         
+onPress={() => {
+  Alert.alert(
+    t.deleteAccount,
+    lang === "es"
+      ? "¿Eliminar definitivamente tu cuenta? Esta acción no se puede deshacer."
+      : "Permanently delete your account? This cannot be undone.",
+    [
+      { text: t.cancel, style: "cancel" },
+      {
+        text: t.deleteAccount,
+        style: "destructive",
+        onPress: async () => {
+          try {
+            const token = await AsyncStorage.getItem(TOKEN_KEY);
+
+            if (!token) {
+              Alert.alert("Error", "Sesión expirada.");
+              return;
+            }
+
+            const response = await fetch(
+              "https://api.i-guide-u.com/api/auth/me",
+              {
+                method: "DELETE",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                  confirmation: "DELETE MY ACCOUNT"
+                })
+              }
+            );
+
+            if (!response.ok) {
+              Alert.alert(
+                "Error",
+                response.status === 409
+                  ? "La cuenta tiene reservas asociadas. Contactá a soporte."
+                  : "No se pudo eliminar la cuenta."
+              );
+              return;
+            }
+
+            await AsyncStorage.multiRemove([
+              TOKEN_KEY,
+              USER_EMAIL_KEY,
+              PROFILE_CACHE_KEY,
+              "iguideu_user_role"
+            ]);
+
+            router.replace("/login");
+          } catch {
+            Alert.alert("Error", "No se pudo conectar con el servidor.");
+          }
+        }
+      }
+    ]
+  );
+}}
+
               style={{
                 backgroundColor: "#6b7280",
                 padding: 16,
