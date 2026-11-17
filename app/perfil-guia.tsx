@@ -397,6 +397,11 @@ return {
 
     try {
       setLoading(true);
+      const savedLanguage = await AsyncStorage.getItem("iguideu_lang");
+      const registrationLanguage =
+        savedLanguage === "en" || savedLanguage === "es"
+          ? savedLanguage
+          : language;
       let guideLocation: { lat: number; lng: number } | null = null;
 
       if (!isExistingGuide) {
@@ -422,6 +427,67 @@ return {
 
 
       let token = (await AsyncStorage.getItem("iguideu_token")) || "";
+      let sessionVerified = false;
+      let persistNewSession = false;
+      let rejectedStoredToken = false;
+
+      if (token) {
+        const storedResponse = await fetch(`${API_BASE}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (storedResponse.ok) {
+          const storedData = await storedResponse.json();
+          const storedEmail = String(storedData?.user?.email || "").trim().toLowerCase();
+          if (storedData?.ok !== true || storedEmail !== cleanEmail || storedData?.user?.role !== "guide") {
+            Alert.alert(t.alertErrorTitle, language === "en"
+              ? "The active session does not match this guide account."
+              : "La sesión activa no corresponde a esta cuenta de guía.");
+            return;
+          }
+          sessionVerified = true;
+        } else if (storedResponse.status === 401 || storedResponse.status === 403) {
+          token = "";
+          rejectedStoredToken = true;
+          await AsyncStorage.multiRemove(["iguideu_token", "iguideu_user_email", "iguideu_user_role"]);
+        } else {
+          Alert.alert(t.alertErrorTitle, t.alertConnectErr);
+          return;
+        }
+      }
+
+      if (rejectedStoredToken) {
+        if (!cleanPassword) {
+          Alert.alert(t.alertErrorTitle, language === "en"
+            ? "Session expired. Sign in again before saving your profile."
+            : "La sesión venció. Iniciá sesión nuevamente antes de guardar el perfil.");
+          return;
+        }
+        const recoveryResponse = await fetch(`${API_BASE}/api/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: cleanEmail, password: cleanPassword })
+        });
+        if (recoveryResponse.ok) {
+          const recoveryData = await recoveryResponse.json();
+          token = String(recoveryData?.token || "").trim();
+          if (!token) {
+            Alert.alert(t.alertErrorTitle, t.alertConnectErr);
+            return;
+          }
+          persistNewSession = true;
+        } else if (recoveryResponse.status === 401) {
+          if (isExistingGuide) {
+            Alert.alert(t.alertErrorTitle, language === "en"
+              ? "Could not sign in. Check your password or reset it."
+              : "No se pudo iniciar sesión. Revisá la contraseña o restablecela.");
+            return;
+          }
+          // A new guide may still register; the backend rejects duplicate emails (409).
+        } else {
+          Alert.alert(t.alertErrorTitle, t.alertConnectErr);
+          return;
+        }
+      }
 
       if (!isExistingGuide && !token) {
         const registerResponse = await fetch(`${API_BASE}/api/auth/register`, {
@@ -433,7 +499,8 @@ return {
             name: cleanName,
             email: cleanEmail,
             password: cleanPassword,
-            role: "guide"
+            role: "guide",
+            language: registrationLanguage
           })
         });
 
@@ -484,10 +551,38 @@ return {
           Alert.alert(t.alertErrorTitle, t.alertConnectErr);
           return;
         }
+        persistNewSession = true;
+      }
 
-        await AsyncStorage.setItem("iguideu_token", token);
-        await AsyncStorage.setItem("iguideu_user_email", cleanEmail);
-        await AsyncStorage.setItem("iguideu_user_role", "guide");
+      if (!token) {
+        Alert.alert(t.alertErrorTitle, t.alertConnectErr);
+        return;
+      }
+
+      if (!sessionVerified) {
+        const sessionResponse = await fetch(`${API_BASE}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!sessionResponse.ok) {
+          Alert.alert(t.alertErrorTitle, t.alertConnectErr);
+          return;
+        }
+        const sessionData = await sessionResponse.json();
+        const sessionEmail = String(sessionData?.user?.email || "").trim().toLowerCase();
+        if (sessionData?.ok !== true || sessionEmail !== cleanEmail || sessionData?.user?.role !== "guide") {
+          Alert.alert(t.alertErrorTitle, language === "en"
+            ? "The active session does not match this guide account."
+            : "La sesión activa no corresponde a esta cuenta de guía.");
+          return;
+        }
+      }
+
+      if (persistNewSession) {
+        await AsyncStorage.multiSet([
+          ["iguideu_token", token],
+          ["iguideu_user_email", cleanEmail],
+          ["iguideu_user_role", "guide"]
+        ]);
       }
 
       const uploadedMainPhoto = await uploadMedia(mainPhoto, token);

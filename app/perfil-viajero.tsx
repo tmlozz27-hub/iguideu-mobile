@@ -148,11 +148,18 @@ export default function PerfilViajero() {
     try {
       setSaving(true);
 
+      const savedLanguage = await AsyncStorage.getItem(LANG_KEY);
+      const registrationLanguage =
+        savedLanguage === "en" || savedLanguage === "es"
+          ? savedLanguage
+          : lang;
+
       const registerData = await apiPost("/api/auth/register", {
         name: cleanName,
         email: cleanEmail,
         password,
-        role: "traveler"
+        role: "traveler",
+        language: registrationLanguage
       });
 
       if (!registerData?.ok) {

@@ -99,11 +99,18 @@ export default function RegisterScreen() {
     try {
       setLoading(true);
 
+      const savedLanguage = await AsyncStorage.getItem(LANG_KEY);
+      const registrationLanguage =
+        savedLanguage === "en" || savedLanguage === "es"
+          ? savedLanguage
+          : lang;
+
       const data = await apiPost("/api/auth/register", {
         name,
         email: cleanEmail,
         password,
         role: userRole,
+        language: registrationLanguage,
       });
 
       if (!data?.ok) {

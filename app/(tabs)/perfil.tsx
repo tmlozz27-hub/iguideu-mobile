@@ -14,7 +14,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useRouter, useFocusEffect } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
-import { apiGet, apiPut } from "@/config/api";
+import { API_BASE, apiGet, apiPut } from "@/config/api";
 
 const TOKEN_KEY = "iguideu_token";
 const USER_EMAIL_KEY = "iguideu_user_email";
@@ -423,7 +423,7 @@ onPress={() => {
             }
 
             const response = await fetch(
-              "https://api.i-guide-u.com/api/auth/me",
+              `${API_BASE}/api/auth/me`,
               {
                 method: "DELETE",
                 headers: {
